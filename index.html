@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JENTE Data Deck</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<style>
+/* ── Reset & Variables ── */
+:root {
+  --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+  --border: #30363d; --text: #e6edf3; --text2: #8b949e;
+  --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+  --yellow: #d29922; --purple: #bc8cff; --orange: #db6d28;
+  --chart1: #58a6ff; --chart2: #3fb950; --chart3: #f85149;
+  --chart4: #d29922; --chart5: #bc8cff; --chart6: #db6d28;
+  --chart7: #79c0ff; --chart8: #56d364;
+}
+:root.light {
+  --bg: #ffffff; --bg2: #f6f8fa; --bg3: #eaeef2;
+  --border: #d0d7de; --text: #1f2328; --text2: #656d76;
+  --accent: #0969da; --green: #1a7f37; --red: #cf222e;
+  --yellow: #9a6700; --purple: #8250df; --orange: #bc4c00;
+  --chart1: #0969da; --chart2: #1a7f37; --chart3: #cf222e;
+  --chart4: #9a6700; --chart5: #8250df; --chart6: #bc4c00;
+  --chart7: #218bff; --chart8: #2da44e;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.5; min-height: 100vh;
+}
+a { color: var(--accent); text-decoration: none; }
+
+/* ── PIN Overlay ── */
+#pin-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+#pin-overlay h2 { color: var(--text2); font-weight: 400; font-size: 16px; }
+#pin-overlay input {
+  width: 200px; padding: 12px; font-size: 24px; text-align: center;
+  letter-spacing: 12px; background: var(--bg2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; outline: none;
+}
+#pin-overlay input:focus { border-color: var(--accent); }
+#pin-error { color: var(--red); font-size: 13px; min-height: 20px; }
+
+/* ── Header ── */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg); z-index: 100;
+}
+header h1 { font-size: 18px; font-weight: 600; }
+header h1 span { color: var(--text2); font-weight: 400; font-size: 14px; margin-left: 8px; }
+.header-controls { display: flex; gap: 8px; align-items: center; }
+.toggle-btn {
+  padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--bg2); color: var(--text2);
+  transition: all 0.2s;
+}
+.toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── KPI Cards ── */
+.kpi-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px; padding: 20px 24px;
+}
+.kpi-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; text-align: center;
+}
+.kpi-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+.kpi-sub { font-size: 12px; color: var(--text2); }
+.kpi-change { font-size: 12px; font-weight: 600; }
+.kpi-change.up { color: var(--green); }
+.kpi-change.down { color: var(--red); }
+
+/* ── Sections ── */
+.section {
+  border-top: 1px solid var(--border); padding: 24px;
+}
+.section-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title { font-size: 15px; font-weight: 600; }
+.section-subtitle { font-size: 12px; color: var(--text2); }
+.section-question {
+  font-size: 13px; color: var(--text2); font-style: italic;
+  margin-bottom: 12px;
+}
+.chart-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+@media (max-width: 900px) {
+  .chart-grid { grid-template-columns: 1fr; }
+}
+.chart-box {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; min-height: 300px; position: relative;
+}
+.chart-box h3 { font-size: 13px; font-weight: 500; margin-bottom: 12px; color: var(--text2); }
+.chart-box canvas { max-height: 280px; }
+.chart-box.full { grid-column: 1 / -1; }
+
+/* ── Data Table ── */
+.data-table-wrap { overflow-x: auto; margin-top: 12px; }
+.data-table {
+  width: 100%; border-collapse: collapse; font-size: 11px;
+}
+.data-table th, .data-table td {
+  padding: 4px 8px; text-align: right; border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table th { color: var(--text2); font-weight: 500; position: sticky; left: 0; background: var(--bg2); }
+.data-table td:first-child { text-align: left; font-weight: 500; }
+
+/* ── Insight Box ── */
+.insight-box {
+  background: var(--bg3); border-radius: 6px; padding: 12px 16px;
+  font-size: 12px; margin-top: 12px; border-left: 3px solid var(--accent);
+}
+.insight-box.warn { border-left-color: var(--yellow); }
+.insight-box.danger { border-left-color: var(--red); }
+.insight-box.good { border-left-color: var(--green); }
+
+/* ── Cohort Heatmap ── */
+.cohort-table { font-size: 10px; }
+.cohort-table td { min-width: 36px; text-align: center; padding: 2px 4px; }
+.cohort-table td.label { text-align: left; min-width: 80px; font-weight: 500; }
+
+/* ── Tab ── */
+.tab-bar { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+.tab-btn {
+  padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--text2);
+}
+.tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Footer ── */
+footer {
+  text-align: center; padding: 24px; color: var(--text2); font-size: 12px;
+  border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+
+<!-- PIN Overlay -->
+<div id="pin-overlay">
+  <h2>JENTE Data Deck</h2>
+  <input type="password" id="pin-input" maxlength="4" placeholder="PIN" autofocus>
+  <div id="pin-error"></div>
+</div>
+
+<!-- Main Content (hidden until PIN) -->
+<div id="app" style="display:none;">
+
+<header>
+  <h1>JENTE Data Deck <span>2022.01 ~ 2025.12</span></h1>
+  <div class="header-controls">
+    <button class="toggle-btn" id="btn-monthly" onclick="setView('monthly')">Monthly</button>
+    <button class="toggle-btn active" id="btn-yearly" onclick="setView('yearly')">Yearly</button>
+    <button class="toggle-btn" id="btn-theme" onclick="toggleTheme()">Light</button>
+  </div>
+</header>
+
+<!-- KPI Cards -->
+<div class="kpi-row" id="kpi-row"></div>
+
+<!-- Section 1: GMV & Revenue -->
+<div class="section" id="sec-gmv">
+  <div class="section-header">
+    <span class="section-title">1. GMV & Revenue</span>
+  </div>
+  <div class="section-question">"사업이 성장하고 있는가? 실매출은 얼마인가?"</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Total GMV & B2C Net Revenue</h3><canvas id="chart-gmv-main"></canvas></div>
+    <div class="chart-box"><h3>B2C vs B2B GMV Mix</h3><canvas id="chart-gmv-mix"></canvas></div>
+  </div>
+  <div id="table-gmv"></div>
+</div>
+
+<!-- Section 2: Return Analysis -->
+<div class="section" id="sec-return">
+  <div class="section-header">
+    <span class="section-title">2. Return Analysis</span>
+  </div>
+  <div class="section-question">"반품이 통제되고 있는가? 실매출에 미치는 영향은?"</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>B2C Return Rate Trend</h3><canvas id="chart-return-rate"></canvas></div>
+    <div class="chart-box"><h3>B2C GMV vs Return Amount</h3><canvas id="chart-return-amount"></canvas></div>
+  </div>
+</div>
+
+<!-- Section 3: Traffic & Marketing -->
+<div class="section" id="sec-traffic">
+  <div class="section-header">
+    <span class="section-title">3. Traffic & Marketing</span>
+  </div>
+  <div class="section-question">"트래픽이 건강한가? 유기적 비중은? 마케팅 효율은?"</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Visitor (Paid / Organic)</h3><canvas id="chart-visitor"></canvas></div>
+    <div class="chart-box"><h3>ROAS & CAC</h3><canvas id="chart-roas-cac"></canvas></div>
+  </div>
+</div>
+
+<!-- Section 4: Customer Base -->
+<div class="section" id="sec-customer">
+  <div class="section-header">
+    <span class="section-title">4. Customer Base</span>
+  </div>
+  <div class="section-question">"고객 기반이 건강하게 확대되고 있는가? MAU는?"</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>MAU & Members</h3><canvas id="chart-mau"></canvas></div>
+    <div class="chart-box"><h3>New Sign-ups & Churn</h3><canvas id="chart-churn"></canvas></div>
+  </div>
+</div>
+
+<!-- Section 5: Conversion -->
+<div class="section" id="sec-conv">
+  <div class="section-header">
+    <span class="section-title">5. Conversion Funnel</span>
+  </div>
+  <div class="section-question">"방문자가 구매까지 이어지는가? 전환율 추이는?"</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Conversion Rate & Orders</h3><canvas id="chart-conv"></canvas></div>
+    <div class="chart-box"><h3>AOV (Average Order Value)</h3><canvas id="chart-aov"></canvas></div>
+  </div>
+</div>
+
+<!-- Section 6: Marketing Efficiency -->
+<div class="section" id="sec-mktg">
+  <div class="section-header">
+    <span class="section-title">6. Marketing Efficiency</span>
+  </div>
+  <div class="section-question">"광고비 대비 효율이 개선되고 있는가?"</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Ad Spend & Ad Ratio</h3><canvas id="chart-adspend"></canvas></div>
+    <div class="chart-box"><h3>CPC & Cost per Visit</h3><canvas id="chart-cpc"></canvas></div>
+  </div>
+</div>
+
+<!-- Section 7: SKU Health -->
+<div class="section" id="sec-sku">
+  <div class="section-header">
+    <span class="section-title">7. Catalog Health</span>
+  </div>
+  <div class="section-question">"상품 카탈로그가 건강한가? 판매 가능 비율은?"</div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>SKU Status</h3><canvas id="chart-sku"></canvas></div>
+    <div class="chart-box"><h3>Soldout Rate</h3><canvas id="chart-soldout"></canvas></div>
+  </div>
+</div>
+
+<!-- Section 8: Cohort Retention -->
+<div class="section" id="sec-cohort">
+  <div class="section-header">
+    <span class="section-title">8. Cohort Retention</span>
+  </div>
+  <div class="section-question">"한번 구매한 고객이 계속 돌아오는가? 코호트별 품질은?"</div>
+  <div class="tab-bar" id="cohort-tabs">
+    <button class="tab-btn active" onclick="setCohortTab('all')">All Users</button>
+    <button class="tab-btn" onclick="setCohortTab('repeat')">Repeat (2+)</button>
+    <button class="tab-btn" onclick="setCohortTab('vip')">VIP</button>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-box"><h3>Yearly Avg. Buyer Retention Curve</h3><canvas id="chart-cohort-buyer"></canvas></div>
+    <div class="chart-box"><h3>Yearly Avg. Revenue Retention Curve</h3><canvas id="chart-cohort-revenue"></canvas></div>
+  </div>
+  <div id="cohort-heatmap-wrap"></div>
+</div>
+
+<!-- Section 9: YoY Growth -->
+<div class="section" id="sec-yoy">
+  <div class="section-header">
+    <span class="section-title">9. Year-over-Year Growth</span>
+  </div>
+  <div class="section-question">"전년 대비 핵심 지표 성장률은?"</div>
+  <div class="chart-grid">
+    <div class="chart-box full"><h3>YoY Growth: GMV / Revenue / MAU</h3><canvas id="chart-yoy"></canvas></div>
+  </div>
+</div>
+
+<footer>
+  JENTE Data Deck &middot; Confidential &middot; Generated 2026-02-25 &middot; GONEX
+</footer>
+
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════════
+// Globals
+// ══════════════════════════════════════════
+const PIN = '2026';
+let currentView = 'yearly';
+let currentCohortTab = 'all';
+let charts = {};
+
+// ══════════════════════════════════════════
+// Helpers
+// ══════════════════════════════════════════
+const EOK = v => v / 1e8; // 억 단위 변환
+const fmtEok = v => (v / 1e8).toFixed(1) + '억';
+const fmtPct = v => v != null ? v.toFixed(1) + '%' : '-';
+const fmtNum = v => v != null ? Math.round(v).toLocaleString() : '-';
+const fmtM = v => v != null ? (v / 1e6).toFixed(0) + 'M' : '-';
+
+function getThemeColors() {
+  const s = getComputedStyle(document.documentElement);
+  return {
+    text: s.getPropertyValue('--text').trim(),
+    text2: s.getPropertyValue('--text2').trim(),
+    border: s.getPropertyValue('--border').trim(),
+    bg2: s.getPropertyValue('--bg2').trim(),
+    c1: s.getPropertyValue('--chart1').trim(),
+    c2: s.getPropertyValue('--chart2').trim(),
+    c3: s.getPropertyValue('--chart3').trim(),
+    c4: s.getPropertyValue('--chart4').trim(),
+    c5: s.getPropertyValue('--chart5').trim(),
+    c6: s.getPropertyValue('--chart6').trim(),
+  };
+}
+
+function chartDefaults() {
+  const c = getThemeColors();
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { labels: { color: c.text2, font: { size: 11 } } },
+      tooltip: { backgroundColor: '#1c2128', titleColor: '#e6edf3', bodyColor: '#e6edf3' },
+    },
+    scales: {
+      x: { ticks: { color: c.text2, font: { size: 10 } }, grid: { color: c.border + '40' } },
+      y: { ticks: { color: c.text2, font: { size: 10 } }, grid: { color: c.border + '40' } },
+    },
+  };
+}
+
+function makeChart(id, config) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return null;
+  charts[id] = new Chart(ctx, config);
+  return charts[id];
+}
+
+function getData() {
+  if (currentView === 'yearly') return RAW.yearly;
+  return RAW.monthly;
+}
+
+function getLabels(data) {
+  return data.map(d => d.ym || d.year);
+}
+
+// ══════════════════════════════════════════
+// PIN
+// ══════════════════════════════════════════
+document.getElementById('pin-input').addEventListener('input', function(e) {
+  if (this.value.length === 4) {
+    if (this.value === PIN) {
+      document.getElementById('pin-overlay').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      renderAll();
+    } else {
+      document.getElementById('pin-error').textContent = 'Invalid PIN';
+      this.value = '';
+    }
+  }
+});
+
+// ══════════════════════════════════════════
+// Theme
+// ══════════════════════════════════════════
+function toggleTheme() {
+  document.documentElement.classList.toggle('light');
+  const btn = document.getElementById('btn-theme');
+  btn.textContent = document.documentElement.classList.contains('light') ? 'Dark' : 'Light';
+  renderAll();
+}
+
+// ══════════════════════════════════════════
+// View Toggle
+// ══════════════════════════════════════════
+function setView(v) {
+  currentView = v;
+  document.getElementById('btn-monthly').classList.toggle('active', v === 'monthly');
+  document.getElementById('btn-yearly').classList.toggle('active', v === 'yearly');
+  renderAll();
+}
+
+// ══════════════════════════════════════════
+// KPI Cards
+// ══════════════════════════════════════════
+function renderKPI() {
+  const m = RAW.monthly;
+  const latest = m[m.length - 1];
+  const prev = m[m.length - 13]; // YoY
+
+  const kpis = [
+    {
+      label: 'Total GMV (Latest Month)',
+      value: fmtEok(latest.total_gmv || 0),
+      change: latest.gmv_yoy_pct,
+      sub: latest.ym,
+    },
+    {
+      label: 'B2C Net Revenue',
+      value: fmtEok(latest.b2c_net_revenue || 0),
+      change: latest.revenue_yoy_pct,
+      sub: 'After returns',
+    },
+    {
+      label: 'B2C Return Rate',
+      value: fmtPct(latest.b2c_return_pct),
+      change: prev ? (latest.b2c_return_pct - prev.b2c_return_pct) : null,
+      sub: 'vs YoY',
+      invert: true,
+    },
+    {
+      label: 'Members',
+      value: fmtNum(latest.members),
+      change: latest.mau_yoy_pct,
+      sub: `MAU: ${fmtNum(latest.mau)}`,
+    },
+    {
+      label: 'Conversion Rate',
+      value: fmtPct(latest.conv_rate_pct),
+      sub: `Orders: ${fmtNum(latest.conv_orders || latest.orders_marketing)}`,
+    },
+    {
+      label: 'Organic Traffic',
+      value: fmtPct(latest.organic_pct),
+      sub: `${fmtNum(latest.organic_visitor)} visitors`,
+    },
+  ];
+
+  const html = kpis.map(k => {
+    let changeHtml = '';
+    if (k.change != null) {
+      const isUp = k.invert ? k.change < 0 : k.change > 0;
+      const cls = isUp ? 'up' : 'down';
+      const sign = k.change > 0 ? '+' : '';
+      changeHtml = `<div class="kpi-change ${cls}">${sign}${k.change.toFixed(1)}% YoY</div>`;
+    }
+    return `<div class="kpi-card">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      ${changeHtml}
+      <div class="kpi-sub">${k.sub || ''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('kpi-row').innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// Section 1: GMV & Revenue
+// ══════════════════════════════════════════
+function renderGMV() {
+  const data = getData();
+  const labels = getLabels(data);
+  const c = getThemeColors();
+
+  const isYearly = currentView === 'yearly';
+  const gmvData = data.map(d => EOK(d.total_gmv || 0));
+  const revData = data.map(d => EOK(d.b2c_net_revenue || 0));
+
+  const opts = chartDefaults();
+  opts.scales.y.title = { display: true, text: '(억원)', color: c.text2 };
+
+  makeChart('chart-gmv-main', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Total GMV', data: gmvData, backgroundColor: c.c1 + '80', borderColor: c.c1, borderWidth: 1 },
+        { label: 'B2C Net Revenue', data: revData, backgroundColor: c.c2 + '80', borderColor: c.c2, borderWidth: 1 },
+      ],
+    },
+    options: opts,
+  });
+
+  // B2C vs B2B Mix
+  const b2cData = data.map(d => EOK(d.b2c_gmv || 0));
+  const b2bData = data.map(d => EOK(d.b2b_gmv || 0));
+  const opts2 = chartDefaults();
+  opts2.scales.y = { stacked: true, ticks: { color: c.text2 }, grid: { color: c.border + '40' }, title: { display: true, text: '(억원)', color: c.text2 } };
+  opts2.scales.x = { stacked: true, ticks: { color: c.text2 }, grid: { color: c.border + '40' } };
+
+  makeChart('chart-gmv-mix', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'B2C GMV', data: b2cData, backgroundColor: c.c1 + '80' },
+        { label: 'B2B GMV', data: b2bData, backgroundColor: c.c4 + '80' },
+      ],
+    },
+    options: opts2,
+  });
+
+  // Yearly summary table
+  if (isYearly) {
+    const thead = '<tr><th>Year</th><th>Total GMV</th><th>B2C GMV</th><th>B2C Return</th><th>Return%</th><th>B2C Net Rev</th><th>B2B GMV</th></tr>';
+    const tbody = RAW.yearly.map(y => `<tr>
+      <td>${y.year}</td><td>${fmtEok(y.total_gmv)}</td><td>${fmtEok(y.b2c_gmv)}</td>
+      <td>${fmtEok(y.b2c_return)}</td><td>${fmtPct(y.return_pct)}</td>
+      <td>${fmtEok(y.b2c_net_revenue)}</td><td>${fmtEok(y.b2b_gmv)}</td>
+    </tr>`).join('');
+    document.getElementById('table-gmv').innerHTML = `<div class="data-table-wrap"><table class="data-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+  } else {
+    document.getElementById('table-gmv').innerHTML = '';
+  }
+}
+
+// ══════════════════════════════════════════
+// Section 2: Return Analysis
+// ══════════════════════════════════════════
+function renderReturn() {
+  const data = currentView === 'monthly' ? RAW.monthly : RAW.yearly;
+  const labels = getLabels(data);
+  const c = getThemeColors();
+
+  // Return Rate
+  const returnPct = data.map(d => d.b2c_return_pct || d.return_pct || 0);
+  const opts = chartDefaults();
+  opts.scales.y.title = { display: true, text: '(%)', color: c.text2 };
+  opts.plugins.annotation = {};
+
+  makeChart('chart-return-rate', {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'B2C Return Rate',
+        data: returnPct,
+        borderColor: c.c3,
+        backgroundColor: c.c3 + '20',
+        fill: true,
+        tension: 0.3,
+        pointRadius: currentView === 'monthly' ? 2 : 4,
+      }],
+    },
+    options: opts,
+  });
+
+  // B2C GMV vs Return Amount
+  if (currentView === 'monthly') {
+    const gmv = data.map(d => EOK(d.b2c_gmv || 0));
+    const ret = data.map(d => EOK(d.b2c_return || 0));
+    const opts2 = chartDefaults();
+    opts2.scales.y.title = { display: true, text: '(억원)', color: c.text2 };
+
+    makeChart('chart-return-amount', {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'B2C GMV', data: gmv, backgroundColor: c.c1 + '60' },
+          { label: 'B2C Return', data: ret, backgroundColor: c.c3 + '80' },
+        ],
+      },
+      options: opts2,
+    });
+  } else {
+    const gmv = data.map(d => EOK(d.b2c_gmv || 0));
+    const ret = data.map(d => EOK(d.b2c_return || 0));
+    const opts2 = chartDefaults();
+    opts2.scales.y.title = { display: true, text: '(억원)', color: c.text2 };
+    makeChart('chart-return-amount', {
+      type: 'bar',
+      data: { labels, datasets: [
+        { label: 'B2C GMV', data: gmv, backgroundColor: c.c1 + '60' },
+        { label: 'B2C Return', data: ret, backgroundColor: c.c3 + '80' },
+      ]},
+      options: opts2,
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+// Section 3: Traffic & Marketing
+// ══════════════════════════════════════════
+function renderTraffic() {
+  const data = currentView === 'monthly' ? RAW.monthly : RAW.yearly;
+  const labels = getLabels(data);
+  const c = getThemeColors();
+
+  // Visitor stacked bar
+  const paid = data.map(d => (d.paid_visitor || 0));
+  const organic = data.map(d => (d.organic_visitor || 0));
+  const opts = chartDefaults();
+  opts.scales.y = { stacked: true, ticks: { color: c.text2, callback: v => (v/1e6).toFixed(1)+'M' }, grid: { color: c.border + '40' } };
+  opts.scales.x = { stacked: true, ticks: { color: c.text2, font: { size: 10 } }, grid: { color: c.border + '40' } };
+
+  makeChart('chart-visitor', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Organic', data: organic, backgroundColor: c.c2 + '80' },
+        { label: 'Paid', data: paid, backgroundColor: c.c6 + '80' },
+      ],
+    },
+    options: opts,
+  });
+
+  // ROAS & CAC dual axis
+  if (currentView === 'monthly') {
+    const roas = data.map(d => d.roas_pct || 0);
+    const cac = data.map(d => d.cac || 0);
+    const opts2 = chartDefaults();
+    opts2.scales.y = { type: 'linear', position: 'left', title: { display: true, text: 'ROAS (%)', color: c.text2 }, ticks: { color: c.text2 }, grid: { color: c.border + '40' } };
+    opts2.scales.y1 = { type: 'linear', position: 'right', title: { display: true, text: 'CAC (원)', color: c.text2 }, ticks: { color: c.text2 }, grid: { display: false } };
+
+    makeChart('chart-roas-cac', {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'ROAS %', data: roas, borderColor: c.c2, yAxisID: 'y', tension: 0.3, pointRadius: 2 },
+          { label: 'CAC', data: cac, borderColor: c.c3, yAxisID: 'y1', tension: 0.3, pointRadius: 2 },
+        ],
+      },
+      options: opts2,
+    });
+  } else {
+    const roas = data.map(d => d.roas_pct || 0);
+    const opts2 = chartDefaults();
+    opts2.scales.y.title = { display: true, text: 'ROAS (%)', color: c.text2 };
+    makeChart('chart-roas-cac', {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ label: 'Yearly ROAS %', data: roas, backgroundColor: c.c2 + '80' }],
+      },
+      options: opts2,
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+// Section 4: Customer Base
+// ══════════════════════════════════════════
+function renderCustomer() {
+  const data = currentView === 'monthly' ? RAW.monthly : RAW.yearly;
+  const labels = getLabels(data);
+  const c = getThemeColors();
+
+  if (currentView === 'monthly') {
+    // MAU & Members
+    const mau = data.map(d => d.mau || 0);
+    const members = data.map(d => d.members || 0);
+    const opts = chartDefaults();
+    opts.scales.y = { type: 'linear', position: 'left', ticks: { color: c.text2, callback: v => (v/1e3).toFixed(0)+'K' }, grid: { color: c.border + '40' } };
+    opts.scales.y1 = { type: 'linear', position: 'right', ticks: { color: c.text2, callback: v => (v/1e3).toFixed(0)+'K' }, grid: { display: false } };
+
+    makeChart('chart-mau', {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'MAU', data: mau, borderColor: c.c1, fill: true, backgroundColor: c.c1 + '20', tension: 0.3, yAxisID: 'y', pointRadius: 2 },
+          { label: 'Total Members', data: members, borderColor: c.c5, tension: 0.3, yAxisID: 'y1', pointRadius: 2 },
+        ],
+      },
+      options: opts,
+    });
+
+    // New & Churn
+    const newM = data.map(d => d.new_members || 0);
+    const churned = data.map(d => -(d.churned || 0));
+    const opts2 = chartDefaults();
+    makeChart('chart-churn', {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'New Sign-ups', data: newM, backgroundColor: c.c2 + '80' },
+          { label: 'Churned', data: churned, backgroundColor: c.c3 + '80' },
+        ],
+      },
+      options: opts2,
+    });
+  } else {
+    const mau = data.map(d => d.avg_mau || 0);
+    const members = data.map(d => d.members_eoy || 0);
+    const opts = chartDefaults();
+    makeChart('chart-mau', {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Avg MAU', data: mau, backgroundColor: c.c1 + '80' },
+          { label: 'Members (EOY)', data: members, backgroundColor: c.c5 + '80' },
+        ],
+      },
+      options: opts,
+    });
+
+    const newM = data.map(d => d.new_members || 0);
+    const opts2 = chartDefaults();
+    makeChart('chart-churn', {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'New Sign-ups', data: newM, backgroundColor: c.c2 + '80' }] },
+      options: opts2,
+    });
+  }
+}
+
+// ══════════════════════════════════════════
+// Section 5: Conversion
+// ══════════════════════════════════════════
+function renderConversion() {
+  const data = RAW.monthly; // Always monthly for conversion
+  const labels = data.map(d => d.ym);
+  const c = getThemeColors();
+
+  // Conversion Rate
+  const convRate = data.map(d => d.conv_rate_pct || 0);
+  const orders = data.map(d => d.conv_orders || d.orders_marketing || 0);
+  const opts = chartDefaults();
+  opts.scales.y = { type: 'linear', position: 'left', title: { display: true, text: 'Conv. Rate (%)', color: c.text2 }, ticks: { color: c.text2 }, grid: { color: c.border + '40' } };
+  opts.scales.y1 = { type: 'linear', position: 'right', title: { display: true, text: 'Orders', color: c.text2 }, ticks: { color: c.text2, callback: v => (v/1e3).toFixed(0)+'K' }, grid: { display: false } };
+
+  makeChart('chart-conv', {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Conversion %', data: convRate, borderColor: c.c1, tension: 0.3, pointRadius: 2, yAxisID: 'y' },
+        { label: 'Orders', data: orders, borderColor: c.c4, tension: 0.3, pointRadius: 2, yAxisID: 'y1', borderDash: [4, 2] },
+      ],
+    },
+    options: opts,
+  });
+
+  // AOV
+  const aov = data.map(d => {
+    const gmv = d.b2c_gmv || d.total_gmv || 0;
+    const ord = d.orders_marketing || 1;
+    return Math.round(gmv / ord);
+  });
+  const opts2 = chartDefaults();
+  opts2.scales.y.title = { display: true, text: 'AOV (원)', color: c.text2 };
+  opts2.scales.y.ticks = { color: c.text2, callback: v => (v/1e3).toFixed(0)+'K' };
+
+  makeChart('chart-aov', {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ label: 'AOV (B2C GMV / Orders)', data: aov, borderColor: c.c5, tension: 0.3, pointRadius: 2, fill: true, backgroundColor: c.c5 + '20' }],
+    },
+    options: opts2,
+  });
+}
+
+// ══════════════════════════════════════════
+// Section 6: Marketing Efficiency
+// ══════════════════════════════════════════
+function renderMktg() {
+  const data = RAW.monthly;
+  const labels = data.map(d => d.ym);
+  const c = getThemeColors();
+
+  // Ad Spend & Ratio
+  const adSpend = data.map(d => EOK(d.ad_spend || 0));
+  const adRatio = data.map(d => d.ad_ratio_pct || 0);
+  const opts = chartDefaults();
+  opts.scales.y = { type: 'linear', position: 'left', title: { display: true, text: '광고비 (억원)', color: c.text2 }, ticks: { color: c.text2 }, grid: { color: c.border + '40' } };
+  opts.scales.y1 = { type: 'linear', position: 'right', title: { display: true, text: '광고비 비중 (%)', color: c.text2 }, ticks: { color: c.text2 }, grid: { display: false } };
+
+  makeChart('chart-adspend', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Ad Spend', data: adSpend, backgroundColor: c.c6 + '80', yAxisID: 'y' },
+        { label: 'Ad Ratio %', data: adRatio, type: 'line', borderColor: c.c3, yAxisID: 'y1', tension: 0.3, pointRadius: 2 },
+      ],
+    },
+    options: opts,
+  });
+
+  // CPC & CPV
+  const cpc = data.map(d => d.cpc || 0);
+  const cpv = data.map(d => d.cost_per_visit || 0);
+  const opts2 = chartDefaults();
+  opts2.scales.y.title = { display: true, text: '(원)', color: c.text2 };
+  makeChart('chart-cpc', {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'CPC', data: cpc, borderColor: c.c1, tension: 0.3, pointRadius: 2 },
+        { label: 'Cost per Visit', data: cpv, borderColor: c.c4, tension: 0.3, pointRadius: 2 },
+      ],
+    },
+    options: opts2,
+  });
+}
+
+// ══════════════════════════════════════════
+// Section 7: SKU Health
+// ══════════════════════════════════════════
+function renderSKU() {
+  const data = RAW.monthly;
+  const labels = data.map(d => d.ym);
+  const c = getThemeColors();
+
+  // SKU stacked bar
+  const available = data.map(d => d.available_sku || 0);
+  const soldout = data.map(d => d.soldout_sku || 0);
+  const opts = chartDefaults();
+  opts.scales.y = { stacked: true, ticks: { color: c.text2, callback: v => (v/1e3).toFixed(0)+'K' }, grid: { color: c.border + '40' } };
+  opts.scales.x.stacked = true;
+
+  makeChart('chart-sku', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Available', data: available, backgroundColor: c.c2 + '80' },
+        { label: 'Soldout', data: soldout, backgroundColor: c.c3 + '60' },
+      ],
+    },
+    options: opts,
+  });
+
+  // Soldout Rate
+  const soldoutPct = data.map(d => d.soldout_pct || 0);
+  const opts2 = chartDefaults();
+  opts2.scales.y.title = { display: true, text: '(%)', color: c.text2 };
+  makeChart('chart-soldout', {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Soldout Rate',
+        data: soldoutPct,
+        borderColor: c.c3,
+        backgroundColor: c.c3 + '20',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 2,
+      }],
+    },
+    options: opts2,
+  });
+}
+
+// ══════════════════════════════════════════
+// Section 8: Cohort
+// ══════════════════════════════════════════
+function setCohortTab(tab) {
+  currentCohortTab = tab;
+  document.querySelectorAll('#cohort-tabs .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.toLowerCase().includes(tab));
+  });
+  renderCohort();
+}
+
+function renderCohort() {
+  const cohortMap = { all: RAW.cohort_all, repeat: RAW.cohort_repeat, vip: RAW.cohort_vip };
+  const cohortData = cohortMap[currentCohortTab];
+  if (!cohortData || !cohortData.buyers || cohortData.buyers.length === 0) {
+    // No data
+    makeChart('chart-cohort-buyer', { type: 'line', data: { labels: [], datasets: [] }, options: chartDefaults() });
+    makeChart('chart-cohort-revenue', { type: 'line', data: { labels: [], datasets: [] }, options: chartDefaults() });
+    return;
+  }
+
+  const c = getThemeColors();
+  const colors = [c.c1, c.c2, c.c3, c.c4, c.c5, c.c6];
+
+  // Filter yearly averages only
+  const buyerAvgs = cohortData.buyers.filter(d => d.cohort.startsWith('Avg.'));
+  const revenueAvgs = cohortData.revenue.filter(d => d.cohort.startsWith('Avg.'));
+
+  // Buyer retention curves
+  const maxM = 24; // show up to 24 months
+  const monthLabels = Array.from({ length: maxM + 1 }, (_, i) => `M${i}`);
+
+  function buildDatasets(avgs) {
+    return avgs.map((avg, idx) => {
+      const data = [];
+      for (let m = 0; m <= maxM; m++) {
+        data.push(avg[`m${m}`] != null ? avg[`m${m}`] : null);
+      }
+      return {
+        label: avg.cohort,
+        data,
+        borderColor: colors[idx % colors.length],
+        tension: 0.3,
+        pointRadius: 2,
+        spanGaps: true,
+      };
+    });
+  }
+
+  const opts = chartDefaults();
+  opts.scales.y.title = { display: true, text: 'Retention (%)', color: c.text2 };
+  opts.scales.x.ticks = { color: c.text2, font: { size: 9 } };
+
+  makeChart('chart-cohort-buyer', {
+    type: 'line',
+    data: { labels: monthLabels, datasets: buildDatasets(buyerAvgs) },
+    options: opts,
+  });
+
+  const opts2 = chartDefaults();
+  opts2.scales.y.title = { display: true, text: 'Revenue Index (%)', color: c.text2 };
+  opts2.scales.x.ticks = { color: c.text2, font: { size: 9 } };
+
+  makeChart('chart-cohort-revenue', {
+    type: 'line',
+    data: { labels: monthLabels, datasets: buildDatasets(revenueAvgs) },
+    options: opts2,
+  });
+
+  // Heatmap for monthly cohorts (buyer retention, last 12 months)
+  renderCohortHeatmap(cohortData.buyers);
+}
+
+function renderCohortHeatmap(buyerData) {
+  // Monthly cohorts only, last 12
+  const monthly = buyerData.filter(d => !d.cohort.startsWith('Avg.'));
+  const recent = monthly.slice(-12);
+  if (recent.length === 0) {
+    document.getElementById('cohort-heatmap-wrap').innerHTML = '';
+    return;
+  }
+
+  const maxM = 12;
+  let html = '<div class="data-table-wrap" style="margin-top:16px;"><table class="cohort-table data-table"><thead><tr><th>Cohort</th><th>Users</th>';
+  for (let m = 0; m <= maxM; m++) html += `<th>M${m}</th>`;
+  html += '</tr></thead><tbody>';
+
+  recent.forEach(row => {
+    html += `<tr><td class="label">${row.cohort}</td><td>${Math.round(row.base_count).toLocaleString()}</td>`;
+    for (let m = 0; m <= maxM; m++) {
+      const val = row[`m${m}`];
+      if (val == null) {
+        html += '<td>-</td>';
+      } else {
+        // Color intensity based on value
+        const intensity = Math.min(val / 100, 1);
+        const bg = `rgba(88,166,255,${intensity * 0.6})`;
+        html += `<td style="background:${bg}">${val.toFixed(1)}%</td>`;
+      }
+    }
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  document.getElementById('cohort-heatmap-wrap').innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// Section 9: YoY Growth
+// ══════════════════════════════════════════
+function renderYoY() {
+  const data = RAW.monthly.filter(d => d.gmv_yoy_pct != null);
+  const labels = data.map(d => d.ym);
+  const c = getThemeColors();
+
+  const gmvYoY = data.map(d => d.gmv_yoy_pct || 0);
+  const revYoY = data.map(d => d.revenue_yoy_pct || 0);
+  const mauYoY = data.map(d => d.mau_yoy_pct || 0);
+
+  const opts = chartDefaults();
+  opts.scales.y.title = { display: true, text: 'YoY Growth (%)', color: c.text2 };
+  // Zero line
+  opts.plugins.annotation = {};
+
+  makeChart('chart-yoy', {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'GMV YoY %', data: gmvYoY, borderColor: c.c1, tension: 0.3, pointRadius: 2 },
+        { label: 'B2C Net Rev YoY %', data: revYoY, borderColor: c.c2, tension: 0.3, pointRadius: 2 },
+        { label: 'MAU YoY %', data: mauYoY, borderColor: c.c5, tension: 0.3, pointRadius: 2 },
+      ],
+    },
+    options: opts,
+  });
+}
+
+// ══════════════════════════════════════════
+// Render All
+// ══════════════════════════════════════════
+function renderAll() {
+  renderKPI();
+  renderGMV();
+  renderReturn();
+  renderTraffic();
+  renderCustomer();
+  renderConversion();
+  renderMktg();
+  renderSKU();
+  renderCohort();
+  renderYoY();
+}
+</script>
+</body>
+</html>

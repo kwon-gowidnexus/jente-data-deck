@@ -142,6 +142,26 @@ header h1 span { color: var(--text2); font-weight: 400; font-size: 14px; margin-
 .kpi-tooltip .tt-bar-fill { height: 100%; border-radius: 2px; position: absolute; left: 0; top: 0; }
 .kpi-tooltip .tt-bar-threshold { position: absolute; top: -3px; width: 2px; height: 10px; background: var(--text); }
 
+/* ── Section Signal Comment ── */
+.section-signal-comment {
+  font-size: 12px; line-height: 1.6; padding: 8px 12px; margin-bottom: 8px;
+  border-radius: 6px; background: var(--bg3); border-left: 3px solid var(--text2);
+  display: none;
+}
+.section-signal-comment.visible { display: block; }
+.section-signal-comment.sig-green { border-left-color: var(--signal-green); }
+.section-signal-comment.sig-yellow { border-left-color: var(--signal-yellow); }
+.section-signal-comment.sig-red { border-left-color: var(--signal-red); }
+.section-signal-comment .ssc-status {
+  font-weight: 600; margin-right: 6px;
+}
+.section-signal-comment .ssc-status.green { color: var(--signal-green); }
+.section-signal-comment .ssc-status.yellow { color: var(--signal-yellow); }
+.section-signal-comment .ssc-status.red { color: var(--signal-red); }
+.section-signal-comment .ssc-action {
+  display: block; margin-top: 2px; color: var(--text2); font-size: 11px;
+}
+
 /* ── Sections ── */
 .section { border-top: 1px solid var(--border); padding: 24px; }
 .section-header {
@@ -240,6 +260,7 @@ footer {
   <div class="section-header">
     <span class="section-title">1. GMV & Revenue <span class="signal-dot" id="signal-sec1"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec1"></div>
   <div class="section-question">"사업이 성장하고 있는가? 실매출은 얼마인가?"</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>Total GMV & B2C Net Revenue</h3><canvas id="chart-gmv-main"></canvas></div>
@@ -253,6 +274,7 @@ footer {
   <div class="section-header">
     <span class="section-title">2. Return Analysis <span class="signal-dot" id="signal-sec2"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec2"></div>
   <div class="section-question">"반품이 통제되고 있는가? 실매출에 미치는 영향은?"</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>B2C Return Rate Trend</h3><canvas id="chart-return-rate"></canvas></div>
@@ -278,6 +300,7 @@ footer {
   <div class="section-header">
     <span class="section-title">3. Traffic & Marketing <span class="signal-dot" id="signal-sec3"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec3"></div>
   <div class="section-question">"트래픽이 건강한가? 유기적 비중은? 마케팅 효율은?"</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>Visitor (Paid / Organic)</h3><canvas id="chart-visitor"></canvas></div>
@@ -290,6 +313,7 @@ footer {
   <div class="section-header">
     <span class="section-title">4. Customer Base <span class="signal-dot" id="signal-sec4"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec4"></div>
   <div class="section-question">"고객 기반이 건강하게 확대되고 있는가? MAU는?"</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>MAU & Members</h3><canvas id="chart-mau"></canvas></div>
@@ -302,6 +326,7 @@ footer {
   <div class="section-header">
     <span class="section-title">5. Conversion Funnel <span class="signal-dot" id="signal-sec5"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec5"></div>
   <div class="section-question">"방문자가 구매까지 이어지는가? 전환율 추이는?"</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>Conversion Rate & Orders</h3><canvas id="chart-conv"></canvas></div>
@@ -314,6 +339,7 @@ footer {
   <div class="section-header">
     <span class="section-title">6. Marketing Efficiency <span class="signal-dot" id="signal-sec6"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec6"></div>
   <div class="section-question">"광고비 대비 효율이 개선되고 있는가?"</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>Ad Spend & Ad Ratio</h3><canvas id="chart-adspend"></canvas></div>
@@ -326,6 +352,7 @@ footer {
   <div class="section-header">
     <span class="section-title">7. Supply & Catalog Health <span class="signal-dot" id="signal-sec7"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec7"></div>
   <div class="section-question">"공급이 안정적인가? 판매 가능 상품 비율은?"</div>
   <div class="chart-grid">
     <div class="chart-box"><h3>SKU Availability vs Soldout</h3><canvas id="chart-sku"></canvas></div>
@@ -338,6 +365,7 @@ footer {
   <div class="section-header">
     <span class="section-title">8. Cohort Retention <span class="signal-dot" id="signal-sec8"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec8"></div>
   <div class="section-question">"한번 구매한 고객이 계속 돌아오는가? 코호트별 품질은?"</div>
   <div class="tab-bar" id="cohort-tabs">
     <button class="tab-btn active" onclick="setCohortTab('all')">All Users</button>
@@ -356,6 +384,7 @@ footer {
   <div class="section-header">
     <span class="section-title">9. Year-over-Year Growth <span class="signal-dot" id="signal-sec9"></span></span>
   </div>
+  <div class="section-signal-comment" id="comment-sec9"></div>
   <div class="section-question">"전년 대비 핵심 지표 성장률은?"</div>
   <div class="chart-grid">
     <div class="chart-box full"><h3>YoY Growth: GMV / Revenue / MAU</h3><canvas id="chart-yoy"></canvas></div>
@@ -717,36 +746,231 @@ function renderKPI() {
 // ══════════════════════════════════════════
 // Section Signals
 // ══════════════════════════════════════════
+function setSectionComment(id, signal, comment, action) {
+  setSignalDot('signal-' + id, signal);
+  const el = document.getElementById('comment-' + id);
+  if (!el) return;
+  const statusLabel = signal === 'green' ? 'PASS' : signal === 'yellow' ? 'CAUTION' : 'CRITICAL';
+  el.className = 'section-signal-comment visible sig-' + signal;
+  el.innerHTML = `<span class="ssc-status ${signal}">${statusLabel}</span>${comment}<span class="ssc-action">${action}</span>`;
+}
+
 function renderSectionSignals() {
   const m = RAW.monthly;
   const latest = m[m.length - 1];
+  const prev12 = m.length >= 13 ? m[m.length - 13] : null;
   const skuAvail = latest.total_sku ? (latest.available_sku / latest.total_sku * 100) : 0;
+  const netRevRatio = latest.b2c_gmv ? (latest.b2c_net_revenue / latest.b2c_gmv * 100) : 0;
 
-  // Section 1: GMV - use GMV YoY
-  setSignalDot('signal-sec1', getSignal(latest.gmv_yoy_pct, THRESHOLDS.gmv_yoy));
-  // Section 2: Return
-  setSignalDot('signal-sec2', getSignal(latest.b2c_return_pct, THRESHOLDS.return_rate));
-  // Section 3: Traffic - organic %
-  setSignalDot('signal-sec3', getSignal(latest.organic_pct, THRESHOLDS.organic_pct));
-  // Section 4: Customer - MAU YoY
-  setSignalDot('signal-sec4', getSignal(latest.mau_yoy_pct, THRESHOLDS.mau_yoy));
-  // Section 5: Conversion
-  setSignalDot('signal-sec5', getSignal(latest.conv_rate_pct, THRESHOLDS.conv_rate));
-  // Section 6: Marketing - ROAS
-  setSignalDot('signal-sec6', getSignal(latest.roas_pct, THRESHOLDS.roas));
-  // Section 7: SKU Availability
-  setSignalDot('signal-sec7', getSignal(skuAvail, THRESHOLDS.sku_availability));
-  // Section 8: Cohort M12 - use latest available yearly avg
+  // Section 1: GMV & Revenue
+  const s1 = getSignal(latest.gmv_yoy_pct, THRESHOLDS.gmv_yoy);
+  if (s1 === 'red') {
+    setSectionComment('sec1', s1,
+      `GMV ${latest.gmv_yoy_pct.toFixed(1)}% YoY 역성장. 순매출비율 ${netRevRatio.toFixed(0)}%로 GMV의 ${(100-netRevRatio).toFixed(0)}%가 반품으로 소멸.`,
+      'Action: 반품률 통제가 선행되어야 GMV 성장이 의미 있음. 반품 원인 분석(사이즈/품질/변심) 후 카테고리별 반품 정책 차등화 필요.'
+    );
+  } else if (s1 === 'yellow') {
+    setSectionComment('sec1', s1,
+      `GMV 성장 둔화. 순매출비율 ${netRevRatio.toFixed(0)}%로 주의 필요.`,
+      'Action: GMV 성장과 반품률 통제를 동시 추진. 고마진 카테고리 확대.'
+    );
+  } else {
+    setSectionComment('sec1', s1,
+      `GMV 양호. 순매출비율 ${netRevRatio.toFixed(0)}%로 실매출 전환 건강.`,
+      ''
+    );
+  }
+
+  // Section 2: Return Analysis
+  const s2 = getSignal(latest.b2c_return_pct, THRESHOLDS.return_rate);
+  const returnGap = (latest.b2c_return_pct - 20).toFixed(0);
+  const lostRev = EOK((latest.b2c_gmv || 0) * (latest.b2c_return_pct / 100 - 0.20));
+  if (s2 === 'red') {
+    setSectionComment('sec2', s2,
+      `반품률 ${latest.b2c_return_pct.toFixed(1)}% — 벤치마크(20%) 대비 +${returnGap}%p 초과. 매월 약 ${lostRev.toFixed(1)}억이 초과 반품으로 소실.`,
+      'Action: (1) 사이즈 가이드 정확도 개선 (2) 상품 사진/설명 품질 강화 (3) Cherry-picker(상습 반품) 고객 식별 및 정책 차등화 (4) 반품 사유별 데이터 수집 시작.'
+    );
+  } else if (s2 === 'yellow') {
+    setSectionComment('sec2', s2,
+      `반품률 ${latest.b2c_return_pct.toFixed(1)}% — 벤치마크(20%) 근접. 관리 강화 필요.`,
+      'Action: 반품 사유 모니터링 체계 구축. 사이즈 미스매치 카테고리 집중 개선.'
+    );
+  } else {
+    setSectionComment('sec2', s2,
+      `반품률 ${latest.b2c_return_pct.toFixed(1)}% — 업계 벤치마크(20%) 이내로 양호.`,
+      ''
+    );
+  }
+
+  // Section 3: Traffic & Marketing
+  const s3 = getSignal(latest.organic_pct, THRESHOLDS.organic_pct);
+  const totalVisitorK = (latest.total_visitor / 1e3).toFixed(0);
+  const prevVisitorK = prev12 ? (prev12.total_visitor / 1e3).toFixed(0) : '-';
+  const visitorYoY = prev12 ? ((latest.total_visitor / prev12.total_visitor - 1) * 100).toFixed(0) : '-';
+  if (s3 === 'green' && latest.organic_pct > 75) {
+    setSectionComment('sec3', 'yellow',
+      `Organic ${latest.organic_pct.toFixed(0)}%로 브랜드력 우수. 그러나 절대 트래픽 ${totalVisitorK}K (YoY ${visitorYoY}%)로 유입 자체가 감소.`,
+      'Action: Organic 비중이 높은 것은 강점이나, 유료 마케팅 축소로 신규 유입이 고갈됨. 퍼포먼스 마케팅 재투자(월 1-2억) 또는 SEO/콘텐츠 마케팅으로 유입 반등 필요.'
+    );
+    setSignalDot('signal-sec3', 'yellow');
+  } else if (s3 === 'green') {
+    setSectionComment('sec3', s3,
+      `Organic ${latest.organic_pct.toFixed(0)}%, 트래픽 ${totalVisitorK}K. 채널 믹스 건강.`,
+      ''
+    );
+  } else {
+    setSectionComment('sec3', s3,
+      `Organic 비중 ${latest.organic_pct.toFixed(0)}%로 유료 의존도 높음.`,
+      'Action: 브랜드 SEO 강화, 콘텐츠 마케팅 투자로 자연 유입 비중 50%+ 확보.'
+    );
+  }
+
+  // Section 4: Customer Base
+  const s4 = getSignal(latest.mau_yoy_pct, THRESHOLDS.mau_yoy);
+  const mauK = (latest.mau / 1e3).toFixed(0);
+  const membersK = (latest.members / 1e3).toFixed(0);
+  const newMem = latest.new_members || 0;
+  const peakMau = Math.max(...m.map(d => d.mau || 0));
+  const mauVsPeak = ((latest.mau / peakMau) * 100).toFixed(0);
+  if (s4 === 'red') {
+    setSectionComment('sec4', s4,
+      `MAU ${mauK}K (YoY ${latest.mau_yoy_pct.toFixed(0)}%), 피크 대비 ${mauVsPeak}% 수준. 신규 가입 월 ${newMem.toLocaleString()}명으로 유입 동력 약화.`,
+      'Action: (1) 비활성 회원 리인게이지먼트 캠페인 (푸시/이메일) (2) 신규 가입 유인 강화 (첫구매 쿠폰) (3) MAU 감소 원인 분석 — 트래픽 감소 vs 이탈 구분.'
+    );
+  } else if (s4 === 'yellow') {
+    setSectionComment('sec4', s4,
+      `MAU ${mauK}K — 소폭 감소. 신규 가입 월 ${newMem.toLocaleString()}명. 모니터링 필요.`,
+      'Action: 리텐션 프로그램 강화. VIP 전용 혜택으로 활성 유저 유지.'
+    );
+  } else {
+    setSectionComment('sec4', s4,
+      `MAU ${mauK}K — 안정적 유지. 신규 가입 월 ${newMem.toLocaleString()}명.`,
+      ''
+    );
+  }
+
+  // Section 5: Conversion Funnel
+  const s5 = getSignal(latest.conv_rate_pct, THRESHOLDS.conv_rate);
+  const convGap = (1.0 - latest.conv_rate_pct).toFixed(2);
+  if (s5 === 'red') {
+    setSectionComment('sec5', s5,
+      `전환율 ${latest.conv_rate_pct.toFixed(2)}% — 벤치마크(1.0%) 대비 -${convGap}%p. 방문자 대비 구매로 연결되지 않음.`,
+      'Action: (1) 상품 상세 페이지 UX 개선 (사이즈/착용샷/리뷰) (2) 결제 퍼널 이탈 지점 분석 (3) 품절률 89%가 전환 저해 — 판매가능 SKU 확대 (4) 가격 경쟁력 점검 (병행수입 대비).'
+    );
+  } else if (s5 === 'yellow') {
+    setSectionComment('sec5', s5,
+      `전환율 ${latest.conv_rate_pct.toFixed(2)}% — 벤치마크(1.0%) 근접. 개선 여지 있음.`,
+      'Action: A/B 테스트로 PDP 최적화. 품절 상품 대체 추천 기능 도입.'
+    );
+  } else {
+    setSectionComment('sec5', s5,
+      `전환율 ${latest.conv_rate_pct.toFixed(2)}% — 벤치마크(1.0%) 충족. 건강한 퍼널.`,
+      ''
+    );
+  }
+
+  // Section 6: Marketing Efficiency
+  const s6 = getSignal(latest.roas_pct, THRESHOLDS.roas);
+  const adSpendEok = EOK(latest.ad_spend || 0).toFixed(1);
+  if (s6 === 'green' && EOK(latest.ad_spend) < 1.0) {
+    setSectionComment('sec6', 'yellow',
+      `ROAS ${latest.roas_pct.toFixed(0)}%로 수치상 우수하나, 광고비 ${adSpendEok}억/월로 극소화된 상태. 효율이 아니라 투자 부재.`,
+      'Action: ROAS가 높은 것은 광고 중단의 결과이지 효율 개선이 아님. 전환율/반품률 개선 후 월 1-2억 수준으로 마케팅 재투자하여 성장 동력 확보.'
+    );
+    setSignalDot('signal-sec6', 'yellow');
+  } else if (s6 === 'green') {
+    setSectionComment('sec6', s6,
+      `ROAS ${latest.roas_pct.toFixed(0)}%, 광고비 ${adSpendEok}억/월. 마케팅 효율 양호.`,
+      ''
+    );
+  } else {
+    setSectionComment('sec6', s6,
+      `ROAS ${latest.roas_pct.toFixed(0)}% — 광고 효율 미달. 광고비 ${adSpendEok}억 대비 매출 전환 부족.`,
+      'Action: 타겟팅 정밀화, 크리에이티브 A/B 테스트, 저효율 채널 예산 재배분.'
+    );
+  }
+
+  // Section 7: Supply & Catalog Health
+  const s7 = getSignal(skuAvail, THRESHOLDS.sku_availability);
+  const availK = (latest.available_sku / 1e3).toFixed(0);
+  const totalK = (latest.total_sku / 1e3).toFixed(0);
+  if (s7 === 'red') {
+    setSectionComment('sec7', s7,
+      `판매가능 SKU ${availK}K / 전체 ${totalK}K — 가용률 ${skuAvail.toFixed(1)}%. 고객이 원하는 상품의 89%가 품절.`,
+      'Action: (1) 부티크 재고 동기화 주기 단축 (실시간 → 시간별) (2) 인기 카테고리 부티크 추가 확보 (3) 품절 상품 사전 필터링으로 UX 개선 (4) Pre-order/Waitlist 기능 도입.'
+    );
+  } else if (s7 === 'yellow') {
+    setSectionComment('sec7', s7,
+      `가용률 ${skuAvail.toFixed(1)}% — 개선 중이나 목표(20%) 미달.`,
+      'Action: 부티크 공급 안정화 + 시즌 재고 사전 확보 계약.'
+    );
+  } else {
+    setSectionComment('sec7', s7,
+      `가용률 ${skuAvail.toFixed(1)}% — 목표(20%) 충족. 카탈로그 건강.`,
+      ''
+    );
+  }
+
+  // Section 8: Cohort Retention — find latest avg with M12 data
+  let s8 = 'gray';
+  let m12Val = null;
+  let m12Source = '';
   const cohortData = RAW.cohort_all;
   if (cohortData && cohortData.buyers) {
     const avgs = cohortData.buyers.filter(d => d.cohort.startsWith('Avg.'));
-    const lastAvg = avgs[avgs.length - 1];
-    if (lastAvg && lastAvg.m12 != null) {
-      setSignalDot('signal-sec8', getSignal(lastAvg.m12, THRESHOLDS.cohort_m12));
+    // Search from latest to earliest for one with m12 data
+    for (let i = avgs.length - 1; i >= 0; i--) {
+      if (avgs[i].m12 != null) {
+        m12Val = avgs[i].m12;
+        m12Source = avgs[i].cohort;
+        s8 = getSignal(m12Val, THRESHOLDS.cohort_m12);
+        break;
+      }
     }
   }
-  // Section 9: YoY Growth - revenue YoY
-  setSignalDot('signal-sec9', getSignal(latest.revenue_yoy_pct, THRESHOLDS.revenue_yoy));
+  if (m12Val != null) {
+    if (s8 === 'red') {
+      setSectionComment('sec8', s8,
+        `M12 리텐션 ${m12Val.toFixed(1)}% (${m12Source}) — 벤치마크(15%) 미달. 1년 후 구매자의 ${(100 - m12Val).toFixed(0)}%가 이탈.`,
+        'Action: (1) VIP/Repeat 고객 전용 리워드 프로그램 (2) 구매 후 30/60/90일 리인게이지먼트 자동화 (3) 개인화 추천으로 재방문 유도 (4) VIP 리텐션이 전체보다 높은지 확인 — VIP 집중 전략.'
+      );
+    } else if (s8 === 'yellow') {
+      setSectionComment('sec8', s8,
+        `M12 리텐션 ${m12Val.toFixed(1)}% (${m12Source}) — 벤치마크(15%) 근접. M12 이후 플랫한 곡선은 긍정적.`,
+        'Action: M1 드롭(~85%) 축소가 핵심. 첫 구매 후 2번째 구매 유도 캠페인 강화.'
+      );
+    } else {
+      setSectionComment('sec8', s8,
+        `M12 리텐션 ${m12Val.toFixed(1)}% (${m12Source}) — 벤치마크(15%) 충족. 충성 고객층 확보.`,
+        ''
+      );
+    }
+  } else {
+    // No M12 data available - show with gray
+    setSectionComment('sec8', 'yellow',
+      `M12 리텐션 데이터 부족 (최신 코호트 아직 12개월 미경과). M1 드롭 후 안정화 구간 진입 여부 모니터링 중.`,
+      'Action: M1→M2 드롭률 축소가 핵심. 첫 구매 후 2번째 구매 유도 캠페인(30일 이내 재구매 쿠폰) 강화. VIP 코호트 별도 추적.'
+    );
+  }
+
+  // Section 9: YoY Growth
+  const s9 = getSignal(latest.revenue_yoy_pct, THRESHOLDS.revenue_yoy);
+  if (s9 === 'red') {
+    setSectionComment('sec9', s9,
+      `순매출 YoY ${latest.revenue_yoy_pct.toFixed(1)}%, GMV YoY ${latest.gmv_yoy_pct.toFixed(1)}%. 순매출 하락폭이 GMV보다 커서 반품 영향이 성장을 이중으로 잠식.`,
+      'Action: 성장 반등의 전제조건은 반품률 정상화(→20%). 그 전까지는 GMV 추구보다 단위경제(Unit Economics) 개선에 집중. P&L 데이터 확보 시 기여이익 기준 관리 전환.'
+    );
+  } else if (s9 === 'yellow') {
+    setSectionComment('sec9', s9,
+      `순매출 성장 둔화. GMV 대비 순매출 갭 확대 여부 모니터링 필요.`,
+      'Action: 반품률 추이와 성장률을 동시 추적. 분기별 궤적 점검.'
+    );
+  } else {
+    setSectionComment('sec9', s9,
+      `순매출/GMV 모두 양의 성장. 건강한 성장 궤도.`,
+      ''
+    );
+  }
 }
 
 // ══════════════════════════════════════════

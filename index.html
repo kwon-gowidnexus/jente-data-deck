@@ -13,6 +13,7 @@
   --border: #30363d; --text: #e6edf3; --text2: #8b949e;
   --accent: #58a6ff; --green: #3fb950; --red: #f85149;
   --yellow: #d29922; --purple: #bc8cff; --orange: #db6d28;
+  --blue: #1f6feb; --cyan: #39d2c0;
   --chart1: #58a6ff; --chart2: #3fb950; --chart3: #f85149;
   --chart4: #d29922; --chart5: #bc8cff; --chart6: #db6d28;
   --chart7: #79c0ff; --chart8: #56d364;
@@ -23,6 +24,7 @@
   --border: #d0d7de; --text: #1f2328; --text2: #656d76;
   --accent: #0969da; --green: #1a7f37; --red: #cf222e;
   --yellow: #9a6700; --purple: #8250df; --orange: #bc4c00;
+  --blue: #0550ae; --cyan: #1a7f37;
   --chart1: #0969da; --chart2: #1a7f37; --chart3: #cf222e;
   --chart4: #9a6700; --chart5: #8250df; --chart6: #bc4c00;
   --chart7: #218bff; --chart8: #2da44e;
@@ -215,6 +217,252 @@ header h1 span { color: var(--text2); font-weight: 400; font-size: 14px; margin-
 }
 .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
+/* ── View Tabs ── */
+.view-tabs { display: flex; gap: 4px; }
+.view-tab {
+  padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text2); transition: all 0.2s;
+}
+.view-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.view-tab:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+.pipeline-btn {
+  padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700;
+  cursor: pointer; border: 1px solid var(--red);
+  background: var(--red); color: #fff; transition: all 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+}
+.pipeline-btn:hover { opacity: 0.85; }
+
+/* ── Sujo View ── */
+.sujo-container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+.sujo-header { margin-bottom: 28px; }
+.sujo-header h2 { font-size: 20px; font-weight: 600; }
+.sujo-header .sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.sujo-header .updated {
+  font-size: 11px; color: var(--text2); margin-top: 6px;
+  padding: 4px 10px; background: var(--bg2); border-radius: 6px;
+  display: inline-block; border: 1px solid var(--border);
+}
+.sujo-kpi-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 28px;
+}
+.sujo-kpi-row .kpi {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px;
+}
+.sujo-kpi-row .kpi-label { font-size: 11px; color: var(--text2); font-weight: 600; margin-bottom: 4px; text-transform: none; letter-spacing: 0; }
+.sujo-kpi-row .kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; text-align: left; }
+.sujo-kpi-row .kpi-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.kpi-accent { color: var(--green); }
+.kpi-warn { color: var(--yellow); }
+.kpi-bad { color: var(--red); }
+.prog-wrap { margin-top: 8px; }
+.prog-bar {
+  height: 6px; background: var(--bg3); border-radius: 3px;
+  overflow: hidden; position: relative;
+}
+.prog-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.prog-label {
+  font-size: 10px; color: var(--text2); margin-top: 3px;
+  display: flex; justify-content: space-between;
+}
+.lines {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px; margin-bottom: 28px;
+}
+.line-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.line-header {
+  padding: 12px 16px; font-size: 13px; font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.line-body { padding: 16px; }
+.line1 .line-header { background: rgba(31,111,235,0.1); color: var(--blue); border-top: 3px solid var(--blue); }
+.line2 .line-header { background: rgba(63,185,80,0.1); color: var(--green); border-top: 3px solid var(--green); }
+.line3 .line-header { background: rgba(219,109,40,0.1); color: var(--orange); border-top: 3px solid var(--orange); }
+.detail-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 5px 0; font-size: 12px;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-row.subtotal {
+  border-top: 1px solid var(--border); border-bottom: none;
+  margin-top: 4px; padding-top: 8px; font-weight: 700;
+}
+.detail-label { color: var(--text2); }
+.detail-label.indent { padding-left: 12px; font-size: 11px; }
+.detail-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+.detail-value.neg { color: var(--red); }
+.detail-value.pos { color: var(--green); }
+.summary-box {
+  border: 2px solid var(--yellow); border-radius: 10px;
+  padding: 20px 24px; margin-bottom: 28px;
+  background: rgba(210,153,34,0.06);
+}
+.summary-box h2 { font-size: 15px; font-weight: 700; color: var(--yellow); margin-bottom: 12px; }
+.summary-flow {
+  display: flex; align-items: center; gap: 0;
+  flex-wrap: wrap; justify-content: center;
+}
+.summary-block {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px; text-align: center; min-width: 130px;
+}
+.summary-block .sb-label { font-size: 10px; color: var(--text2); margin-bottom: 2px; }
+.summary-block .sb-value { font-size: 18px; font-weight: 700; }
+.summary-arrow { font-size: 18px; color: var(--text2); padding: 0 8px; }
+.summary-block.positive { border-color: var(--green); }
+.summary-block.positive .sb-value { color: var(--green); }
+.summary-block.negative { border-color: var(--red); }
+.summary-block.negative .sb-value { color: var(--red); }
+.summary-block.neutral { border-color: var(--yellow); }
+.summary-block.neutral .sb-value { color: var(--yellow); }
+.waterfall-section { margin-bottom: 28px; }
+.waterfall-section h2 {
+  font-size: 15px; font-weight: 600; margin-bottom: 14px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.wf-bar-wrap {
+  display: grid; grid-template-columns: 140px 1fr 100px;
+  gap: 8px; align-items: center; margin-bottom: 6px; font-size: 12px;
+}
+.wf-label { color: var(--text2); text-align: right; font-size: 11px; }
+.wf-bar-outer {
+  height: 24px; background: var(--bg3); border-radius: 4px;
+  position: relative; overflow: hidden;
+}
+.wf-bar-inner {
+  height: 100%; border-radius: 4px; min-width: 2px;
+  display: flex; align-items: center; padding-left: 8px;
+  font-size: 10px; font-weight: 600; color: var(--bg);
+}
+.wf-val { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.daily-section { margin-bottom: 28px; }
+.daily-section h2 {
+  font-size: 15px; font-weight: 600; margin-bottom: 14px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+#view-sujo table { width: 100%; border-collapse: collapse; font-size: 12px; }
+#view-sujo th {
+  text-align: right; padding: 8px 12px; background: var(--bg2);
+  color: var(--text2); font-weight: 600; font-size: 11px;
+  border-bottom: 1px solid var(--border);
+}
+#view-sujo th:first-child { text-align: left; }
+#view-sujo td {
+  text-align: right; padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+#view-sujo td:first-child { text-align: left; font-weight: 600; }
+#view-sujo tr.total-row { background: var(--bg2); font-weight: 700; }
+#view-sujo tr.total-row td { border-top: 2px solid var(--border); }
+.target-section { margin-bottom: 28px; }
+.target-section h2 {
+  font-size: 15px; font-weight: 600; margin-bottom: 14px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.target-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.target-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+}
+.target-card h3 { font-size: 12px; color: var(--text2); margin-bottom: 10px; }
+.sujo-note {
+  background: rgba(210,153,34,0.08); border: 1px solid rgba(210,153,34,0.3);
+  border-radius: 8px; padding: 14px 18px; font-size: 12px;
+  line-height: 1.7; margin-bottom: 28px;
+}
+.sujo-note .note-title { font-weight: 600; color: var(--yellow); margin-bottom: 4px; }
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600;
+}
+.tag-ok { background: rgba(63,185,80,0.15); color: var(--green); }
+.tag-warn { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.tag-bad { background: rgba(248,81,73,0.15); color: var(--red); }
+/* ── Sujo Source Link ── */
+.source-link {
+  font-size: 10px; font-weight: 500; color: var(--accent);
+  text-decoration: none; opacity: 0.7; transition: opacity 0.2s;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.source-link:hover { opacity: 1; text-decoration: underline; }
+.source-link::before { content: ''; display: inline-block; width: 12px; height: 12px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2358a6ff' stroke-width='2'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E") no-repeat center/contain;
+}
+:root.light .source-link::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230969da' stroke-width='2'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
+}
+.section-sources { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+
+/* ── Sujo Month Nav ── */
+.sujo-month-nav {
+  display: flex; gap: 6px; margin-bottom: 20px; align-items: center;
+}
+.sujo-month-btn {
+  padding: 6px 16px; border-radius: 6px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text2); transition: all 0.2s;
+}
+.sujo-month-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.sujo-month-btn:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+
+/* ── New Sections: Refund / Unpaid / Inventory ── */
+.sujo-section { margin-bottom: 28px; }
+.sujo-section h2 {
+  font-size: 15px; font-weight: 600; margin-bottom: 14px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.sujo-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sujo-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.sujo-stat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+}
+.sujo-stat-card h3 { font-size: 12px; color: var(--text2); margin-bottom: 10px; font-weight: 600; }
+.sujo-stat-card .stat-value { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+.sujo-stat-card .stat-sub { font-size: 11px; color: var(--text2); }
+
+/* Reason distribution bar */
+.reason-bar-wrap { margin-top: 10px; }
+.reason-bar-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11px; }
+.reason-bar-label { width: 70px; text-align: right; color: var(--text2); flex-shrink: 0; }
+.reason-bar-outer { flex: 1; height: 18px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.reason-bar-inner { height: 100%; border-radius: 3px; min-width: 2px; }
+.reason-bar-val { width: 40px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Aging bar */
+.aging-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 11px; }
+.aging-label { width: 80px; text-align: right; color: var(--text2); flex-shrink: 0; }
+.aging-bar-outer { flex: 1; height: 20px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.aging-bar-inner { height: 100%; border-radius: 3px; display: flex; align-items: center; padding-left: 6px; font-size: 10px; font-weight: 600; color: var(--bg); }
+.aging-val { width: 60px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Week group toggle */
+.week-group-header {
+  display: flex; align-items: center; gap: 6px; cursor: pointer;
+  padding: 6px 12px; background: var(--bg3); font-size: 12px; font-weight: 600;
+  border-bottom: 1px solid var(--border); user-select: none;
+}
+.week-group-header:hover { background: var(--bg2); }
+.week-group-header .arrow { transition: transform 0.2s; display: inline-block; font-size: 10px; }
+.week-group-header .arrow.open { transform: rotate(90deg); }
+.week-group-rows { display: none; }
+.week-group-rows.open { display: table-row-group; }
+.week-subtotal td { font-weight: 700; background: rgba(88,166,255,0.05); }
+
+@media (max-width: 768px) {
+  .sujo-kpi-row { grid-template-columns: 1fr 1fr; }
+  .lines { grid-template-columns: 1fr; }
+  .target-grid { grid-template-columns: 1fr; }
+  .sujo-grid-2 { grid-template-columns: 1fr; }
+  .sujo-grid-3 { grid-template-columns: 1fr; }
+}
+
 /* ── Footer ── */
 footer {
   text-align: center; padding: 24px; color: var(--text2); font-size: 12px;
@@ -235,17 +483,39 @@ footer {
 <div id="app" style="display:none;">
 
 <header>
-  <h1>JENTE Data Deck <span>2022.01 ~ 2025.12</span></h1>
+  <h1>JENTE Data Deck</h1>
+  <div class="view-tabs">
+    <button class="view-tab active" id="tab-sujo" onclick="setTab('sujo')">자금수지</button>
+    <button class="view-tab" id="tab-ops" onclick="setTab('ops')">운영데이터</button>
+  </div>
   <div class="header-controls">
-    <a href="pipeline.html" target="_blank" class="toggle-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg>
-      Pipeline
-    </a>
-    <button class="toggle-btn" id="btn-monthly" onclick="setView('monthly')">Monthly</button>
-    <button class="toggle-btn active" id="btn-yearly" onclick="setView('yearly')">Yearly</button>
-    <button class="toggle-btn" id="btn-theme" onclick="toggleTheme()">Light</button>
+    <a class="pipeline-btn" href="pipeline.html" target="_blank">Pipeline</a>
+    <button class="toggle-btn active" id="btn-monthly" onclick="setView('monthly')">Monthly</button>
+    <button class="toggle-btn" id="btn-yearly" onclick="setView('yearly')">Yearly</button>
+    <button class="toggle-btn" id="btn-theme" onclick="toggleTheme()">Dark</button>
   </div>
 </header>
+
+<!-- VIEW 1: 자금수지 (기본 표시) -->
+<div id="view-sujo">
+<div class="sujo-container">
+  <div id="sujo-month-nav"></div>
+  <div id="sujo-header"></div>
+  <div id="sujo-kpi"></div>
+  <div id="sujo-lines"></div>
+  <div id="sujo-flow"></div>
+  <div id="sujo-waterfall"></div>
+  <div id="sujo-daily"></div>
+  <div id="sujo-targets"></div>
+  <div id="sujo-refund"></div>
+  <div id="sujo-unpaid"></div>
+  <div id="sujo-inventory"></div>
+  <div id="sujo-note"></div>
+</div>
+</div><!-- /view-sujo -->
+
+<!-- VIEW 2: 운영데이터 (숨김) -->
+<div id="view-ops" style="display:none;">
 
 <!-- Signal Legend -->
 <div class="signal-legend">
@@ -395,8 +665,10 @@ footer {
   </div>
 </div>
 
+</div><!-- /view-ops -->
+
 <footer>
-  JENTE Data Deck &middot; Confidential &middot; Generated 2026-02-25 &middot; GONEX
+  JENTE Data Deck &middot; Confidential &middot; Generated 2026-03-03 &middot; GONEX
 </footer>
 
 </div><!-- /app -->
@@ -488,9 +760,13 @@ const THRESHOLDS = {
 // ══════════════════════════════════════════
 // State
 // ══════════════════════════════════════════
-let currentView = 'yearly';
+let currentView = 'monthly';
+let currentTab = 'sujo';
 let currentCohortTab = 'all';
 let charts = {};
+
+// Light theme default
+document.documentElement.classList.add('light');
 
 // ══════════════════════════════════════════
 // Helpers
@@ -632,7 +908,7 @@ document.getElementById('pin-input').addEventListener('input', function(e) {
     if (this.value === PIN) {
       document.getElementById('pin-overlay').style.display = 'none';
       document.getElementById('app').style.display = 'block';
-      renderAll();
+      setTab('sujo');
     } else {
       document.getElementById('pin-error').textContent = 'Invalid PIN';
       this.value = '';
@@ -641,20 +917,755 @@ document.getElementById('pin-input').addEventListener('input', function(e) {
 });
 
 // ══════════════════════════════════════════
+// SUJO DATA
+// ══════════════════════════════════════════
+const SUJO_DATA = {
+  "2026-02": {
+    meta: { month: "2월", year: 2026, days: 28, updated: "2026-03-03", label: "2026년 2월 마감" },
+    sources: {
+      sales: { name: "매출데이터", id: "1JnV7qOGPrUFZyfwClEquKWz9kNbmeYHOi-KBXmsA6Gc" },
+      return_cost: { name: "반품 매출원가", id: "1AG5ujmf8kfahbFbk50J7mtAb_mSitg9WfJCessay7Ak" },
+      refund_review: { name: "환불리뷰", id: "1hvcwMweiBFiTB1ybS8uv61_8zeDlHzMvvyPexKhLEqY" },
+      unpaid: { name: "반품환불 미지급", id: "1-Rhv7EKfMLcsn4O__lYAAeMm1sdUolcDAylxR51JYRM" },
+      inventory: { name: "비원가성 재고", id: "1FAUmTA3zDKnUSxsav5I3M5lCgktRNQgzUYJe2kHRxGg" }
+    },
+    kpi: {
+      total_gmv: 2971000000,
+      net_profit: 421000000,
+      refund: 379000000,
+      total_cost: 2550000000,
+      margin_pct: 14.2,
+      refund_pct: 12.8,
+      daily_avg_gmv: 106107143,
+      target_gmv: 3200000000
+    },
+    line1: {
+      gross: 2710000000, cancel: -348000000, net: 2362000000,
+      cogs: -1825000000, pg_fee: -63300000, coupon: -52700000,
+      profit: 421000000, margin_pct: 15.5,
+      target_revenue: 2940000000, target_profit: 450000000,
+      orders: 4820
+    },
+    line2: {
+      gross: 189000000, cancel: 0, net: 182000000,
+      cogs_unknown: true, pg_fee: -4900000, coupon: -8100000,
+      profit_note: "원가 미반영", orders: 312, orders_detail: "매입 245 / 위탁 67",
+      target_revenue: 256000000, target_profit: 120000000
+    },
+    line3: {
+      gross: 72000000, net: 68400000, cogs: -42000000,
+      profit: 26400000, margin_pct: 22.1, count: 46,
+      limit_total: 260000000, limit_current: 56000000, limit_prev: 210000000
+    },
+    waterfall: [
+      { label: "총 거래액", value: 2971000000, color: "var(--blue)", pct: 100 },
+      { label: "환불 차감", value: -379000000, color: "var(--red)", pct: 12.8 },
+      { label: "순매출", value: 2592000000, color: "var(--cyan)", pct: 87.2 },
+      { label: "매입원가", value: -1867000000, color: "var(--red)", pct: 62.8 },
+      { label: "PG 수수료", value: -68200000, color: "var(--orange)", pct: 2.3 },
+      { label: "할인 (쿠폰/앱/마일리지)", value: -60800000, color: "var(--yellow)", pct: 2.0 },
+      { label: "순이익", value: 421000000, color: "var(--green)", pct: 14.2, highlight: true }
+    ],
+    daily: [
+      { date:"02-01", dow:"일", gmv:89200000, api:82300000, inv:5100000, ret:1800000, refund:-11200000, cogs:-56800000, pg:-2300000, disc:-1900000, profit:16200000 },
+      { date:"02-02", dow:"월", gmv:112500000, api:104200000, inv:6200000, ret:2100000, refund:-14500000, cogs:-73100000, pg:-2900000, disc:-2100000, profit:19900000 },
+      { date:"02-03", dow:"화", gmv:118300000, api:109500000, inv:6500000, ret:2300000, refund:-15200000, cogs:-76900000, pg:-3100000, disc:-2200000, profit:20900000 },
+      { date:"02-04", dow:"수", gmv:105200000, api:97400000, inv:5800000, ret:2000000, refund:-13500000, cogs:-68400000, pg:-2700000, disc:-2000000, profit:18600000 },
+      { date:"02-05", dow:"목", gmv:109800000, api:101700000, inv:6000000, ret:2100000, refund:-14100000, cogs:-71400000, pg:-2800000, disc:-2100000, profit:19400000 },
+      { date:"02-06", dow:"금", gmv:115600000, api:107100000, inv:6300000, ret:2200000, refund:-14800000, cogs:-75100000, pg:-3000000, disc:-2200000, profit:20500000 },
+      { date:"02-07", dow:"토", gmv:98500000, api:91200000, inv:5400000, ret:1900000, refund:-12600000, cogs:-64000000, pg:-2500000, disc:-1900000, profit:17500000 },
+      { date:"02-08", dow:"일", gmv:88700000, api:82100000, inv:4900000, ret:1700000, refund:-11400000, cogs:-57600000, pg:-2300000, disc:-1700000, profit:15700000 },
+      { date:"02-09", dow:"월", gmv:110200000, api:102100000, inv:6000000, ret:2100000, refund:-14200000, cogs:-71600000, pg:-2800000, disc:-2100000, profit:19500000 },
+      { date:"02-10", dow:"화", gmv:116800000, api:108200000, inv:6400000, ret:2200000, refund:-15000000, cogs:-75900000, pg:-3000000, disc:-2200000, profit:20700000 },
+      { date:"02-11", dow:"수", gmv:103400000, api:95800000, inv:5600000, ret:2000000, refund:-13300000, cogs:-67200000, pg:-2700000, disc:-2000000, profit:18200000 },
+      { date:"02-12", dow:"목", gmv:107500000, api:99600000, inv:5900000, ret:2000000, refund:-13800000, cogs:-69900000, pg:-2800000, disc:-2000000, profit:19000000 },
+      { date:"02-13", dow:"금", gmv:113200000, api:104800000, inv:6200000, ret:2200000, refund:-14500000, cogs:-73600000, pg:-2900000, disc:-2100000, profit:20100000 },
+      { date:"02-14", dow:"토", gmv:121500000, api:112500000, inv:6700000, ret:2300000, refund:-15600000, cogs:-78900000, pg:-3100000, disc:-2300000, profit:21600000 },
+      { date:"02-15", dow:"일", gmv:90100000, api:83400000, inv:5000000, ret:1700000, refund:-11600000, cogs:-58500000, pg:-2300000, disc:-1700000, profit:16000000 },
+      { date:"02-16", dow:"월", gmv:108600000, api:100600000, inv:5900000, ret:2100000, refund:-13900000, cogs:-70600000, pg:-2800000, disc:-2100000, profit:19200000 },
+      { date:"02-17", dow:"화", gmv:114500000, api:106100000, inv:6300000, ret:2100000, refund:-14700000, cogs:-74400000, pg:-3000000, disc:-2200000, profit:20200000 },
+      { date:"02-18", dow:"수", gmv:101800000, api:94300000, inv:5500000, ret:2000000, refund:-13100000, cogs:-66200000, pg:-2600000, disc:-1900000, profit:18000000 },
+      { date:"02-19", dow:"목", gmv:106200000, api:98400000, inv:5800000, ret:2000000, refund:-13600000, cogs:-69000000, pg:-2700000, disc:-2000000, profit:18900000 },
+      { date:"02-20", dow:"금", gmv:111500000, api:103300000, inv:6100000, ret:2100000, refund:-14300000, cogs:-72500000, pg:-2900000, disc:-2100000, profit:19700000 },
+      { date:"02-21", dow:"토", gmv:96800000, api:89700000, inv:5300000, ret:1800000, refund:-12400000, cogs:-62900000, pg:-2500000, disc:-1800000, profit:17200000 },
+      { date:"02-22", dow:"일", gmv:87500000, api:81100000, inv:4800000, ret:1600000, refund:-11200000, cogs:-56900000, pg:-2200000, disc:-1700000, profit:15500000 },
+      { date:"02-23", dow:"월", gmv:107800000, api:99900000, inv:5900000, ret:2000000, refund:-13800000, cogs:-70100000, pg:-2800000, disc:-2000000, profit:19100000 },
+      { date:"02-24", dow:"화", gmv:113600000, api:105200000, inv:6200000, ret:2200000, refund:-14600000, cogs:-73800000, pg:-2900000, disc:-2200000, profit:20100000 },
+      { date:"02-25", dow:"수", gmv:100500000, api:93100000, inv:5500000, ret:1900000, refund:-12900000, cogs:-65300000, pg:-2600000, disc:-1900000, profit:17800000 },
+      { date:"02-26", dow:"목", gmv:104800000, api:97100000, inv:5700000, ret:2000000, refund:-13500000, cogs:-68100000, pg:-2700000, disc:-2000000, profit:18500000 },
+      { date:"02-27", dow:"금", gmv:109200000, api:101200000, inv:5900000, ret:2100000, refund:-14000000, cogs:-71000000, pg:-2800000, disc:-2000000, profit:19400000 },
+      { date:"02-28", dow:"토", gmv:97400000, api:90200000, inv:5300000, ret:1900000, refund:-12500000, cogs:-63300000, pg:-2500000, disc:-1800000, profit:17300000 }
+    ],
+    target: {
+      line1: { label:"Line 1: API 판매", goal: 2940000000, actual: 2362000000, profit_goal: 450000000, profit_actual: 421000000 },
+      line2: { label:"Line 2: 재고 판매", goal: 256000000, actual: 182000000, profit_goal: 120000000, profit_note: "원가 미확인" },
+      line3: { label:"Line 3: 재고 구매 (반품)", limit: 260000000, actual: 68400000, limit_current: 56000000, limit_prev: 210000000 }
+    },
+    refund_analysis: {
+      current_month_cancel: { count: 548, amount: 379000000, pct: 12.83 },
+      prev_month_cancel: { count: 70, amount: 11000000 },
+      prev_month_return: { count: 226, amount: 244000000, pct: 8.25 },
+      reasons: [
+        { label: "단순변심", pct: 47, color: "var(--blue)" },
+        { label: "상품불량", pct: 12, color: "var(--red)" },
+        { label: "오배송", pct: 8, color: "var(--orange)" },
+        { label: "사이즈불일치", pct: 18, color: "var(--yellow)" },
+        { label: "기타", pct: 15, color: "var(--text2)" }
+      ]
+    },
+    unpaid: {
+      kicc: 259000000, inicis: 974000000, total: 1313000000,
+      other: 80000000,
+      monthly: [
+        { month: "2025-11", amount: 980000000 },
+        { month: "2025-12", amount: 1120000000 },
+        { month: "2026-01", amount: 1250000000 },
+        { month: "2026-02", amount: 1313000000 }
+      ]
+    },
+    inventory: {
+      return_qty: 670, return_val: 519000000,
+      purchase_qty: 1062, purchase_val: 271000000,
+      total_qty: 1732, total_val: 790000000,
+      aging: [
+        { label: "30일 이내", qty: 680, val: 310000000, pct: 39.2, color: "var(--green)" },
+        { label: "30~60일", qty: 450, val: 215000000, pct: 27.2, color: "var(--yellow)" },
+        { label: "60~90일", qty: 340, val: 155000000, pct: 19.6, color: "var(--orange)" },
+        { label: "90일+", qty: 262, val: 110000000, pct: 13.9, color: "var(--red)" }
+      ]
+    },
+    cost_breakdown: [
+      { item: "매입원가 (API)", amount: 1825000000, pct: "61.4%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "매입원가 (반품)", amount: 42000000, pct: "1.4%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "매입원가 (매입/위탁)", amount: null, pct: "—", tag: "tag-warn", tag_text: "별도 소스" },
+      { item: "PG 수수료 (카드)", amount: 62000000, pct: "2.09%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "PG 부가세", amount: 6200000, pct: "0.21%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "쿠폰 할인", amount: 30200000, pct: "1.02%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "앱 할인", amount: 22500000, pct: "0.76%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "마일리지", amount: 8100000, pct: "0.27%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "관세", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" },
+      { item: "물류비 (국내운임/포장)", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" },
+      { item: "판관비 (급여/임차/보험 등)", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" }
+    ]
+  },
+  "2026-03": {
+    meta: { month: "3월", year: 2026, days: 2, updated: "2026-03-03", label: "2026년 3월 (프로토타입 2일)" },
+    sources: {
+      sales: { name: "매출데이터", id: "1JnV7qOGPrUFZyfwClEquKWz9kNbmeYHOi-KBXmsA6Gc" },
+      return_cost: { name: "반품 매출원가", id: "1AG5ujmf8kfahbFbk50J7mtAb_mSitg9WfJCessay7Ak" },
+      refund_review: { name: "환불리뷰", id: "1hvcwMweiBFiTB1ybS8uv61_8zeDlHzMvvyPexKhLEqY" },
+      unpaid: { name: "반품환불 미지급", id: "1-Rhv7EKfMLcsn4O__lYAAeMm1sdUolcDAylxR51JYRM" },
+      inventory: { name: "비원가성 재고", id: "1FAUmTA3zDKnUSxsav5I3M5lCgktRNQgzUYJe2kHRxGg" }
+    },
+    kpi: {
+      total_gmv: 243311497, net_profit: 40657955, refund: 17136668, total_cost: 185516870,
+      margin_pct: 16.7, refund_pct: 7.0, daily_avg_gmv: 121655749, target_gmv: 3200000000
+    },
+    line1: {
+      gross: 228885000, cancel: -17241428, net: 220418429,
+      cogs: -165169153, pg_fee: -5694424, coupon: -8772250,
+      profit: 40782602, margin_pct: 18.5,
+      target_revenue: 2940000000, target_profit: 450000000, orders: 320
+    },
+    line2: {
+      gross: 2563000, cancel: 0, net: 2455355,
+      cogs_unknown: true, pg_fee: -65803, coupon: -107645,
+      profit_note: "원가 미반영", orders: 9, orders_detail: "매입 9 / 위탁 0",
+      target_revenue: 256000000, target_profit: 120000000
+    },
+    line3: {
+      gross: 5573000, net: 5300297, cogs: -4675496,
+      profit: 624801, margin_pct: 11.8, count: 9,
+      limit_total: 260000000, limit_current: 56000000, limit_prev: 210000000
+    },
+    waterfall: [
+      { label: "총 거래액", value: 243311497, color: "var(--blue)", pct: 100 },
+      { label: "환불 차감", value: -17136668, color: "var(--red)", pct: 7.0 },
+      { label: "순매출", value: 226174825, color: "var(--cyan)", pct: 93.0 },
+      { label: "매입원가", value: -169844649, color: "var(--red)", pct: 69.8 },
+      { label: "PG 수수료", value: -6054728, color: "var(--orange)", pct: 2.5 },
+      { label: "할인 (쿠폰/앱/마일리지)", value: -9617493, color: "var(--yellow)", pct: 3.95 },
+      { label: "순이익", value: 40657955, color: "var(--green)", pct: 16.7, highlight: true }
+    ],
+    daily: [
+      { date:"03-01", dow:"토", gmv:115445540, api:112871943, inv:1141900, ret:1431697, refund:-7236882, cogs:-80650482, pg:-2862109, disc:-4677510, profit:20018557 },
+      { date:"03-02", dow:"일", gmv:127865957, api:122683902, inv:1313455, ret:3868600, refund:-9899786, cogs:-87723191, pg:-3152409, disc:-4906043, profit:22184528 }
+    ],
+    target: {
+      line1: { label:"Line 1: API 판매", goal: 2940000000, actual: 220418429, profit_goal: 450000000, profit_actual: 40782602 },
+      line2: { label:"Line 2: 재고 판매", goal: 256000000, actual: 2455355, profit_goal: 120000000, profit_note: "원가 미확인" },
+      line3: { label:"Line 3: 재고 구매 (반품)", limit: 260000000, actual: 5300297, limit_current: 56000000, limit_prev: 210000000 }
+    },
+    refund_analysis: null,
+    unpaid: null,
+    inventory: null,
+    cost_breakdown: [
+      { item: "매입원가 (API)", amount: 165169153, pct: "67.9%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "매입원가 (반품)", amount: 4675496, pct: "1.9%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "매입원가 (매입/위탁)", amount: null, pct: "—", tag: "tag-warn", tag_text: "별도 소스" },
+      { item: "PG 수수료 (카드)", amount: 5504293, pct: "2.26%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "PG 부가세", amount: 550435, pct: "0.23%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "쿠폰 할인", amount: 4543230, pct: "1.87%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "앱 할인", amount: 4325280, pct: "1.78%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "마일리지", amount: 748983, pct: "0.31%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "관세", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" },
+      { item: "물류비 (국내운임/포장)", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" },
+      { item: "판관비 (급여/임차/보험 등)", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" }
+    ]
+  }
+};
+
+let currentMonth = '2026-02';
+const SUJO_MONTHS = Object.keys(SUJO_DATA);
+
+// ══════════════════════════════════════════
+// Sujo Helpers
+// ══════════════════════════════════════════
+function sheetUrl(id) { return `https://docs.google.com/spreadsheets/d/${id}/`; }
+function sourceLink(src) { return `<a class="source-link" href="${sheetUrl(src.id)}" target="_blank" rel="noopener">${src.name}</a>`; }
+function sourceLinks(sources, keys) { return '<div class="section-sources">' + keys.map(k => sources[k] ? sourceLink(sources[k]) : '').join('') + '</div>'; }
+
+const sujoFmt = v => v != null ? Math.round(v).toLocaleString() : '—';
+const sujoEok = v => v != null ? (v / 1e8).toFixed(2) + '억' : '—';
+const sujoEokShort = v => v != null ? (v / 1e8).toFixed(1) + '억' : '—';
+const sujoMan = v => v != null ? Math.round(v / 10000).toLocaleString() + '만' : '—';
+
+// ══════════════════════════════════════════
+// Sujo Render Functions
+// ══════════════════════════════════════════
+function renderSujo(month) {
+  const d = SUJO_DATA[month];
+  if (!d) return;
+  renderSujoMonthNav(month);
+  renderSujoHeader(d);
+  renderSujoKPI(d);
+  renderSujoLines(d);
+  renderSujoFlow(d);
+  renderSujoWaterfall(d);
+  renderSujoDaily(d);
+  renderSujoTargets(d);
+  renderSujoRefund(d);
+  renderSujoUnpaid(d);
+  renderSujoInventory(d);
+  renderSujoNote(d);
+}
+
+function renderSujoMonthNav(activeMonth) {
+  const html = '<div class="sujo-month-nav">' +
+    SUJO_MONTHS.map(m => {
+      const md = SUJO_DATA[m].meta;
+      const cls = m === activeMonth ? ' active' : '';
+      return `<button class="sujo-month-btn${cls}" onclick="setMonth('${m}')">${md.month}</button>`;
+    }).join('') +
+    '</div>';
+  document.getElementById('sujo-month-nav').innerHTML = html;
+}
+
+function renderSujoHeader(d) {
+  const m = d.meta;
+  const src = d.sources;
+  document.getElementById('sujo-header').innerHTML = `
+    <div class="sujo-header">
+      <h2>JENTE 수조 (자금수지) — ${m.year}년 ${m.month}</h2>
+      <div class="sub">${m.label}</div>
+      <div class="updated">데이터 기준: ${m.updated} &middot; ${m.days}일 실적</div>
+      ${src ? sourceLinks(src, ['sales','return_cost','refund_review','unpaid','inventory']) : ''}
+    </div>`;
+}
+
+function renderSujoKPI(d) {
+  const k = d.kpi;
+  const src = d.sources;
+  const progPct = Math.min((k.total_gmv / k.target_gmv) * 100, 100).toFixed(1);
+  const profitProgPct = Math.min((k.net_profit / (k.target_gmv * 0.15)) * 100, 100).toFixed(1);
+  document.getElementById('sujo-kpi').innerHTML = `
+    <div class="sujo-kpi-row">
+      <div class="kpi">
+        <div class="kpi-label">누적 총 거래액</div>
+        <div class="kpi-value">${sujoEokShort(k.total_gmv)}</div>
+        <div class="kpi-sub">일평균 ${sujoEokShort(k.daily_avg_gmv)}</div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:${progPct}%;background:var(--blue)"></div></div>
+          <div class="prog-label"><span>누적</span><span>목표 ${sujoEokShort(k.target_gmv)}</span></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">누적 순이익 (원가 차감)</div>
+        <div class="kpi-value kpi-accent">${sujoEokShort(k.net_profit)}</div>
+        <div class="kpi-sub">마진율 ${k.margin_pct}%</div>
+        <div class="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" style="width:${profitProgPct}%;background:var(--green)"></div></div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">누적 환불</div>
+        <div class="kpi-value kpi-bad">${sujoEokShort(k.refund)}</div>
+        <div class="kpi-sub">환불율 ${k.refund_pct}%</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">누적 비용 합계</div>
+        <div class="kpi-value kpi-warn">${sujoEokShort(k.total_cost)}</div>
+        <div class="kpi-sub">원가+PG+할인</div>
+      </div>
+    </div>`;
+}
+
+function renderSujoLines(d) {
+  const l1 = d.line1, l2 = d.line2, l3 = d.line3;
+  const src = d.sources;
+  const l1pct = l1.target_revenue ? Math.round(l1.net / l1.target_revenue * 100) : 0;
+  const l1tag = l1pct >= 80 ? 'tag-ok' : l1pct >= 50 ? 'tag-warn' : 'tag-bad';
+  const l2pct = l2.target_revenue ? Math.round(l2.net / l2.target_revenue * 100) : 0;
+  const l2tag = l2pct >= 80 ? 'tag-ok' : l2pct >= 50 ? 'tag-warn' : 'tag-bad';
+  const l3pct = l3.limit_total ? (l3.net / l3.limit_total * 100).toFixed(1) : 0;
+  const l3tag = parseFloat(l3pct) <= 50 ? 'tag-ok' : parseFloat(l3pct) <= 80 ? 'tag-warn' : 'tag-bad';
+
+  document.getElementById('sujo-lines').innerHTML = `
+    <div class="lines">
+      <div class="line-card line1">
+        <div class="line-header"><span>Line 1: API 중계 ${src ? sourceLink(src.sales) : ''}</span><span class="tag ${l1tag}">${l1pct}%</span></div>
+        <div class="line-body">
+          <div class="detail-row"><span class="detail-label">총 판매액 (상품가)</span><span class="detail-value">${sujoFmt(l1.gross)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">취소/환불</span><span class="detail-value neg">${sujoFmt(l1.cancel)}</span></div>
+          <div class="detail-row"><span class="detail-label">순매출 (결제액)</span><span class="detail-value">${sujoFmt(l1.net)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">매입원가 (EUR&times;환율)</span><span class="detail-value neg">${sujoFmt(l1.cogs)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">PG 수수료</span><span class="detail-value neg">${sujoFmt(l1.pg_fee)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">쿠폰/앱할인</span><span class="detail-value neg">${sujoFmt(l1.coupon)}</span></div>
+          <div class="detail-row subtotal"><span>API 순이익</span><span class="detail-value pos">${sujoFmt(l1.profit)}</span></div>
+          <div class="detail-row" style="border-bottom:none"><span class="detail-label">마진율</span><span class="detail-value" style="color:var(--blue)">${l1.margin_pct}%</span></div>
+          <div class="prog-wrap" style="margin-top:4px">
+            <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(l1pct,100)}%;background:var(--blue)"></div></div>
+            <div class="prog-label"><span>누적 ${sujoEokShort(l1.net)}</span><span>목표 ${sujoEokShort(l1.target_revenue)}</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="line-card line2">
+        <div class="line-header"><span>Line 2: 재고 판매 ${src ? sourceLink(src.sales) : ''}</span><span class="tag ${l2tag}">${l2pct}%</span></div>
+        <div class="line-body">
+          <div class="detail-row"><span class="detail-label">총 판매액 (상품가)</span><span class="detail-value">${sujoFmt(l2.gross)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">취소/환불</span><span class="detail-value" style="color:var(--text2)">${sujoFmt(l2.cancel)}</span></div>
+          <div class="detail-row"><span class="detail-label">순매출 (결제액)</span><span class="detail-value">${sujoFmt(l2.net)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">재고 취득원가</span><span class="detail-value" style="color:var(--text2)">${l2.cogs_unknown ? '미확인' : sujoFmt(l2.cogs)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">PG 수수료</span><span class="detail-value neg">${sujoFmt(l2.pg_fee)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">쿠폰/앱할인</span><span class="detail-value neg">${sujoFmt(l2.coupon)}</span></div>
+          <div class="detail-row subtotal"><span>재고 순이익</span><span class="detail-value" style="color:var(--yellow)">${l2.profit_note || sujoFmt(l2.profit)}</span></div>
+          <div class="detail-row" style="border-bottom:none"><span class="detail-label">주문 건수</span><span class="detail-value">${l2.orders}건${l2.orders_detail ? ' ('+l2.orders_detail+')' : ''}</span></div>
+          <div class="prog-wrap" style="margin-top:4px">
+            <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(l2pct,100)}%;background:var(--green)"></div></div>
+            <div class="prog-label"><span>누적 ${sujoEokShort(l2.net)}</span><span>목표 ${sujoEokShort(l2.target_revenue)}</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="line-card line3">
+        <div class="line-header"><span>Line 3: 재고 구매 (반품) ${src ? sourceLink(src.return_cost) : ''}</span><span class="tag ${l3tag}">${l3pct}%</span></div>
+        <div class="line-body">
+          <div class="detail-row"><span class="detail-label">반품 판매액</span><span class="detail-value">${sujoFmt(l3.gross)}</span></div>
+          <div class="detail-row"><span class="detail-label">반품 결제액</span><span class="detail-value">${sujoFmt(l3.net)}</span></div>
+          <div class="detail-row"><span class="detail-label indent">반품 원가 (EUR&times;환율)</span><span class="detail-value neg">${sujoFmt(l3.cogs)}</span></div>
+          <div class="detail-row subtotal"><span>반품 마진</span><span class="detail-value pos">${sujoFmt(l3.profit)}</span></div>
+          <div class="detail-row" style="border-bottom:none"><span class="detail-label">반품 건수 / 마진율</span><span class="detail-value">${l3.count}건 / ${l3.margin_pct}%</span></div>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
+            <div class="detail-row"><span class="detail-label" style="font-weight:600;color:var(--orange)">재고 구매 한도</span><span class="detail-value">${sujoFmt(l3.limit_total)}</span></div>
+            <div class="detail-row"><span class="detail-label indent">당월 반품 한도</span><span class="detail-value">${sujoFmt(l3.limit_current)}</span></div>
+            <div class="detail-row"><span class="detail-label indent">전월 반품 한도</span><span class="detail-value">${sujoFmt(l3.limit_prev)}</span></div>
+          </div>
+          <div class="prog-wrap" style="margin-top:4px">
+            <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(l3pct,100)}%;background:var(--orange)"></div></div>
+            <div class="prog-label"><span>누적 ${sujoEokShort(l3.net)}</span><span>상한 ${sujoEokShort(l3.limit_total)}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSujoFlow(d) {
+  const l1p = d.line1.profit || 0;
+  const l2p = d.line2.cogs_unknown ? (d.line2.net - (d.line2.pg_fee||0) - (d.line2.coupon||0)) : (d.line2.profit || 0);
+  const l3cost = d.line3.cogs ? Math.abs(d.line3.cogs) : 0;
+  const liquidity = l1p + l2p - l3cost;
+  const l2cls = d.line2.cogs_unknown ? '' : (l2p >= 0 ? ' positive' : ' negative');
+  const l2style = d.line2.cogs_unknown ? ' style="border-color:var(--text2)"' : '';
+  const l2valStyle = d.line2.cogs_unknown ? ' style="color:var(--text2)"' : '';
+  const liqCls = liquidity >= 0 ? 'neutral' : 'negative';
+
+  document.getElementById('sujo-flow').innerHTML = `
+    <div class="summary-box">
+      <h2>수조 흐름 — 누적 실적</h2>
+      <div class="summary-flow">
+        <div class="summary-block positive"><div class="sb-label">Line 1 API 순이익</div><div class="sb-value">+${sujoMan(l1p)}</div></div>
+        <div class="summary-arrow">+</div>
+        <div class="summary-block${l2cls}"${l2style}><div class="sb-label">Line 2 재고 순이익</div><div class="sb-value"${l2valStyle}>+${sujoMan(l2p)}</div></div>
+        <div class="summary-arrow">&minus;</div>
+        <div class="summary-block negative"><div class="sb-label">Line 3 재고 구매</div><div class="sb-value">-${sujoMan(l3cost)}</div></div>
+        <div class="summary-arrow">=</div>
+        <div class="summary-block ${liqCls}"><div class="sb-label">유동성 (원가 차감 후)</div><div class="sb-value">${sujoMan(liquidity)}</div></div>
+      </div>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--text2);">
+        유동성 &rarr; 금융비용 &rarr; 재직자 급여 &rarr; 직책자 급여 &rarr; 부채 상환
+        <span style="color:var(--yellow);font-size:11px;display:block;margin-top:4px;">(금융비용/급여/부채 데이터 미확보 — 수동 입력 또는 추가 연동 필요)</span>
+      </div>
+    </div>`;
+}
+
+function renderSujoWaterfall(d) {
+  const gmv = d.kpi.total_gmv;
+  const bars = d.waterfall.map(w => {
+    const absVal = Math.abs(w.value);
+    const widthPct = gmv > 0 ? (absVal / gmv * 100) : 0;
+    const shortVal = Math.round(absVal / 1e6) + 'M';
+    const valCls = w.value < 0 ? ' neg' : (w.highlight ? ' pos' : '');
+    const labelStyle = w.highlight ? ' style="color:var(--green);font-weight:700"' : '';
+    const mtStyle = w.highlight ? ' style="margin-top:4px"' : '';
+    return `<div class="wf-bar-wrap"${mtStyle}><div class="wf-label"${labelStyle}>${w.label}</div><div class="wf-bar-outer"><div class="wf-bar-inner" style="width:${widthPct.toFixed(1)}%;background:${w.color}">${widthPct > 8 ? shortVal : ''}</div></div><div class="wf-val${valCls}"${w.highlight ? ' style="font-size:14px"' : ''}>${w.value < 0 ? '-' : ''}${sujoFmt(absVal)}</div></div>`;
+  }).join('\n  ');
+
+  const wfSrc = d.sources;
+  document.getElementById('sujo-waterfall').innerHTML = `
+    <div class="waterfall-section">
+      <h2>비용 워터폴 (누적) ${wfSrc ? sourceLink(wfSrc.sales) : ''}</h2>
+      ${bars}
+      <div style="text-align:right;font-size:11px;color:var(--text2);margin-top:6px;">순이익률 ${d.kpi.margin_pct}% &middot; 미포함: 관세, 물류비, 판관비</div>
+    </div>`;
+}
+
+function renderSujoDaily(d) {
+  const days = d.daily;
+  if (!days || days.length === 0) {
+    document.getElementById('sujo-daily').innerHTML = '';
+    return;
+  }
+
+  // Group by week
+  const weeks = [];
+  let currentWeek = [];
+  days.forEach((day, i) => {
+    currentWeek.push(day);
+    if (day.dow === '토' || i === days.length - 1) {
+      weeks.push([...currentWeek]);
+      currentWeek = [];
+    }
+  });
+
+  const sumField = (arr, field) => arr.reduce((s, d) => s + (d[field] || 0), 0);
+  const totalGmv = sumField(days, 'gmv');
+  const totalRefund = sumField(days, 'refund');
+  const totalCogs = sumField(days, 'cogs');
+  const totalPg = sumField(days, 'pg');
+  const totalDisc = sumField(days, 'disc');
+  const totalProfit = sumField(days, 'profit');
+  const netRevenue = totalGmv + totalRefund;
+  const profitPct = netRevenue > 0 ? (totalProfit / netRevenue * 100).toFixed(1) : '0.0';
+  const monthDays = d.meta.days <= days.length ? 28 : 31;
+  const multiplier = days.length > 0 ? monthDays / days.length : 1;
+
+  let rowsHtml = '';
+  weeks.forEach((week, wi) => {
+    const wSum = {
+      gmv: sumField(week, 'gmv'), refund: sumField(week, 'refund'),
+      cogs: sumField(week, 'cogs'), pg: sumField(week, 'pg'),
+      disc: sumField(week, 'disc'), profit: sumField(week, 'profit')
+    };
+    const wId = 'week-' + wi;
+
+    // Week header row (always visible)
+    rowsHtml += `<tr class="week-subtotal" style="cursor:pointer" onclick="toggleWeek('${wId}')">
+      <td style="text-align:left"><span class="arrow" id="arrow-${wId}">&#9654;</span> W${wi+1} (${week[0].date}~${week[week.length-1].date})</td>
+      <td>${sujoFmt(wSum.gmv)}</td>
+      <td style="color:var(--red)">${sujoFmt(wSum.refund)}</td>
+      <td style="color:var(--red)">${sujoFmt(wSum.cogs)}</td>
+      <td style="color:var(--red)">${sujoFmt(wSum.pg)}</td>
+      <td style="color:var(--red)">${sujoFmt(wSum.disc)}</td>
+      <td style="color:var(--green)">${sujoFmt(wSum.profit)}</td>
+    </tr>`;
+
+    // Individual day rows (hidden by default)
+    week.forEach(day => {
+      rowsHtml += `<tr class="week-detail week-detail-${wId}" style="display:none">
+        <td style="text-align:left;padding-left:24px">${day.date} (${day.dow})</td>
+        <td>${sujoFmt(day.gmv)}</td>
+        <td style="color:var(--red)">${sujoFmt(day.refund)}</td>
+        <td style="color:var(--red)">${sujoFmt(day.cogs)}</td>
+        <td style="color:var(--red)">${sujoFmt(day.pg)}</td>
+        <td style="color:var(--red)">${sujoFmt(day.disc)}</td>
+        <td style="color:var(--green)">${sujoFmt(day.profit)}</td>
+      </tr>`;
+    });
+  });
+
+  const dlySrc = d.sources;
+  document.getElementById('sujo-daily').innerHTML = `
+    <div class="daily-section">
+      <h2>일별 상세 (${days.length}일) ${dlySrc ? sourceLink(dlySrc.sales) : ''}</h2>
+      <table>
+        <thead>
+          <tr><th style="text-align:left">기간</th><th>거래액</th><th>환불</th><th>원가</th><th>PG</th><th>할인</th><th>순이익</th></tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+          <tr class="total-row">
+            <td style="text-align:left">합계</td>
+            <td>${sujoFmt(totalGmv)}</td>
+            <td style="color:var(--red)">${sujoFmt(totalRefund)}</td>
+            <td style="color:var(--red)">${sujoFmt(totalCogs)}</td>
+            <td style="color:var(--red)">${sujoFmt(totalPg)}</td>
+            <td style="color:var(--red)">${sujoFmt(totalDisc)}</td>
+            <td style="color:var(--green)">${sujoFmt(totalProfit)}</td>
+          </tr>
+          ${days.length < monthDays ? `<tr style="color:var(--text2)">
+            <td style="text-align:left">월 추정 (&times;${multiplier.toFixed(1)})</td>
+            <td>${sujoFmt(totalGmv * multiplier)}</td>
+            <td>${sujoFmt(totalRefund * multiplier)}</td>
+            <td>${sujoFmt(totalCogs * multiplier)}</td>
+            <td>${sujoFmt(totalPg * multiplier)}</td>
+            <td>${sujoFmt(totalDisc * multiplier)}</td>
+            <td style="color:var(--green)">${sujoFmt(totalProfit * multiplier)}</td>
+          </tr>` : ''}
+        </tbody>
+      </table>
+      <div style="font-size:11px;color:var(--text2);margin-top:6px;text-align:right;">순이익률 ${profitPct}% &middot; 미포함: 관세, 물류비, 판관비</div>
+    </div>`;
+}
+
+function toggleWeek(wId) {
+  const rows = document.querySelectorAll('.week-detail-' + wId);
+  const arrow = document.getElementById('arrow-' + wId);
+  const isOpen = rows.length > 0 && rows[0].style.display !== 'none';
+  rows.forEach(r => r.style.display = isOpen ? 'none' : 'table-row');
+  if (arrow) arrow.innerHTML = isOpen ? '&#9654;' : '&#9660;';
+}
+
+function renderSujoTargets(d) {
+  const t = d.target;
+  const days = d.daily ? d.daily.length : d.meta.days;
+  const monthDays = d.meta.days <= days ? 28 : 31;
+  const mult = days > 0 ? monthDays / days : 1;
+
+  function targetCard(t, isLine3) {
+    if (isLine3) {
+      const estPct = t.limit ? (t.actual * mult / t.limit * 100).toFixed(0) : 0;
+      const tag = estPct <= 50 ? 'tag-ok' : estPct <= 80 ? 'tag-warn' : 'tag-bad';
+      const estVal = t.actual * mult;
+      return `<div class="target-card">
+        <h3>${t.label}</h3>
+        <div class="detail-row"><span class="detail-label">반품 상한</span><span class="detail-value">${sujoEokShort(t.limit)}</span></div>
+        <div class="detail-row"><span class="detail-label">누적 실적</span><span class="detail-value">${sujoEokShort(t.actual)}</span></div>
+        <div class="detail-row"><span class="detail-label">월 추정</span><span class="detail-value">${sujoEokShort(estVal)}</span></div>
+        <div class="detail-row"><span class="detail-label">상한 대비</span><span class="detail-value ${estPct <= 80 ? 'pos' : 'kpi-bad'}">${estPct}% ${estPct <= 80 ? '(여유)' : '(주의)'}</span></div>
+        <div class="prog-wrap" style="margin-top:6px"><div class="prog-bar"><div class="prog-fill" style="width:${Math.min(estPct,100)}%;background:var(--orange)"></div></div></div>
+        <div class="detail-row" style="margin-top:8px;border-bottom:none"><span class="detail-label">당월 반품 한도</span><span class="detail-value">${sujoEokShort(t.limit_current)}</span></div>
+        <div class="detail-row" style="border-bottom:none"><span class="detail-label">전월 반품 한도</span><span class="detail-value">${sujoEokShort(t.limit_prev)}</span></div>
+      </div>`;
+    }
+    const estRevenue = t.actual * mult;
+    const pct = t.goal ? Math.round(estRevenue / t.goal * 100) : 0;
+    const tag = pct >= 80 ? 'tag-ok' : pct >= 50 ? 'tag-warn' : 'tag-bad';
+    const pctCls = pct >= 80 ? 'pos' : 'kpi-bad';
+    const progColor = pct >= 80 ? 'var(--green)' : 'var(--red)';
+    const profitEst = t.profit_actual ? sujoEokShort(t.profit_actual * mult) : (t.profit_note || '—');
+    const profitCls = t.profit_actual ? 'pos' : '';
+    return `<div class="target-card">
+      <h3>${t.label}</h3>
+      <div class="detail-row"><span class="detail-label">목표 매출</span><span class="detail-value">${sujoEokShort(t.goal)}</span></div>
+      <div class="detail-row"><span class="detail-label">누적 매출</span><span class="detail-value">${sujoEokShort(t.actual)}</span></div>
+      <div class="detail-row"><span class="detail-label">월 추정</span><span class="detail-value ${pctCls}">${sujoEokShort(estRevenue)}</span></div>
+      <div class="detail-row"><span class="detail-label">달성률 (추정)</span><span class="detail-value ${pctCls}">${pct}%</span></div>
+      <div class="prog-wrap" style="margin-top:6px"><div class="prog-bar"><div class="prog-fill" style="width:${Math.min(pct,100)}%;background:${progColor}"></div></div></div>
+      <div class="detail-row" style="margin-top:8px;border-bottom:none"><span class="detail-label">목표 순이익</span><span class="detail-value">${sujoEokShort(t.profit_goal)}</span></div>
+      <div class="detail-row" style="border-bottom:none"><span class="detail-label">순이익 추정</span><span class="detail-value ${profitCls}">${profitEst}</span></div>
+    </div>`;
+  }
+
+  document.getElementById('sujo-targets').innerHTML = `
+    <div class="target-section">
+      <h2>목표 대비 (${d.meta.month} 목표 기준)</h2>
+      <div class="target-grid">
+        ${targetCard(t.line1, false)}
+        ${targetCard(t.line2, false)}
+        ${targetCard(t.line3, true)}
+      </div>
+    </div>`;
+}
+
+function renderSujoRefund(d) {
+  const r = d.refund_analysis;
+  if (!r) {
+    document.getElementById('sujo-refund').innerHTML = '';
+    return;
+  }
+  const reasonBars = r.reasons.map(rs =>
+    `<div class="reason-bar-item">
+      <div class="reason-bar-label">${rs.label}</div>
+      <div class="reason-bar-outer"><div class="reason-bar-inner" style="width:${rs.pct}%;background:${rs.color}"></div></div>
+      <div class="reason-bar-val">${rs.pct}%</div>
+    </div>`
+  ).join('');
+
+  const refSrc = d.sources;
+  document.getElementById('sujo-refund').innerHTML = `
+    <div class="sujo-section">
+      <h2>환불 분석 ${refSrc ? sourceLink(refSrc.refund_review) : ''}</h2>
+      <div class="sujo-grid-2">
+        <div class="sujo-stat-card">
+          <h3>당월 취소</h3>
+          <div class="stat-value kpi-bad">${r.current_month_cancel.count}건</div>
+          <div class="stat-sub">금액 ${sujoEokShort(r.current_month_cancel.amount)} (${r.current_month_cancel.pct}%)</div>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+            <div class="detail-row"><span class="detail-label">전월 취소</span><span class="detail-value">${r.prev_month_cancel.count}건 / ${sujoEokShort(r.prev_month_cancel.amount)}</span></div>
+            <div class="detail-row"><span class="detail-label">전월 반품</span><span class="detail-value">${r.prev_month_return.count}건 / ${sujoEokShort(r.prev_month_return.amount)} (${r.prev_month_return.pct}%)</span></div>
+          </div>
+        </div>
+        <div class="sujo-stat-card">
+          <h3>환불 사유 분포</h3>
+          ${reasonBars}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSujoUnpaid(d) {
+  const u = d.unpaid;
+  if (!u) {
+    document.getElementById('sujo-unpaid').innerHTML = '';
+    return;
+  }
+  const trendBars = u.monthly.map(m => {
+    const maxAmt = Math.max(...u.monthly.map(x => x.amount));
+    const pct = maxAmt > 0 ? (m.amount / maxAmt * 100) : 0;
+    return `<div class="aging-row">
+      <div class="aging-label">${m.month}</div>
+      <div class="aging-bar-outer"><div class="aging-bar-inner" style="width:${pct}%;background:var(--accent)">${sujoEokShort(m.amount)}</div></div>
+      <div class="aging-val">${sujoFmt(m.amount)}</div>
+    </div>`;
+  }).join('');
+
+  const upSrc = d.sources;
+  document.getElementById('sujo-unpaid').innerHTML = `
+    <div class="sujo-section">
+      <h2>반품/환불 미지급 현황 ${upSrc ? sourceLink(upSrc.unpaid) : ''}</h2>
+      <div class="sujo-grid-2">
+        <div class="sujo-stat-card">
+          <h3>PG별 미지급 잔액</h3>
+          <div class="stat-value kpi-warn">${sujoEokShort(u.total)}</div>
+          <div class="stat-sub">합계</div>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+            <div class="detail-row"><span class="detail-label">KICC</span><span class="detail-value">${sujoEokShort(u.kicc)}</span></div>
+            <div class="detail-row"><span class="detail-label">INICIS</span><span class="detail-value">${sujoEokShort(u.inicis)}</span></div>
+            ${u.other ? `<div class="detail-row"><span class="detail-label">기타</span><span class="detail-value">${sujoEokShort(u.other)}</span></div>` : ''}
+          </div>
+        </div>
+        <div class="sujo-stat-card">
+          <h3>월별 미지급 추이</h3>
+          ${trendBars}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSujoInventory(d) {
+  const inv = d.inventory;
+  if (!inv) {
+    document.getElementById('sujo-inventory').innerHTML = '';
+    return;
+  }
+  const agingBars = inv.aging.map(a => {
+    return `<div class="aging-row">
+      <div class="aging-label">${a.label}</div>
+      <div class="aging-bar-outer"><div class="aging-bar-inner" style="width:${a.pct}%;background:${a.color}">${a.qty}개</div></div>
+      <div class="aging-val">${sujoEokShort(a.val)}</div>
+    </div>`;
+  }).join('');
+
+  const invSrc = d.sources;
+  document.getElementById('sujo-inventory').innerHTML = `
+    <div class="sujo-section">
+      <h2>마감재고 현황 ${invSrc ? sourceLink(invSrc.inventory) : ''}</h2>
+      <div class="sujo-grid-2">
+        <div class="sujo-stat-card">
+          <h3>재고 구성</h3>
+          <div class="stat-value">${inv.total_qty.toLocaleString()}<span style="font-size:14px">개</span></div>
+          <div class="stat-sub">총 ${sujoEokShort(inv.total_val)}</div>
+          <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+            <div class="detail-row"><span class="detail-label">반품 재고</span><span class="detail-value">${inv.return_qty.toLocaleString()}개 / ${sujoEokShort(inv.return_val)}</span></div>
+            <div class="detail-row"><span class="detail-label">매입 재고</span><span class="detail-value">${inv.purchase_qty.toLocaleString()}개 / ${sujoEokShort(inv.purchase_val)}</span></div>
+          </div>
+        </div>
+        <div class="sujo-stat-card">
+          <h3>에이징 분석</h3>
+          ${agingBars}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderSujoNote(d) {
+  const cb = d.cost_breakdown;
+  if (!cb) {
+    document.getElementById('sujo-note').innerHTML = '';
+    return;
+  }
+  const autoCount = cb.filter(c => c.tag === 'tag-ok').length;
+  const totalCount = cb.length;
+  const missingCount = cb.filter(c => c.tag === 'tag-bad').length;
+
+  const costRows = cb.map(c => {
+    const bgStyle = c.tag === 'tag-bad' ? ' style="background:rgba(210,153,34,0.04)"' : '';
+    const amtDisplay = c.amount != null ? sujoFmt(c.amount) : '<span style="color:var(--text2)">—</span>';
+    return `<tr${bgStyle}><td>${c.item}</td><td>${amtDisplay}</td><td>${c.pct}</td><td><span class="tag ${c.tag}">${c.tag_text}</span></td></tr>`;
+  }).join('');
+
+  const noteSrc = d.sources;
+  document.getElementById('sujo-note').innerHTML = `
+    <div class="daily-section">
+      <h2>비용 구성 상세 (누적) ${noteSrc ? sourceLinks(noteSrc, ['sales','return_cost']) : ''}</h2>
+      <table>
+        <thead><tr><th style="text-align:left">비용 항목</th><th>금액</th><th>거래액 대비</th><th>상태</th></tr></thead>
+        <tbody>${costRows}</tbody>
+      </table>
+    </div>
+    <div class="sujo-note">
+      <div class="note-title">프로토타입 한계 &amp; 다음 단계</div>
+      <strong>자동 산출 가능 (${autoCount}/${totalCount} 항목):</strong> 매입원가(API/반품), PG수수료, 부가세, 쿠폰, 앱할인, 마일리지, 환불<br>
+      <strong>미확보 (${missingCount}/${totalCount} 항목):</strong> 관세, 물류비, 판관비 — 이 3개가 확보되면 수조 완전 자동화 가능<br>
+      <strong>확인 필요:</strong> 거래액 정의 (상품가 vs 결제액), MUR 31% 산출 공식<br><br>
+      <strong>이 대시보드가 자동 갱신되려면:</strong><br>
+      1. 운영 시트 Sheets API 파서 구현 (gspread)<br>
+      2. 매일 또는 실시간으로 시트 읽어서 data.js 갱신<br>
+      3. 관세/물류비/판관비 소스 추가 연동
+    </div>`;
+}
+
+function setMonth(month) {
+  currentMonth = month;
+  renderSujo(month);
+}
+
+// ══════════════════════════════════════════
+// Tab Switching
+// ══════════════════════════════════════════
+function setTab(tab) {
+  currentTab = tab;
+  document.getElementById('view-sujo').style.display = tab === 'sujo' ? 'block' : 'none';
+  document.getElementById('view-ops').style.display = tab === 'ops' ? 'block' : 'none';
+  document.getElementById('tab-sujo').classList.toggle('active', tab === 'sujo');
+  document.getElementById('tab-ops').classList.toggle('active', tab === 'ops');
+  if (tab === 'sujo') renderSujo(currentMonth);
+  if (tab === 'ops') renderAll();
+}
+
 // Theme & View
 // ══════════════════════════════════════════
 function toggleTheme() {
   document.documentElement.classList.toggle('light');
   const btn = document.getElementById('btn-theme');
   btn.textContent = document.documentElement.classList.contains('light') ? 'Dark' : 'Light';
-  renderAll();
+  if (currentTab === 'ops') renderAll();
 }
 
 function setView(v) {
   currentView = v;
   document.getElementById('btn-monthly').classList.toggle('active', v === 'monthly');
   document.getElementById('btn-yearly').classList.toggle('active', v === 'yearly');
-  renderAll();
+  if (currentTab === 'ops') renderAll();
 }
 
 // ══════════════════════════════════════════

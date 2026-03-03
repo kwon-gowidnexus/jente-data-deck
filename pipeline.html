@@ -1,523 +1,843 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JENTE Data Deck - Pipeline Architecture</title>
-<style>
-  :root {
-    --bg: #0d1117;
-    --bg2: #161b22;
-    --bg3: #1c2128;
-    --text: #e6edf3;
-    --text2: #8b949e;
-    --border: #30363d;
-    --blue: #1f6feb;
-    --green: #3fb950;
-    --yellow: #d29922;
-    --red: #f85149;
-    --purple: #a371f7;
-    --cyan: #39d2c0;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { overflow-x: hidden; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    padding: 40px 20px;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>젠테 데이터 인프라 현황 & 파이프라인</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-muted: #8b949e;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --red: #f85149;
+            --orange: #d29922;
+        }
 
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0;
-  }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  h1 {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .subtitle {
-    font-size: 13px;
-    color: var(--text2);
-    margin-bottom: 32px;
-  }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 16px;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-  /* Architecture Diagram — flexbox horizontal flow */
-  .arch {
-    display: flex;
-    align-items: stretch;
-    margin-bottom: 40px;
-    gap: 0;
-  }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
 
-  .zone {
-    flex: 1 1 0;
-    min-width: 0;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px;
-    position: relative;
-  }
-  .zone-label {
-    position: absolute;
-    top: -10px;
-    left: 16px;
-    background: var(--bg);
-    padding: 0 8px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
+        h1 small {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: normal;
+        }
 
-  .zone-jente { border-color: #444; }
-  .zone-jente .zone-label { color: var(--text2); }
+        h2 {
+            font-size: 1.6rem;
+            margin-top: 3rem;
+            margin-bottom: 1.2rem;
+            color: var(--accent);
+        }
 
-  .zone-s3 { border-color: var(--blue); }
-  .zone-s3 .zone-label { color: var(--blue); }
+        h3 {
+            font-size: 1.25rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
 
-  .zone-gowid { border-color: var(--green); }
-  .zone-gowid .zone-label { color: var(--green); }
+        p, li {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
 
-  .node {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    margin-bottom: 6px;
-    font-size: 11px;
-    line-height: 1.4;
-  }
-  .node:last-child { margin-bottom: 0; }
-  .node-title {
-    font-weight: 600;
-    font-size: 11px;
-    margin-bottom: 1px;
-  }
-  .node-sub {
-    font-size: 10px;
-    color: var(--text2);
-  }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+        }
 
-  .node-primary { border-color: var(--blue); border-left: 3px solid var(--blue); }
-  .node-ga { border-color: var(--cyan); border-left: 3px solid var(--cyan); }
-  .node-ads { border-color: var(--yellow); border-left: 3px solid var(--yellow); }
-  .node-future { border-color: var(--border); border-left: 3px solid var(--border); opacity: 0.5; }
+        .back-link {
+            display: inline-block;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover { text-decoration: underline; }
 
-  .node-csv { border-color: var(--blue); background: rgba(31, 111, 235, 0.08); }
-  .node-script { border-color: var(--green); border-left: 3px solid var(--green); }
-  .node-output { border-color: var(--yellow); border-left: 3px solid var(--yellow); }
-  .node-deploy { border-color: var(--purple); border-left: 3px solid var(--purple); }
+        .chart-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
 
-  /* Arrows */
-  .arrows {
-    flex: 0 0 28px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding-top: 30px;
-    gap: 24px;
-  }
-  .arrow {
-    font-size: 18px;
-    color: var(--text2);
-    text-align: center;
-    line-height: 1;
-  }
+        .chart-container .mermaid {
+            display: flex;
+            justify-content: center;
+        }
 
-  /* Legend */
-  .legend {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 32px;
-    padding: 12px 16px;
-    background: var(--bg2);
-    border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--text2);
-  }
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-  }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
 
-  /* Detail Table */
-  .detail-section {
-    margin-bottom: 32px;
-  }
-  .detail-section h2 {
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px;
-  }
-  th {
-    text-align: left;
-    padding: 8px 12px;
-    background: var(--bg2);
-    color: var(--text2);
-    font-weight: 600;
-    border-bottom: 1px solid var(--border);
-  }
-  td {
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-  .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 10px;
-    font-weight: 600;
-  }
-  .tag-confirmed { background: rgba(63, 185, 80, 0.15); color: var(--green); }
-  .tag-pending { background: rgba(210, 153, 34, 0.15); color: var(--yellow); }
-  .tag-future { background: rgba(139, 148, 158, 0.15); color: var(--text2); }
-  .tag-jente { background: rgba(139, 148, 158, 0.15); color: var(--text2); }
-  .tag-gowid { background: rgba(63, 185, 80, 0.15); color: var(--green); }
+        th, td {
+            padding: 0.75rem 1.2rem;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
 
-  /* Flow Diagram - Vertical */
-  .flow {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin-bottom: 32px;
-  }
-  .flow-step {
-    display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 16px;
-    padding: 16px 0;
-    border-left: 2px solid var(--border);
-    margin-left: 70px;
-    padding-left: 24px;
-    position: relative;
-  }
-  .flow-step::before {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 20px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--text2);
-  }
-  .flow-step.done::before { background: var(--green); border-color: var(--green); }
-  .flow-step.active::before { background: var(--yellow); border-color: var(--yellow); }
-  .flow-step.future::before { background: var(--bg); border-color: var(--border); }
+        th {
+            background: var(--surface);
+            color: var(--accent);
+            font-size: 1rem;
+            font-weight: 600;
+        }
 
-  .flow-label {
-    font-size: 11px;
-    color: var(--text2);
-    font-weight: 600;
-  }
-  .flow-content {
-    font-size: 12px;
-    line-height: 1.6;
-  }
+        td {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
 
-  /* Note */
-  .note {
-    background: rgba(210, 153, 34, 0.08);
-    border: 1px solid rgba(210, 153, 34, 0.3);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 12px;
-    line-height: 1.6;
-    margin-bottom: 32px;
-  }
-  .note-title {
-    font-weight: 600;
-    color: var(--yellow);
-    margin-bottom: 4px;
-  }
+        tr:hover td {
+            background: rgba(88, 166, 255, 0.05);
+        }
 
-  .footer {
-    font-size: 11px;
-    color: var(--text2);
-    text-align: center;
-    margin-top: 40px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-  }
-</style>
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-red { background: rgba(248, 81, 73, 0.2); color: var(--red); }
+        .badge-green { background: rgba(63, 185, 80, 0.2); color: var(--green); }
+        .badge-orange { background: rgba(210, 153, 34, 0.2); color: var(--orange); }
+        .badge-blue { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+
+        .step-timeline {
+            list-style: none;
+            padding: 0;
+            margin: 1.5rem 0;
+        }
+        .step-timeline li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px 0;
+            border-left: 2px solid var(--border);
+            margin-left: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .step-timeline li::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 14px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+        .step-timeline li.done::before { background: var(--green); }
+        .step-timeline li.active::before { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
+        .step-timeline li.pending::before { background: var(--border); }
+        .step-label { font-weight: 600; min-width: 220px; font-size: 1rem; }
+        .step-status { font-size: 0.95rem; }
+
+        /* Gantt table */
+        .gantt-table { font-size: 1rem; }
+        .gantt-table th { font-size: 0.95rem; }
+        .gantt-table td { font-size: 0.95rem; padding: 0.6rem 1rem; }
+        .phase-header td {
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1rem;
+            border-bottom: 2px solid var(--accent);
+            padding: 0.8rem 1rem;
+        }
+
+        /* Gantt bar visual */
+        .gantt-visual { margin-top: 0.5rem; }
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .gantt-label {
+            min-width: 160px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            text-align: right;
+        }
+        .gantt-track {
+            flex: 1;
+            height: 32px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .gantt-bar {
+            position: absolute;
+            top: 2px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            padding: 0 8px;
+        }
+        .gantt-bar.done { background: var(--green); }
+        .gantt-bar.active { background: var(--orange); }
+        .gantt-bar.pending { background: var(--border); color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            body { padding: 1rem; }
+            .gantt-label { min-width: 100px; font-size: 0.85rem; }
+        }
+
+        .sheet-link {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .sheet-link:hover { text-decoration: underline; }
+        .sheet-link::after {
+            content: '';
+            display: inline-block;
+            width: 11px;
+            height: 11px;
+            margin-left: 3px;
+            vertical-align: middle;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2358a6ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        .sheet-links-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+            margin-top: 4px;
+        }
+        .sheet-links-inline .sheet-link { font-size: 0.85rem; }
+    </style>
 </head>
 <body>
-<div class="container">
 
-<h1>JENTE Data Deck — Pipeline Architecture</h1>
-<p class="subtitle">데이터 연동 구조도 · 2026-02-26 확정</p>
+<a class="back-link" href="index.html">&larr; Data Deck</a>
 
-<!-- Legend -->
-<div class="legend">
-  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>foret DB (확정)</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>GA4 (확정)</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>광고비 — 구글 시트 (확정)</div>
-  <div class="legend-item"><div class="legend-dot" style="background:var(--text2)"></div>Cloud SQL (향후)</div>
+<h1>젠테 데이터 인프라 현황 <small>Updated 2026-03-03</small></h1>
+<p class="subtitle">젠테 담당자 응답 기반 &middot; 고위드 피트스탑 팀 &middot; Phase 2 진행중</p>
+
+<!-- ========== 0. 진행 현황 요약 ========== -->
+<h2>0. 진행 현황</h2>
+
+<ul class="step-timeline">
+    <li class="done">
+        <span class="step-label">Phase 0: 환경 파악</span>
+        <span class="step-status"><span class="badge badge-green">완료 02-25</span> DB 구조 · 담당자 · 접근 정책 파악</span>
+    </li>
+    <li class="done">
+        <span class="step-label">Phase 1: 연동 방식 협의</span>
+        <span class="step-status"><span class="badge badge-green">완료 02-26</span> CSV 스케줄러 + S3 확정, DB 직접 접근 불가</span>
+    </li>
+    <li class="done">
+        <span class="step-label">CSV 샘플 수신 + 검증</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-03</span> orders 200K행, users 95K행, products 975K행</span>
+    </li>
+    <li class="done">
+        <span class="step-label">GA4 API 연동</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-03</span> Property 280664290, MAU 100% 일치</span>
+    </li>
+    <li class="done">
+        <span class="step-label">광고비 시트 연동</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-03</span> 퍼포먼스 광고 통합(월), 원 단위 100% 일치</span>
+    </li>
+    <li class="done">
+        <span class="step-label">convert_csv.py 개발</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-03</span> CSV+GA4+Sheets+Legacy+Sujo &rarr; data.js</span>
+    </li>
+    <li class="done">
+        <span class="step-label">수조(자금수지) 뷰 통합</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-03</span> 운영 시트 기반 3-Line 수조 대시보드</span>
+    </li>
+    <li class="active">
+        <span class="step-label">S3 IAM 권한 수신</span>
+        <span class="step-status"><span class="badge badge-orange">젠테 대기</span> 젠테 측 S3 버킷 + IAM 생성 대기</span>
+    </li>
+    <li class="pending">
+        <span class="step-label">파이프라인 자동화</span>
+        <span class="step-status"><span class="badge badge-blue">다음</span> S3 &rarr; data.js &rarr; GitHub Pages 자동 배포</span>
+    </li>
+    <li class="pending">
+        <span class="step-label">라이브 전환 + 모니터링</span>
+        <span class="step-status"><span class="badge badge-blue">다음</span></span>
+    </li>
+</ul>
+
+<!-- ========== 1. 전체 구조 ========== -->
+<h2>1. 젠테 데이터 소스 전체 구조</h2>
+<div class="chart-container">
+    <pre class="mermaid">
+graph TB
+    subgraph JENTE["젠테 데이터 인프라 -- 전부 AWS"]
+        subgraph DB["데이터베이스"]
+            MONGO["MongoDB\nAWS EC2\n주문/상품/유저"]
+            MYSQL["MySQL\nAWS RDS\n정산/결제"]
+            DOCDB["DocumentDB\nAWS\n변경이력/로그"]
+        end
+
+        subgraph ERP["ERP 시스템"]
+            FORET["포레 Foret ERP\n개발자만 포트포워딩\n주문 데이터"]
+        end
+
+        subgraph EXTERNAL["외부 서비스"]
+            GA["Google Analytics 4\n트래픽/방문자/MAU"]
+            GABIA["가비아 웹호스팅 DB\n회원/코호트 원본"]
+            OPS_SHEET["운영 시트\nforet/PG/할인/환불/환율"]
+            ADS_SHEET["광고비 시트\n월별 채널별 광고비"]
+        end
+    end
+
+    style DB fill:#1e3a5f,stroke:#4a90d9,color:#e0e0e0
+    style ERP fill:#4a2860,stroke:#8e44ad,color:#e0e0e0
+    style EXTERNAL fill:#1a3a2a,stroke:#27ae60,color:#e0e0e0
+    </pre>
 </div>
 
-<!-- Architecture -->
-<div class="arch">
-  <!-- JENTE -->
-  <div class="zone zone-jente">
-    <div class="zone-label">젠테 인프라</div>
-    <div class="node node-primary">
-      <div class="node-title">foret DB</div>
-      <div class="node-sub">MongoDB · MySQL · DocumentDB<br/>주문 · 반품 · SKU · 구매이력</div>
-    </div>
-    <div class="node node-primary">
-      <div class="node-title">가비아 DB</div>
-      <div class="node-sub">회원 가입일 · 활동 정보</div>
-    </div>
-    <div class="node node-ga">
-      <div class="node-title">GA4</div>
-      <div class="node-sub">트래픽 · 세션 · MAU · Organic/Paid</div>
-    </div>
-    <div class="node node-ads">
-      <div class="node-title">광고 플랫폼</div>
-      <div class="node-sub">Meta · Google Ads · 네이버 등<br/>→ 공유 구글 시트에 월별 수동 입력</div>
-    </div>
-    <div class="node node-future">
-      <div class="node-title">Google Cloud SQL + 스프레드시트</div>
-      <div class="node-sub">물류 재고 상세 (향후 확장 시)</div>
-    </div>
-  </div>
+<!-- ========== 2. 현재 파이프라인 (확정) ========== -->
+<h2>2. 현재 파이프라인 구조 <span class="badge badge-green">확정</span></h2>
+<p>DB 직접 접근 대신 CSV 스케줄러 + Google API + Sheets 방식으로 확정 (2026-02-26)</p>
 
-  <!-- Arrow 1 -->
-  <div class="arrows">
-    <div class="arrow">→</div>
-    <div class="arrow">→</div>
-    <div class="arrow">→</div>
-  </div>
+<div class="chart-container">
+    <pre class="mermaid">
+flowchart LR
+    subgraph JENTE["젠테 측"]
+        CSV_ORDERS["orders.csv\n200K행 18컬럼\n일 3회 갱신"]
+        CSV_USERS["users.csv\n95K행 3컬럼\n일 1회"]
+        CSV_PRODUCTS["products.csv\n975K행 9컬럼\n일 1회"]
+        S3["S3 버킷\n(IAM 대기중)"]
+        CSV_ORDERS --> S3
+        CSV_USERS --> S3
+        CSV_PRODUCTS --> S3
+    end
 
-  <!-- S3 + Google Sheet -->
-  <div class="zone zone-s3">
-    <div class="zone-label">전달 지점</div>
-    <div class="node node-csv">
-      <div class="node-title">S3 버킷 <span style="font-weight:400;color:var(--text2);font-size:9px">스케줄러 일 1~3회</span></div>
-      <div class="node-sub">
-        <strong>orders.csv</strong> — 주문/반품 건별<br/>
-        <strong>users.csv</strong> — 회원 정보<br/>
-        <strong>products.csv</strong> — SKU 현황
-      </div>
-    </div>
-    <div class="node" style="border-color:var(--cyan); background:rgba(57,210,192,0.08)">
-      <div class="node-title">GA4 API <span style="font-weight:400;color:var(--text2);font-size:9px">뷰어 권한</span></div>
-      <div class="node-sub">고위드가 직접 호출</div>
-    </div>
-    <div class="node" style="border-color:var(--yellow); background:rgba(210,153,34,0.08)">
-      <div class="node-title">공유 구글 시트 <span style="font-weight:400;color:var(--text2);font-size:9px">월별 수동</span></div>
-      <div class="node-sub">채널별 광고비</div>
-    </div>
-  </div>
+    subgraph GOOGLE["Google API"]
+        GA4["GA4 API\nProperty 280664290\n뷰어 권한 완료"]
+        SHEETS_AD["광고비 시트\n월별 통합"]
+        SHEETS_OPS["운영 시트\nforet/PG/할인/환불"]
+    end
 
-  <!-- Arrow 2 -->
-  <div class="arrows">
-    <div class="arrow">→</div>
-    <div class="arrow">→</div>
-    <div class="arrow">→</div>
-  </div>
+    subgraph GOWID["고위드 파이프라인"]
+        CONVERT["convert_csv.py\nCSV 집계\n코호트 계산\n수조 파서"]
+        DATAJS["data.js\nmonthly/yearly\ncohort 3종\nsujo"]
+        DEPLOY["GitHub Pages\n자동 배포"]
+        DASH["Data Deck\n2-탭 대시보드\n자금수지 + 운영데이터"]
+    end
 
-  <!-- GOWID -->
-  <div class="zone zone-gowid">
-    <div class="zone-label">고위드 파이프라인</div>
-    <div class="node node-script">
-      <div class="node-title">convert_csv.py</div>
-      <div class="node-sub">건별 → 월별 집계<br/>코호트 리텐션 계산<br/>반품률 · 전환율 · SKU 가용률</div>
-    </div>
-    <div class="node node-script">
-      <div class="node-title">ga4_fetch.py</div>
-      <div class="node-sub">트래픽 · MAU · Organic 비중</div>
-    </div>
-    <div class="node node-script">
-      <div class="node-title">sheets_fetch.py</div>
-      <div class="node-sub">광고비 · ROAS 계산</div>
-    </div>
-    <div class="node node-output">
-      <div class="node-title">data.js 생성</div>
-      <div class="node-sub">전체 지표 병합 → 대시보드 포맷</div>
-    </div>
-    <div class="node node-deploy">
-      <div class="node-title">GitHub Pages 배포</div>
-      <div class="node-sub">git push → 자동 배포<br/>kwon-gowidnexus/jente-data-deck</div>
-    </div>
-  </div>
+    S3 -->|boto3| CONVERT
+    GA4 -->|google-analytics-data| CONVERT
+    SHEETS_AD -->|gspread| CONVERT
+    SHEETS_OPS -->|gspread| CONVERT
+    CONVERT --> DATAJS
+    DATAJS --> DEPLOY
+    DEPLOY --> DASH
+    </pre>
 </div>
 
-<!-- Note -->
-<div class="note" style="background:rgba(63,185,80,0.06); border-color:rgba(63,185,80,0.3);">
-  <div class="note-title" style="color:var(--green);">데이터 소스 요약</div>
-  <strong>foret DB</strong> → 주문/반품/SKU/구매이력 (orders.csv, products.csv) · <strong>가비아 DB</strong> → 회원 가입일/활동 (users.csv) · <strong>GA4</strong> → 트래픽/MAU (API 직접) · <strong>광고 플랫폼</strong> → 광고비 (구글 시트 경유)<br/>
-  CSV 3종(S3) + GA4 API + Sheets API로 대시보드 핵심 지표 전체 커버.
-</div>
+<!-- ========== 3. 소스 → 지표 매핑 ========== -->
+<h2>3. 데이터 소스 &rarr; 지표 매핑 (검증 완료)</h2>
 
-<!-- Data Coverage -->
-<div class="detail-section">
-  <h2>데이터 소스별 커버리지</h2>
-  <table>
+<table>
     <thead>
-      <tr>
-        <th>데이터 소스</th>
-        <th>커버 지표</th>
-        <th>연동 방식</th>
-        <th>상태</th>
-      </tr>
+        <tr><th>지표</th><th>소스</th><th>연동</th><th>교차검증</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td><strong>foret DB</strong></td>
-        <td>GMV, 순매출, 반품(건수/금액/사유), SKU 가용률, 코호트(첫구매+재구매)</td>
-        <td>S3 CSV (orders.csv, products.csv)</td>
-        <td><span class="tag tag-confirmed">확정</span></td>
-      </tr>
-      <tr>
-        <td><strong>가비아 DB</strong></td>
-        <td>회원수, 가입일, 활동 정보</td>
-        <td>S3 CSV (users.csv)</td>
-        <td><span class="tag tag-confirmed">확정</span></td>
-      </tr>
-      <tr>
-        <td><strong>GA4</strong></td>
-        <td>세션, MAU, 방문자, Organic/Paid, 전환율(세션 기준)</td>
-        <td>GA4 API (뷰어 권한)</td>
-        <td><span class="tag tag-confirmed">확정</span></td>
-      </tr>
-      <tr>
-        <td><strong>광고 플랫폼</strong></td>
-        <td>채널별 광고비, ROAS</td>
-        <td>공유 구글 시트 → Sheets API</td>
-        <td><span class="tag tag-confirmed">확정</span></td>
-      </tr>
-      <tr>
-        <td><strong>Google Cloud SQL</strong></td>
-        <td>물류 재고 상세</td>
-        <td>—</td>
-        <td><span class="tag tag-future">향후</span></td>
-      </tr>
-      <tr>
-        <td><strong>PG사</strong></td>
-        <td>실결제/환불액 (현재는 판매가 기준으로 foret만 사용)</td>
-        <td>—</td>
-        <td><span class="tag tag-future">향후</span></td>
-      </tr>
+        <tr>
+            <td><strong>GMV / 주문 / 반품</strong></td>
+            <td>orders.csv (foret DB)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>판매가 기준, 제외: 결제중/주문접수/주문무효</td>
+        </tr>
+        <tr>
+            <td><strong>회원수 / 가입</strong></td>
+            <td>users.csv (가비아 DB)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>누적 회원 95K, 월별 가입수 추출</td>
+        </tr>
+        <tr>
+            <td><strong>SKU / 품절률</strong></td>
+            <td>products.csv (foret DB)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>stock_availability + display_availability</td>
+        </tr>
+        <tr>
+            <td><strong>MAU / 세션 / 채널</strong></td>
+            <td>GA4 API (280664290)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>MAU 100% 일치, 세션 ~99%</td>
+        </tr>
+        <tr>
+            <td><strong>광고비</strong></td>
+            <td><a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1emKnOo6gtZTWdqORzM4Iv5tBZiMYH-DPkP2BToBqxzM/" target="_blank" rel="noopener">광고비 시트</a> (퍼포먼스 광고 통합 월)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>원 단위 100% 일치 (2025-02~12)</td>
+        </tr>
+        <tr>
+            <td><strong>코호트 리텐션</strong></td>
+            <td>orders.csv 기반 자체 계산</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>All / Repeat(2+) / VIP(3+) 3종</td>
+        </tr>
+        <tr>
+            <td><strong>수조 (자금수지)</strong></td>
+            <td>
+                <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1FfOTrQFu_njmWH5mm5y-sHSKs7kcDAEt_lw-BRx_1eo/" target="_blank" rel="noopener">운영 시트</a> (foret/PG/할인/환불/환율)
+                <div class="sheet-links-inline">
+                    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1JnV7qOGPrUFZyfwClEquKWz9kNbmeYHOi-KBXmsA6Gc/" target="_blank" rel="noopener">매출데이터</a>
+                    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1AG5ujmf8kfahbFbk50J7mtAb_mSitg9WfJCessay7Ak/" target="_blank" rel="noopener">반품 매출원가</a>
+                    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1hvcwMweiBFiTB1ybS8uv61_8zeDlHzMvvyPexKhLEqY/" target="_blank" rel="noopener">환불리뷰</a>
+                    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1-Rhv7EKfMLcsn4O__lYAAeMm1sdUolcDAylxR51JYRM/" target="_blank" rel="noopener">반품환불 미지급</a>
+                    <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1FAUmTA3zDKnUSxsav5I3M5lCgktRNQgzUYJe2kHRxGg/" target="_blank" rel="noopener">비원가성 재고</a>
+                </div>
+            </td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>Line 1 API / Line 2 재고 / Line 3 반품</td>
+        </tr>
+        <tr>
+            <td><strong>B2B GMV</strong></td>
+            <td>기존 IR DATA 고정값</td>
+            <td><span class="badge badge-orange">레거시</span></td>
+            <td>2023년 이후 B2B 중단, 과거 고정값 사용</td>
+        </tr>
+        <tr>
+            <td><strong>P&L (매출/원가/영업이익)</strong></td>
+            <td>재무 담당자 별도 논의</td>
+            <td><span class="badge badge-red">미착수</span></td>
+            <td>Phase 3 이후</td>
+        </tr>
     </tbody>
-  </table>
-</div>
+</table>
 
-<!-- Role Assignment -->
-<div class="detail-section">
-  <h2>역할 분담</h2>
-  <table>
+<!-- ========== 4. 실무자 채널 ========== -->
+<h2>4. 젠테 실무자 채널</h2>
+
+<table>
     <thead>
-      <tr>
-        <th>작업</th>
-        <th>담당</th>
-        <th>상태</th>
-      </tr>
+        <tr><th>담당자</th><th>영역</th><th>연동 항목</th><th>상태</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td>CSV 내보내기 스크립트 + S3 업로드</td>
-        <td><span class="tag tag-jente">젠테</span> 개발 (이신영)</td>
-        <td><span class="tag tag-pending">조율 예정</span></td>
-      </tr>
-      <tr>
-        <td>GA4 뷰어 권한 설정</td>
-        <td><span class="tag tag-jente">젠테</span> 마케팅 (오석재)</td>
-        <td><span class="tag tag-pending">요청 완료</span></td>
-      </tr>
-      <tr>
-        <td>광고비 구글 시트 입력</td>
-        <td><span class="tag tag-jente">젠테</span> 마케팅 (오석재)</td>
-        <td><span class="tag tag-pending">조율 예정</span></td>
-      </tr>
-      <tr>
-        <td>convert_csv.py (CSV → data.js)</td>
-        <td><span class="tag tag-gowid">고위드</span></td>
-        <td><span class="tag tag-future">개발 예정</span></td>
-      </tr>
-      <tr>
-        <td>GA4 API 연동 스크립트</td>
-        <td><span class="tag tag-gowid">고위드</span></td>
-        <td><span class="tag tag-future">개발 예정</span></td>
-      </tr>
-      <tr>
-        <td>파이프라인 자동화 (cron/Lambda)</td>
-        <td><span class="tag tag-gowid">고위드</span></td>
-        <td><span class="tag tag-future">개발 예정</span></td>
-      </tr>
-      <tr>
-        <td>대시보드 유지보수</td>
-        <td><span class="tag tag-gowid">고위드</span></td>
-        <td><span class="tag tag-confirmed">운영 중</span></td>
-      </tr>
+        <tr>
+            <td><strong>이신영</strong></td>
+            <td>개발, DB</td>
+            <td>CSV 스케줄러, S3 세팅</td>
+            <td><span class="badge badge-orange">S3 대기</span></td>
+        </tr>
+        <tr>
+            <td><strong>오석재</strong></td>
+            <td>마케팅, GA</td>
+            <td>GA4 뷰어 권한, 광고비 시트</td>
+            <td><span class="badge badge-green">완료</span></td>
+        </tr>
+        <tr>
+            <td><strong>김정엽</strong></td>
+            <td>운영, 물류</td>
+            <td>운영 시트, 재고 데이터</td>
+            <td><span class="badge badge-green">시트 공유</span></td>
+        </tr>
+        <tr>
+            <td><strong>김동욱</strong></td>
+            <td>재무, 자금</td>
+            <td>P&L, 관세, 물류비, 판관비</td>
+            <td><span class="badge badge-red">미착수</span></td>
+        </tr>
     </tbody>
-  </table>
-</div>
+</table>
 
-<!-- CSV Spec -->
-<div class="detail-section">
-  <h2>CSV 스펙 (건별 트랜잭션 단위)</h2>
-  <table>
+<!-- ========== 5. CSV 스펙 ========== -->
+<h2>5. CSV 스펙 (확정)</h2>
+
+<h3>수신 CSV 3종</h3>
+<table>
     <thead>
-      <tr>
-        <th>파일</th>
-        <th>필드 (안)</th>
-        <th>소스</th>
-        <th>커버 지표</th>
-      </tr>
+        <tr><th>파일</th><th>행수</th><th>컬럼수</th><th>갱신</th><th>주요 컬럼</th></tr>
     </thead>
     <tbody>
-      <tr>
-        <td><strong>orders.csv</strong></td>
-        <td>order_id, user_id, order_date, order_amount, b2c_b2b, order_status, return_date, return_amount, return_reason</td>
-        <td>foret DB</td>
-        <td>GMV, 순매출, 반품률, 코호트, 전환율</td>
-      </tr>
-      <tr>
-        <td><strong>users.csv</strong></td>
-        <td>user_id, signup_date, last_login_date</td>
-        <td>가비아 DB</td>
-        <td>회원수, 신규가입, MAU(보조)</td>
-      </tr>
-      <tr>
-        <td><strong>products.csv</strong></td>
-        <td>sku_id, status, category</td>
-        <td>foret DB</td>
-        <td>SKU 가용률, 품절률</td>
-      </tr>
+        <tr>
+            <td><strong>orders.csv</strong></td>
+            <td>200,812</td>
+            <td>18</td>
+            <td>일 3회 (00:30, 08:30, 16:30)</td>
+            <td>order_seq, goods_price, ea, refund_code, status</td>
+        </tr>
+        <tr>
+            <td><strong>users.csv</strong></td>
+            <td>95,473</td>
+            <td>3</td>
+            <td>일 1회</td>
+            <td>member_seq, regist_date, lastlogin_date</td>
+        </tr>
+        <tr>
+            <td><strong>products.csv</strong></td>
+            <td>974,591</td>
+            <td>9</td>
+            <td>일 1회</td>
+            <td>stock_availability, display_availability, category</td>
+        </tr>
     </tbody>
-  </table>
+</table>
+
+<h3>데이터 정의 (젠테 확정 2026-03-03)</h3>
+<table>
+    <thead>
+        <tr><th>항목</th><th>정의</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>B2C/B2B</td><td>B2B 2023년 이후 중단. orders.csv 전부 B2C</td></tr>
+        <tr><td>GMV 제외 status</td><td>결제중, 주문접수, 주문무효 (3개만 제외)</td></tr>
+        <tr><td>결제취소 포함</td><td>15,304건 중 99.9%에 refund_code &rarr; 실결제 후 취소</td></tr>
+        <tr><td>판매가능 SKU</td><td>stock_availability = true</td></tr>
+        <tr><td>판매중 SKU</td><td>stock + display_availability = true</td></tr>
+    </tbody>
+</table>
+
+<!-- ========== 6. DB별 접근 ========== -->
+<h2>6. DB별 접근 방식 & 현황</h2>
+
+<table>
+    <thead>
+        <tr><th>DB</th><th>방식</th><th>상태</th><th>비고</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>MySQL (RDS)</strong></td>
+            <td>CSV 내보내기 (DB 직접 접근 불가)</td>
+            <td><span class="badge badge-green">CSV 완료</span></td>
+            <td>정산 데이터, S3 자동화 대기</td>
+        </tr>
+        <tr>
+            <td><strong>MongoDB (EC2)</strong></td>
+            <td>CSV 내보내기</td>
+            <td><span class="badge badge-green">CSV 완료</span></td>
+            <td>주문/상품 핵심 데이터</td>
+        </tr>
+        <tr>
+            <td><strong>GA4</strong></td>
+            <td>API 직접 연동</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>Property 280664290, 뷰어 권한</td>
+        </tr>
+        <tr>
+            <td><strong><a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1emKnOo6gtZTWdqORzM4Iv5tBZiMYH-DPkP2BToBqxzM/" target="_blank" rel="noopener">광고 시트</a></strong></td>
+            <td>Sheets API (gspread)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>퍼포먼스 광고 통합 (월)</td>
+        </tr>
+        <tr>
+            <td><strong><a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1FfOTrQFu_njmWH5mm5y-sHSKs7kcDAEt_lw-BRx_1eo/" target="_blank" rel="noopener">운영 시트</a></strong></td>
+            <td>Sheets API (gspread)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>수조 5개 탭 (foret/PG/할인/환불/환율) + 수조 분석 시트 5종</td>
+        </tr>
+        <tr>
+            <td><strong>S3</strong></td>
+            <td>boto3 (IAM read-only)</td>
+            <td><span class="badge badge-orange">대기</span></td>
+            <td>젠테 측 버킷 + IAM 생성 대기</td>
+        </tr>
+        <tr>
+            <td><strong>가비아 DB</strong></td>
+            <td>users.csv로 대체</td>
+            <td><span class="badge badge-green">CSV 완료</span></td>
+            <td>회원 데이터, 코호트 자체 계산</td>
+        </tr>
+        <tr>
+            <td><strong>DocumentDB</strong></td>
+            <td>미정</td>
+            <td><span class="badge badge-blue">추후</span></td>
+            <td>변경이력, 현재 불필요</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ========== 7. 파이프라인 아키텍처 ========== -->
+<h2>7. convert_csv.py 파이프라인</h2>
+
+<div class="chart-container">
+    <pre class="mermaid">
+flowchart TD
+    subgraph INPUT["입력 (8개 소스)"]
+        CSV1["orders.csv\n200K rows"]
+        CSV2["users.csv\n95K rows"]
+        CSV3["products.csv\n975K rows"]
+        LEGACY["legacy_data.json\n2022-01~2023-04 백필"]
+        GA4_IN["GA4 API\nsessions/MAU/채널"]
+        SHEETS_IN["Sheets API\n광고비 (월)"]
+        OPS_IN["운영 시트 5종\nforet/PG/할인/환불/환율"]
+    end
+
+    subgraph PIPELINE["convert_csv.py"]
+        AGG_ORD["1. aggregate_orders\n월별 GMV/반품/주문수"]
+        AGG_USR["2. aggregate_users\n월별 가입/누적회원"]
+        FETCH_GA["3. fetch_ga4_monthly\n세션/MAU/채널"]
+        FETCH_AD["4. fetch_ad_spend\n월별 광고비"]
+        BACKFILL["5. backfill_monthly\nCSV + Legacy 합산"]
+        DERIVED["6. compute_derived\nROAS/CAC/YoY 등"]
+        YEARLY["7. compute_yearly\n연간 집계"]
+        COHORT["8. calculate_cohorts\nAll/Repeat/VIP"]
+        SUJO["9. fetch_sujo_data\n수조 5개 파서"]
+    end
+
+    subgraph OUTPUT["출력"]
+        DATAJS_OUT["data.js\nmonthly 48+ months\nyearly 4 years\ncohort 3 types\nsujo (자금수지)"]
+    end
+
+    CSV1 --> AGG_ORD
+    CSV2 --> AGG_USR
+    CSV3 --> BACKFILL
+    LEGACY --> BACKFILL
+    GA4_IN --> FETCH_GA
+    SHEETS_IN --> FETCH_AD
+    OPS_IN --> SUJO
+
+    AGG_ORD --> BACKFILL
+    AGG_USR --> BACKFILL
+    FETCH_GA --> BACKFILL
+    FETCH_AD --> BACKFILL
+    BACKFILL --> DERIVED
+    DERIVED --> YEARLY
+    DERIVED --> COHORT
+    YEARLY --> DATAJS_OUT
+    COHORT --> DATAJS_OUT
+    SUJO --> DATAJS_OUT
+    </pre>
 </div>
 
-<div class="footer">
-  JENTE Data Deck · Pipeline Architecture · GOWID NEXUS · 2026-02-26
+<!-- ========== 8. 로드맵 ========== -->
+<h2>8. 연동 로드맵</h2>
+
+<div class="chart-container" style="min-width: 900px;">
+    <div class="roadmap-table">
+        <table class="gantt-table">
+            <thead>
+                <tr>
+                    <th style="width: 180px;">Phase</th>
+                    <th style="width: 280px;">Task</th>
+                    <th style="width: 140px;">기간</th>
+                    <th style="width: 100px;">상태</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Phase 0 -->
+                <tr class="phase-header"><td colspan="4">Phase 0 — 환경 파악</td></tr>
+                <tr>
+                    <td></td>
+                    <td>환경 파악 질의</td>
+                    <td>02-24</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>응답 분석 / 전략 수립</td>
+                    <td>02-25</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>Read-only 접근 요청 발송</td>
+                    <td>02-25</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <!-- Phase 1 -->
+                <tr class="phase-header"><td colspan="4">Phase 1 — 연동 방식 협의</td></tr>
+                <tr>
+                    <td></td>
+                    <td>실무자 채널 생성</td>
+                    <td>02-26</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>CSV 스케줄러 + S3 확정</td>
+                    <td>02-26</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <!-- Phase 2 -->
+                <tr class="phase-header"><td colspan="4">Phase 2 — CSV 파이프라인 구축</td></tr>
+                <tr>
+                    <td></td>
+                    <td>CSV 샘플 수신 + 검증</td>
+                    <td>02-27 ~ 03-03</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>GA4 API 연동 + 교차검증</td>
+                    <td>03-01 ~ 03-03</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>광고비 시트 연동 + 검증</td>
+                    <td>03-01 ~ 03-03</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>convert_csv.py 개발</td>
+                    <td>03-01 ~ 03-03</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>수조(자금수지) 뷰 통합</td>
+                    <td>03-02 ~ 03-03</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <!-- Phase 3 -->
+                <tr class="phase-header"><td colspan="4">Phase 3 — 자동화</td></tr>
+                <tr>
+                    <td></td>
+                    <td>S3 IAM 권한 수신</td>
+                    <td>03-03 ~</td>
+                    <td><span class="badge badge-orange">젠테 대기</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>S3 boto3 연동</td>
+                    <td>+2일</td>
+                    <td><span class="badge badge-blue">다음</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>cron 자동화 + 배포</td>
+                    <td>+2일</td>
+                    <td><span class="badge badge-blue">다음</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>라이브 전환</td>
+                    <td>+1일</td>
+                    <td><span class="badge badge-blue">다음</span></td>
+                </tr>
+                <!-- Phase 4 -->
+                <tr class="phase-header"><td colspan="4">Phase 4 — 고도화</td></tr>
+                <tr>
+                    <td></td>
+                    <td>P&L 재무 데이터 연동</td>
+                    <td>Phase 3 후 ~5일</td>
+                    <td><span class="badge badge-blue">다음</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>관세 / 물류비 소스 확보</td>
+                    <td>Phase 3 후 ~5일</td>
+                    <td><span class="badge badge-blue">다음</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>수조 완전 자동화</td>
+                    <td>+3일</td>
+                    <td><span class="badge badge-blue">다음</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 타임라인 바 시각화 -->
+    <div class="gantt-visual">
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: var(--text-muted); font-size: 1rem;">타임라인 (02-24 ~ 03-15+)</h3>
+        <div class="gantt-row">
+            <span class="gantt-label">P0 환경 파악</span>
+            <div class="gantt-track"><div class="gantt-bar done" style="left: 0%; width: 8%;">02/24-25</div></div>
+        </div>
+        <div class="gantt-row">
+            <span class="gantt-label">P1 연동 협의</span>
+            <div class="gantt-track"><div class="gantt-bar done" style="left: 8%; width: 4%;">02/26</div></div>
+        </div>
+        <div class="gantt-row">
+            <span class="gantt-label">P2 CSV 파이프라인</span>
+            <div class="gantt-track"><div class="gantt-bar done" style="left: 12%; width: 22%;">02/27 ~ 03/03</div></div>
+        </div>
+        <div class="gantt-row">
+            <span class="gantt-label">P3 자동화</span>
+            <div class="gantt-track"><div class="gantt-bar active" style="left: 34%; width: 30%;">03/03 ~ (대기)</div></div>
+        </div>
+        <div class="gantt-row">
+            <span class="gantt-label">P4 고도화</span>
+            <div class="gantt-track"><div class="gantt-bar pending" style="left: 64%; width: 36%;">TBD</div></div>
+        </div>
+    </div>
 </div>
 
-</div>
+<!-- ========== 9. 주의사항 ========== -->
+<h2>9. 주의사항</h2>
+
+<table>
+    <thead>
+        <tr><th>#</th><th>항목</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>1</td><td>CSV 단위</td><td>반드시 건별(트랜잭션) 단위. 월별 합산이면 코호트 불가</td></tr>
+        <tr><td>2</td><td>MAU 소스</td><td>GA4 API (foret DB 아님). Property 280664290</td></tr>
+        <tr><td>3</td><td>GA4 시작</td><td>2022-07부터. 2022-01~06은 레거시 고정값</td></tr>
+        <tr><td>4</td><td>Organic/Paid</td><td>firstUserDefaultChannelGroup 기준 (session 아님)</td></tr>
+        <tr><td>5</td><td>광고비</td><td>DB 미보유. Sheets 수동입력 방식 (퍼포먼스 광고 통합 월)</td></tr>
+        <tr><td>6</td><td>판매가 vs 결제</td><td>현재 판매가 기준. 실결제 필요 시 PG사 조합 필요</td></tr>
+        <tr><td>7</td><td>B2B</td><td>2023년 이후 중단. orders.csv 전부 B2C</td></tr>
+        <tr><td>8</td><td>GMV 제외</td><td>결제중/주문접수/주문무효만 제외. 결제취소는 포함</td></tr>
+        <tr><td>9</td><td>물류 재고</td><td>foret DB + Google Cloud SQL + 시트 분산. 현재 SKU 가용률만 사용</td></tr>
+        <tr><td>10</td><td>수조 미확보</td><td>관세, 물류비(국내운임/포장), 판관비(급여/임차/보험) 3개 항목</td></tr>
+        <tr><td>11</td><td>gcloud ADC</td><td>analytics.readonly + spreadsheets.readonly + drive.readonly + cloud-platform</td></tr>
+    </tbody>
+</table>
+
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+            darkMode: true,
+            background: '#161b22',
+            primaryColor: '#1e3a5f',
+            primaryTextColor: '#e6edf3',
+            primaryBorderColor: '#4a90d9',
+            lineColor: '#8b949e',
+            secondaryColor: '#4a2860',
+            tertiaryColor: '#1a3a2a',
+            fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif',
+            fontSize: '16px'
+        },
+        flowchart: { curve: 'basis', padding: 24, nodeSpacing: 30, rankSpacing: 40 }
+    });
+</script>
+
 </body>
 </html>

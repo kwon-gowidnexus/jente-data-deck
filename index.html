@@ -410,6 +410,58 @@ header h1 span { color: var(--text2); font-weight: 400; font-size: 14px; margin-
 }
 .sujo-month-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .sujo-month-btn:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+.sujo-year-label {
+  font-size: 12px; font-weight: 700; color: var(--text2); padding: 4px 4px 4px 0;
+  white-space: nowrap;
+}
+.sujo-year-divider {
+  width: 1px; height: 22px; background: var(--border); margin: 0 4px;
+}
+
+/* ── Freshness Bar ── */
+.freshness-bar {
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 14px; align-items: center;
+}
+.freshness-bar .fb-title {
+  font-size: 11px; font-weight: 600; color: var(--text2); margin-right: 4px;
+}
+.freshness-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border); color: var(--text2);
+}
+.fb-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.fb-dot.fresh { background: var(--signal-green); }
+.fb-dot.stale { background: var(--signal-yellow); }
+.fb-dot.old { background: var(--signal-red); }
+
+/* ── Date Range Bar ── */
+.date-range-bar {
+  display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.dr-label { font-size: 12px; font-weight: 600; color: var(--text2); }
+.dr-input {
+  padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 12px;
+  font-family: inherit;
+}
+.dr-sep { color: var(--text2); font-size: 12px; }
+.dr-btn {
+  padding: 3px 10px; border-radius: 4px; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text2); font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.dr-btn:hover { border-color: var(--accent); color: var(--text); }
+.dr-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.weekly-unsupported {
+  padding: 20px; text-align: center; color: var(--text2); font-size: 13px;
+  background: var(--bg2); border: 1px dashed var(--border); border-radius: 8px;
+  margin: 8px 0;
+}
 
 /* ── New Sections: Refund / Unpaid / Inventory ── */
 .sujo-section { margin-bottom: 28px; }
@@ -489,8 +541,9 @@ footer {
     <button class="view-tab" id="tab-ops" onclick="setTab('ops')">운영데이터</button>
   </div>
   <div class="header-controls">
-    <a class="pipeline-btn" href="pipeline.html" target="_blank">Pipeline</a>
-    <button class="toggle-btn active" id="btn-monthly" onclick="setView('monthly')">Monthly</button>
+    <a class="pipeline-btn" href="JENTE_데이터_인프라_현황.html" target="_blank">Pipeline</a>
+    <button class="toggle-btn active" id="btn-weekly" onclick="setView('weekly')">Weekly</button>
+    <button class="toggle-btn" id="btn-monthly" onclick="setView('monthly')">Monthly</button>
     <button class="toggle-btn" id="btn-yearly" onclick="setView('yearly')">Yearly</button>
     <button class="toggle-btn" id="btn-theme" onclick="toggleTheme()">Dark</button>
   </div>
@@ -499,6 +552,7 @@ footer {
 <!-- VIEW 1: 자금수지 (기본 표시) -->
 <div id="view-sujo">
 <div class="sujo-container">
+  <div id="sujo-freshness"></div>
   <div id="sujo-month-nav"></div>
   <div id="sujo-header"></div>
   <div id="sujo-kpi"></div>
@@ -524,6 +578,19 @@ footer {
   <span class="signal-legend-item"><span class="signal-dot yellow"></span> Within 10%</span>
   <span class="signal-legend-item"><span class="signal-dot red"></span> Below threshold</span>
   <span style="margin-left:auto; font-style:italic;">Hover KPI cards for threshold details</span>
+</div>
+<div id="ops-freshness"></div>
+
+<!-- Date Range Filter -->
+<div class="date-range-bar" id="date-range-bar">
+  <span class="dr-label">기간:</span>
+  <input type="date" id="dr-from" class="dr-input" onchange="applyDateRange()">
+  <span class="dr-sep">~</span>
+  <input type="date" id="dr-to" class="dr-input" onchange="applyDateRange()">
+  <button class="dr-btn" onclick="setQuickRange('3m')">3M</button>
+  <button class="dr-btn" onclick="setQuickRange('6m')">6M</button>
+  <button class="dr-btn" onclick="setQuickRange('ytd')">YTD</button>
+  <button class="dr-btn active" onclick="setQuickRange('all')">All</button>
 </div>
 
 <!-- KPI Cards -->
@@ -668,7 +735,7 @@ footer {
 </div><!-- /view-ops -->
 
 <footer>
-  JENTE Data Deck &middot; Confidential &middot; Generated 2026-03-03 &middot; GONEX
+  JENTE Data Deck &middot; Confidential &middot; Generated 2026-03-04 &middot; GONEX
 </footer>
 
 </div><!-- /app -->
@@ -760,10 +827,12 @@ const THRESHOLDS = {
 // ══════════════════════════════════════════
 // State
 // ══════════════════════════════════════════
-let currentView = 'monthly';
+let currentView = 'weekly';
 let currentTab = 'sujo';
 let currentCohortTab = 'all';
 let charts = {};
+let dateRangeFrom = null;
+let dateRangeTo = null;
 
 // Light theme default
 document.documentElement.classList.add('light');
@@ -821,11 +890,26 @@ function makeChart(id, config) {
 }
 
 function getData() {
-  return currentView === 'yearly' ? RAW.yearly : RAW.monthly;
+  let data;
+  if (currentView === 'yearly') data = RAW.yearly;
+  else if (currentView === 'weekly' && RAW.weekly) data = RAW.weekly;
+  else data = RAW.monthly;
+
+  // Apply date range filter (weekly/monthly only)
+  if (currentView !== 'yearly' && (dateRangeFrom || dateRangeTo)) {
+    data = data.filter(d => {
+      const key = d.start_date || d.ym || '';
+      if (dateRangeFrom && key < dateRangeFrom) return false;
+      const endKey = d.end_date || d.ym || '';
+      if (dateRangeTo && endKey > dateRangeTo) return false;
+      return true;
+    });
+  }
+  return data;
 }
 
 function getLabels(data) {
-  return data.map(d => d.ym || d.year);
+  return data.map(d => d.week_label || d.ym || d.year);
 }
 
 // ── Signal / Traffic Light ──
@@ -1049,7 +1133,7 @@ const SUJO_DATA = {
     ]
   },
   "2026-03": {
-    meta: { month: "3월", year: 2026, days: 2, updated: "2026-03-03", label: "2026년 3월 (프로토타입 2일)" },
+    meta: { month: "3월", year: 2026, days: 3, updated: "2026-03-04", label: "2026년 3월 (3일)" },
     sources: {
       sales: { name: "매출데이터", id: "1JnV7qOGPrUFZyfwClEquKWz9kNbmeYHOi-KBXmsA6Gc" },
       return_cost: { name: "반품 매출원가", id: "1AG5ujmf8kfahbFbk50J7mtAb_mSitg9WfJCessay7Ak" },
@@ -1058,56 +1142,69 @@ const SUJO_DATA = {
       inventory: { name: "비원가성 재고", id: "1FAUmTA3zDKnUSxsav5I3M5lCgktRNQgzUYJe2kHRxGg" }
     },
     kpi: {
-      total_gmv: 243311497, net_profit: 40657955, refund: 17136668, total_cost: 185516870,
-      margin_pct: 16.7, refund_pct: 7.0, daily_avg_gmv: 121655749, target_gmv: 3200000000
+      total_gmv: 328480928, net_profit: 27826636, refund: 52595790, total_cost: 300654292,
+      margin_pct: 8.5, refund_pct: 16.0, daily_avg_gmv: 109493643, target_gmv: 3200000000
     },
     line1: {
-      gross: 228885000, cancel: -17241428, net: 220418429,
-      cogs: -165169153, pg_fee: -5694424, coupon: -8772250,
-      profit: 40782602, margin_pct: 18.5,
-      target_revenue: 2940000000, target_profit: 450000000, orders: 320
+      gross: 305362277, cancel: -21686548, net: 252766487,
+      cogs: -205508812, pg_fee: -7632986, coupon: -11662267,
+      profit: 27962422, margin_pct: 11.1,
+      target_revenue: 2940000000, target_profit: 450000000, orders: 493
     },
     line2: {
-      gross: 2563000, cancel: 0, net: 2455355,
-      cogs_unknown: true, pg_fee: -65803, coupon: -107645,
-      profit_note: "원가 미반영", orders: 9, orders_detail: "매입 9 / 위탁 0",
+      gross: 6259879, cancel: 0, net: 6010000,
+      cogs_unknown: true, pg_fee: -163000, coupon: -250000,
+      profit_note: "원가 미반영", orders: 25, orders_detail: "매입 25 / 위탁 0",
       target_revenue: 256000000, target_profit: 120000000
     },
     line3: {
-      gross: 5573000, net: 5300297, cogs: -4675496,
-      profit: 624801, margin_pct: 11.8, count: 9,
+      gross: 16858772, net: 16032698, cogs: -14144521,
+      profit: 1888177, margin_pct: 11.8, count: 15,
       limit_total: 260000000, limit_current: 56000000, limit_prev: 210000000
     },
     waterfall: [
-      { label: "총 거래액", value: 243311497, color: "var(--blue)", pct: 100 },
-      { label: "환불 차감", value: -17136668, color: "var(--red)", pct: 7.0 },
-      { label: "순매출", value: 226174825, color: "var(--cyan)", pct: 93.0 },
-      { label: "매입원가", value: -169844649, color: "var(--red)", pct: 69.8 },
-      { label: "PG 수수료", value: -6054728, color: "var(--orange)", pct: 2.5 },
-      { label: "할인 (쿠폰/앱/마일리지)", value: -9617493, color: "var(--yellow)", pct: 3.95 },
-      { label: "순이익", value: 40657955, color: "var(--green)", pct: 16.7, highlight: true }
+      { label: "총 거래액", value: 328480928, color: "var(--blue)", pct: 100 },
+      { label: "환불 차감", value: -52595790, color: "var(--red)", pct: 16.0 },
+      { label: "순매출", value: 275885138, color: "var(--cyan)", pct: 84.0 },
+      { label: "매입원가", value: -227310918, color: "var(--red)", pct: 69.2 },
+      { label: "PG 수수료", value: -8207512, color: "var(--orange)", pct: 2.5 },
+      { label: "할인 (쿠폰/앱/마일리지)", value: -12540072, color: "var(--yellow)", pct: 3.8 },
+      { label: "순이익", value: 27826636, color: "var(--green)", pct: 8.5, highlight: true }
     ],
     daily: [
-      { date:"03-01", dow:"토", gmv:115445540, api:112871943, inv:1141900, ret:1431697, refund:-7236882, cogs:-80650482, pg:-2862109, disc:-4677510, profit:20018557 },
-      { date:"03-02", dow:"일", gmv:127865957, api:122683902, inv:1313455, ret:3868600, refund:-9899786, cogs:-87723191, pg:-3152409, disc:-4906043, profit:22184528 }
+      { date:"03-01", dow:"일", gmv:115445540, api:112871943, inv:1141900, ret:1431697, refund:-7236882, cogs:-80650482, pg:-2862109, disc:-4677510, profit:20018557 },
+      { date:"03-02", dow:"월", gmv:127865957, api:122683902, inv:1313455, ret:3868600, refund:-9899786, cogs:-87723191, pg:-3112181, disc:-4906043, profit:22225756 },
+      { date:"03-03", dow:"화", gmv:85169431, api:69806432, inv:3804524, ret:11558475, refund:-35459122, cogs:-58937245, pg:-2192994, disc:-2956519, profit:-14376449 }
     ],
     target: {
-      line1: { label:"Line 1: API 판매", goal: 2940000000, actual: 220418429, profit_goal: 450000000, profit_actual: 40782602 },
-      line2: { label:"Line 2: 재고 판매", goal: 256000000, actual: 2455355, profit_goal: 120000000, profit_note: "원가 미확인" },
-      line3: { label:"Line 3: 재고 구매 (반품)", limit: 260000000, actual: 5300297, limit_current: 56000000, limit_prev: 210000000 }
+      line1: { label:"Line 1: API 판매", goal: 2940000000, actual: 252766487, profit_goal: 450000000, profit_actual: 27962422 },
+      line2: { label:"Line 2: 재고 판매", goal: 256000000, actual: 6010000, profit_goal: 120000000, profit_note: "원가 미확인" },
+      line3: { label:"Line 3: 재고 구매 (반품)", limit: 260000000, actual: 16032698, limit_current: 56000000, limit_prev: 210000000 }
     },
-    refund_analysis: null,
+    refund_analysis: {
+      current_month_cancel: { count: 69, amount: 52595790, pct: 16.01 },
+      prev_month_cancel: null,
+      prev_month_return: null,
+      reasons: [
+        { label: "단순변심", pct: 51, color: "var(--blue)" },
+        { label: "반품환불", pct: 33, color: "var(--red)" },
+        { label: "배송지연", pct: 6, color: "var(--orange)" },
+        { label: "하자", pct: 4, color: "var(--yellow)" },
+        { label: "색상/사이즈 미스", pct: 3, color: "var(--cyan)" },
+        { label: "기타", pct: 3, color: "var(--text2)" }
+      ]
+    },
     unpaid: null,
     inventory: null,
     cost_breakdown: [
-      { item: "매입원가 (API)", amount: 165169153, pct: "67.9%", tag: "tag-ok", tag_text: "자동 산출" },
-      { item: "매입원가 (반품)", amount: 4675496, pct: "1.9%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "매입원가 (API)", amount: 205508812, pct: "62.6%", tag: "tag-ok", tag_text: "추정 (67.3%)" },
+      { item: "매입원가 (반품)", amount: 14144521, pct: "4.3%", tag: "tag-ok", tag_text: "추정 (83.9%)" },
       { item: "매입원가 (매입/위탁)", amount: null, pct: "—", tag: "tag-warn", tag_text: "별도 소스" },
-      { item: "PG 수수료 (카드)", amount: 5504293, pct: "2.26%", tag: "tag-ok", tag_text: "자동 산출" },
-      { item: "PG 부가세", amount: 550435, pct: "0.23%", tag: "tag-ok", tag_text: "자동 산출" },
-      { item: "쿠폰 할인", amount: 4543230, pct: "1.87%", tag: "tag-ok", tag_text: "자동 산출" },
-      { item: "앱 할인", amount: 4325280, pct: "1.78%", tag: "tag-ok", tag_text: "자동 산출" },
-      { item: "마일리지", amount: 748983, pct: "0.31%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "PG 수수료 (카드)", amount: 7424796, pct: "2.26%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "PG 부가세", amount: 742488, pct: "0.23%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "쿠폰 할인", amount: 5290710, pct: "1.61%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "앱 할인", amount: 5916120, pct: "1.80%", tag: "tag-ok", tag_text: "자동 산출" },
+      { item: "마일리지", amount: 1333242, pct: "0.41%", tag: "tag-ok", tag_text: "자동 산출" },
       { item: "관세", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" },
       { item: "물류비 (국내운임/포장)", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" },
       { item: "판관비 (급여/임차/보험 등)", amount: null, pct: "—", tag: "tag-bad", tag_text: "미확보" }
@@ -1131,6 +1228,59 @@ const sujoEokShort = v => v != null ? (v / 1e8).toFixed(1) + '억' : '—';
 const sujoMan = v => v != null ? Math.round(v / 10000).toLocaleString() + '만' : '—';
 
 // ══════════════════════════════════════════
+// Freshness Bar
+// ══════════════════════════════════════════
+function freshnessClass(isoStr) {
+  if (!isoStr) return 'old';
+  const ms = Date.now() - new Date(isoStr).getTime();
+  const hours = ms / 3600000;
+  if (hours < 24) return 'fresh';
+  if (hours < 72) return 'stale';
+  return 'old';
+}
+
+function renderFreshness() {
+  const sources = (RAW && RAW.meta && RAW.meta.sources) || null;
+
+  // Sujo freshness: show current month's updated date + sheet sources
+  const sujoEl = document.getElementById('sujo-freshness');
+  if (sujoEl) {
+    const sd = SUJO_DATA[currentMonth];
+    if (sd && sd.meta) {
+      const cls = freshnessClass(sd.meta.updated);
+      let html = '<div class="freshness-bar"><span class="fb-title">데이터 현황</span>';
+      html += `<span class="freshness-badge"><span class="fb-dot ${cls}"></span>수조 ${sd.meta.updated}</span>`;
+      if (sources && sources.sheets_ops) {
+        const sCls = freshnessClass(sources.sheets_ops.last_fetch);
+        html += `<span class="freshness-badge"><span class="fb-dot ${sCls}"></span>운영시트</span>`;
+      }
+      html += '</div>';
+      sujoEl.innerHTML = html;
+    }
+  }
+
+  // Ops freshness: show all data sources
+  const opsEl = document.getElementById('ops-freshness');
+  if (opsEl && sources) {
+    const names = {
+      csv_orders: 'Orders CSV', csv_users: 'Users CSV', csv_products: 'Products CSV',
+      ga4: 'GA4', sheets_ad: '광고비 시트', sheets_ops: '운영 시트',
+    };
+    let html = '<div class="freshness-bar"><span class="fb-title">소스 현황</span>';
+    for (const [key, label] of Object.entries(names)) {
+      const s = sources[key];
+      if (!s) continue;
+      const ts = s.last_modified || s.last_fetch || '';
+      const cls = freshnessClass(ts);
+      const rows = s.rows ? ` (${(s.rows/1000).toFixed(0)}K)` : '';
+      html += `<span class="freshness-badge"><span class="fb-dot ${cls}"></span>${label}${rows}</span>`;
+    }
+    html += '</div>';
+    opsEl.innerHTML = html;
+  }
+}
+
+// ══════════════════════════════════════════
 // Sujo Render Functions
 // ══════════════════════════════════════════
 function renderSujo(month) {
@@ -1151,14 +1301,31 @@ function renderSujo(month) {
 }
 
 function renderSujoMonthNav(activeMonth) {
-  const html = '<div class="sujo-month-nav">' +
-    SUJO_MONTHS.map(m => {
+  // Group months by year for clear visual separation
+  const byYear = {};
+  SUJO_MONTHS.forEach(m => {
+    const md = SUJO_DATA[m].meta;
+    const yr = md.year || m.slice(0, 4);
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(m);
+  });
+  const years = Object.keys(byYear).sort();
+  const multiYear = years.length > 1;
+
+  let inner = '';
+  years.forEach((yr, yi) => {
+    if (multiYear) {
+      if (yi > 0) inner += '<span class="sujo-year-divider"></span>';
+      inner += `<span class="sujo-year-label">${yr}:</span>`;
+    }
+    byYear[yr].forEach(m => {
       const md = SUJO_DATA[m].meta;
       const cls = m === activeMonth ? ' active' : '';
-      return `<button class="sujo-month-btn${cls}" onclick="setMonth('${m}')">${md.month}</button>`;
-    }).join('') +
-    '</div>';
-  document.getElementById('sujo-month-nav').innerHTML = html;
+      inner += `<button class="sujo-month-btn${cls}" onclick="setMonth('${m}')">${md.month}</button>`;
+    });
+  });
+
+  document.getElementById('sujo-month-nav').innerHTML = '<div class="sujo-month-nav">' + inner + '</div>';
 }
 
 function renderSujoHeader(d) {
@@ -1648,6 +1815,7 @@ function setTab(tab) {
   document.getElementById('view-ops').style.display = tab === 'ops' ? 'block' : 'none';
   document.getElementById('tab-sujo').classList.toggle('active', tab === 'sujo');
   document.getElementById('tab-ops').classList.toggle('active', tab === 'ops');
+  renderFreshness();
   if (tab === 'sujo') renderSujo(currentMonth);
   if (tab === 'ops') renderAll();
 }
@@ -1663,8 +1831,53 @@ function toggleTheme() {
 
 function setView(v) {
   currentView = v;
+  document.getElementById('btn-weekly').classList.toggle('active', v === 'weekly');
   document.getElementById('btn-monthly').classList.toggle('active', v === 'monthly');
   document.getElementById('btn-yearly').classList.toggle('active', v === 'yearly');
+  // Show/hide date range bar (not for yearly)
+  const drBar = document.getElementById('date-range-bar');
+  if (drBar) drBar.style.display = v === 'yearly' ? 'none' : 'flex';
+  if (currentTab === 'ops') renderAll();
+}
+
+// Date range helpers
+function applyDateRange() {
+  const from = document.getElementById('dr-from').value;
+  const to = document.getElementById('dr-to').value;
+  dateRangeFrom = from || null;
+  dateRangeTo = to || null;
+  // Clear active quick buttons
+  document.querySelectorAll('.dr-btn').forEach(b => b.classList.remove('active'));
+  if (currentTab === 'ops') renderAll();
+}
+
+function setQuickRange(range) {
+  const today = new Date();
+  let from = null;
+  document.querySelectorAll('.dr-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (range === 'all') {
+    dateRangeFrom = null;
+    dateRangeTo = null;
+    document.getElementById('dr-from').value = '';
+    document.getElementById('dr-to').value = '';
+  } else {
+    dateRangeTo = null;
+    document.getElementById('dr-to').value = '';
+    if (range === '3m') {
+      from = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+    } else if (range === '6m') {
+      from = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+    } else if (range === 'ytd') {
+      from = new Date(today.getFullYear(), 0, 1);
+    }
+    if (from) {
+      const iso = from.toISOString().slice(0, 10);
+      dateRangeFrom = iso;
+      document.getElementById('dr-from').value = iso;
+    }
+  }
   if (currentTab === 'ops') renderAll();
 }
 
@@ -2049,7 +2262,7 @@ function renderGMV() {
 // Section 2: Return Analysis
 // ══════════════════════════════════════════
 function renderReturn() {
-  const data = currentView === 'monthly' ? RAW.monthly : RAW.yearly;
+  const data = getData();
   const labels = getLabels(data);
   const c = getThemeColors();
 
@@ -2111,9 +2324,9 @@ function renderReturn() {
 // ══════════════════════════════════════════
 function renderSensitivity() {
   const c = getThemeColors();
-  const data = RAW.monthly;
-  const recent = data.slice(-24); // last 24 months
-  const labels = recent.map(d => d.ym);
+  const data = getData();
+  const recent = data.slice(-24); // last 24 periods
+  const labels = getLabels(recent);
 
   // Line chart: actual vs scenario return rates
   const actualNetRev = recent.map(d => EOK(d.b2c_net_revenue || 0));
@@ -2205,7 +2418,13 @@ function renderSensitivity() {
 // Section 3: Traffic & Marketing
 // ══════════════════════════════════════════
 function renderTraffic() {
-  const data = currentView === 'monthly' ? RAW.monthly : RAW.yearly;
+  if (currentView === 'weekly') {
+    document.getElementById('sec-traffic').querySelectorAll('.chart-box').forEach(el => {
+      el.innerHTML = '<div class="weekly-unsupported">Traffic 데이터는 Weekly 뷰에서 지원되지 않습니다 (GA4 월간 데이터)</div>';
+    });
+    return;
+  }
+  const data = getData();
   const labels = getLabels(data);
   const c = getThemeColors();
 
@@ -2261,7 +2480,7 @@ function renderTraffic() {
 // Section 4: Customer Base
 // ══════════════════════════════════════════
 function renderCustomer() {
-  const data = currentView === 'monthly' ? RAW.monthly : RAW.yearly;
+  const data = getData();
   const labels = getLabels(data);
   const c = getThemeColors();
 
@@ -2328,8 +2547,15 @@ function renderCustomer() {
 // Section 5: Conversion
 // ══════════════════════════════════════════
 function renderConversion() {
-  const data = RAW.monthly;
-  const labels = data.map(d => d.ym);
+  if (currentView === 'weekly') {
+    // Weekly doesn't have conversion rate (needs GA4 visitor data)
+    document.getElementById('sec-conv').querySelectorAll('.chart-box').forEach(el => {
+      el.innerHTML = '<div class="weekly-unsupported">Conversion 데이터는 Weekly 뷰에서 지원되지 않습니다 (GA4 visitor 필요)</div>';
+    });
+    return;
+  }
+  const data = getData();
+  const labels = getLabels(data);
   const c = getThemeColors();
 
   const convRate = data.map(d => d.conv_rate_pct || 0);
@@ -2386,6 +2612,12 @@ function renderConversion() {
 // Section 6: Marketing Efficiency
 // ══════════════════════════════════════════
 function renderMktg() {
+  if (currentView === 'weekly') {
+    document.getElementById('sec-mktg').querySelectorAll('.chart-box').forEach(el => {
+      el.innerHTML = '<div class="weekly-unsupported">Marketing 데이터는 Weekly 뷰에서 지원되지 않습니다 (광고비 월간 데이터)</div>';
+    });
+    return;
+  }
   const data = RAW.monthly;
   const labels = data.map(d => d.ym);
   const c = getThemeColors();
@@ -2429,8 +2661,8 @@ function renderMktg() {
 // Section 7: Supply & Catalog Health
 // ══════════════════════════════════════════
 function renderSKU() {
-  const data = RAW.monthly;
-  const labels = data.map(d => d.ym);
+  const data = getData();
+  const labels = getLabels(data);
   const c = getThemeColors();
 
   const available = data.map(d => d.available_sku || 0);
@@ -2606,6 +2838,12 @@ function renderCohortHeatmap(buyerData) {
 // Section 9: YoY Growth
 // ══════════════════════════════════════════
 function renderYoY() {
+  if (currentView === 'weekly') {
+    document.getElementById('sec-yoy').querySelectorAll('.chart-box').forEach(el => {
+      el.innerHTML = '<div class="weekly-unsupported">YoY Growth는 Weekly 뷰에서 지원되지 않습니다 (월간 데이터 기반)</div>';
+    });
+    return;
+  }
   const data = RAW.monthly.filter(d => d.gmv_yoy_pct != null);
   const labels = data.map(d => d.ym);
   const c = getThemeColors();

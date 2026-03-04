@@ -251,10 +251,10 @@
 </head>
 <body>
 
-<a class="back-link" href="index.html">&larr; Data Deck</a>
+<a class="back-link" href="jente_datadeck_draft.html">&larr; Data Deck</a>
 
-<h1>젠테 데이터 인프라 현황 <small>Updated 2026-03-03</small></h1>
-<p class="subtitle">젠테 담당자 응답 기반 &middot; 고위드 피트스탑 팀 &middot; Phase 2 진행중</p>
+<h1>젠테 데이터 인프라 현황 <small>Updated 2026-03-04</small></h1>
+<p class="subtitle">젠테 담당자 응답 기반 &middot; 고위드 피트스탑 팀 &middot; Phase 3 완료</p>
 
 <!-- ========== 0. 진행 현황 요약 ========== -->
 <h2>0. 진행 현황</h2>
@@ -270,7 +270,7 @@
     </li>
     <li class="done">
         <span class="step-label">CSV 샘플 수신 + 검증</span>
-        <span class="step-status"><span class="badge badge-green">완료 03-03</span> orders 200K행, users 95K행, products 975K행</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-03</span> orders 903K행, users 248K행, products 2.3M행</span>
     </li>
     <li class="done">
         <span class="step-label">GA4 API 연동</span>
@@ -288,17 +288,25 @@
         <span class="step-label">수조(자금수지) 뷰 통합</span>
         <span class="step-status"><span class="badge badge-green">완료 03-03</span> 운영 시트 기반 3-Line 수조 대시보드</span>
     </li>
-    <li class="active">
+    <li class="done">
         <span class="step-label">S3 IAM 권한 수신</span>
-        <span class="step-status"><span class="badge badge-orange">젠테 대기</span> 젠테 측 S3 버킷 + IAM 생성 대기</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-04</span> jente-backup-prod 버킷, IAM read-only</span>
     </li>
-    <li class="pending">
+    <li class="done">
         <span class="step-label">파이프라인 자동화</span>
-        <span class="step-status"><span class="badge badge-blue">다음</span> S3 &rarr; data.js &rarr; GitHub Pages 자동 배포</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-04</span> S3 &rarr; convert_csv.py &rarr; data.js &rarr; GitHub Pages</span>
+    </li>
+    <li class="done">
+        <span class="step-label">라이브 전환</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-04</span> kwon-gowidnexus.github.io/jente-data-deck/</span>
+    </li>
+    <li class="active">
+        <span class="step-label">대시보드 고도화</span>
+        <span class="step-status"><span class="badge badge-orange">진행중</span> Weekly 뷰, 날짜 범위 필터, 프레시니스 바</span>
     </li>
     <li class="pending">
-        <span class="step-label">라이브 전환 + 모니터링</span>
-        <span class="step-status"><span class="badge badge-blue">다음</span></span>
+        <span class="step-label">P&L 재무 데이터 연동</span>
+        <span class="step-status"><span class="badge badge-blue">다음</span> 관세, 물류비, 판관비 소스 확보 필요</span>
     </li>
 </ul>
 
@@ -340,10 +348,10 @@ graph TB
     <pre class="mermaid">
 flowchart LR
     subgraph JENTE["젠테 측"]
-        CSV_ORDERS["orders.csv\n200K행 18컬럼\n일 3회 갱신"]
-        CSV_USERS["users.csv\n95K행 3컬럼\n일 1회"]
-        CSV_PRODUCTS["products.csv\n975K행 9컬럼\n일 1회"]
-        S3["S3 버킷\n(IAM 대기중)"]
+        CSV_ORDERS["orders.csv\n903K행 18컬럼\n일 3회 갱신"]
+        CSV_USERS["users.csv\n248K행 3컬럼\n일 1회"]
+        CSV_PRODUCTS["products.csv\n2.3M행 9컬럼\n일 1회"]
+        S3["S3 버킷\njente-backup-prod\n(IAM 완료)"]
         CSV_ORDERS --> S3
         CSV_USERS --> S3
         CSV_PRODUCTS --> S3
@@ -458,7 +466,7 @@ flowchart LR
             <td><strong>이신영</strong></td>
             <td>개발, DB</td>
             <td>CSV 스케줄러, S3 세팅</td>
-            <td><span class="badge badge-orange">S3 대기</span></td>
+            <td><span class="badge badge-green">완료</span></td>
         </tr>
         <tr>
             <td><strong>오석재</strong></td>
@@ -492,21 +500,21 @@ flowchart LR
     <tbody>
         <tr>
             <td><strong>orders.csv</strong></td>
-            <td>200,812</td>
+            <td>902,837</td>
             <td>18</td>
             <td>일 3회 (00:30, 08:30, 16:30)</td>
-            <td>order_seq, goods_price, ea, refund_code, status</td>
+            <td>order_seq, goods_price, ea, deposit_date, refund_status, status</td>
         </tr>
         <tr>
             <td><strong>users.csv</strong></td>
-            <td>95,473</td>
+            <td>247,981</td>
             <td>3</td>
             <td>일 1회</td>
             <td>member_seq, regist_date, lastlogin_date</td>
         </tr>
         <tr>
             <td><strong>products.csv</strong></td>
-            <td>974,591</td>
+            <td>2,313,271</td>
             <td>9</td>
             <td>일 1회</td>
             <td>stock_availability, display_availability, category</td>
@@ -569,8 +577,8 @@ flowchart LR
         <tr>
             <td><strong>S3</strong></td>
             <td>boto3 (IAM read-only)</td>
-            <td><span class="badge badge-orange">대기</span></td>
-            <td>젠테 측 버킷 + IAM 생성 대기</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>jente-backup-prod, IAM read-only 연동 완료</td>
         </tr>
         <tr>
             <td><strong>가비아 DB</strong></td>
@@ -594,9 +602,9 @@ flowchart LR
     <pre class="mermaid">
 flowchart TD
     subgraph INPUT["입력 (8개 소스)"]
-        CSV1["orders.csv\n200K rows"]
-        CSV2["users.csv\n95K rows"]
-        CSV3["products.csv\n975K rows"]
+        CSV1["orders.csv\n903K rows"]
+        CSV2["users.csv\n248K rows"]
+        CSV3["products.csv\n2.3M rows"]
         LEGACY["legacy_data.json\n2022-01~2023-04 백필"]
         GA4_IN["GA4 API\nsessions/MAU/채널"]
         SHEETS_IN["Sheets API\n광고비 (월)"]
@@ -722,49 +730,55 @@ flowchart TD
                     <td><span class="badge badge-green">완료</span></td>
                 </tr>
                 <!-- Phase 3 -->
-                <tr class="phase-header"><td colspan="4">Phase 3 — 자동화</td></tr>
+                <tr class="phase-header"><td colspan="4">Phase 3 — S3 연동 + 자동화</td></tr>
                 <tr>
                     <td></td>
                     <td>S3 IAM 권한 수신</td>
-                    <td>03-03 ~</td>
-                    <td><span class="badge badge-orange">젠테 대기</span></td>
+                    <td>03-04</td>
+                    <td><span class="badge badge-green">완료</span></td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td>S3 boto3 연동</td>
-                    <td>+2일</td>
-                    <td><span class="badge badge-blue">다음</span></td>
+                    <td>S3 boto3 연동 + 프로덕션 파이프라인</td>
+                    <td>03-04</td>
+                    <td><span class="badge badge-green">완료</span></td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td>cron 자동화 + 배포</td>
-                    <td>+2일</td>
-                    <td><span class="badge badge-blue">다음</span></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>라이브 전환</td>
-                    <td>+1일</td>
-                    <td><span class="badge badge-blue">다음</span></td>
+                    <td>GitHub Pages 배포 + 라이브 전환</td>
+                    <td>03-04</td>
+                    <td><span class="badge badge-green">완료</span></td>
                 </tr>
                 <!-- Phase 4 -->
-                <tr class="phase-header"><td colspan="4">Phase 4 — 고도화</td></tr>
+                <tr class="phase-header"><td colspan="4">Phase 4 — 대시보드 고도화</td></tr>
+                <tr>
+                    <td></td>
+                    <td>Weekly 뷰 + 날짜 범위 필터</td>
+                    <td>03-04 ~</td>
+                    <td><span class="badge badge-orange">진행중</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>데이터 소스 프레시니스 바</td>
+                    <td>03-04 ~</td>
+                    <td><span class="badge badge-orange">진행중</span></td>
+                </tr>
                 <tr>
                     <td></td>
                     <td>P&L 재무 데이터 연동</td>
-                    <td>Phase 3 후 ~5일</td>
+                    <td>TBD</td>
                     <td><span class="badge badge-blue">다음</span></td>
                 </tr>
                 <tr>
                     <td></td>
                     <td>관세 / 물류비 소스 확보</td>
-                    <td>Phase 3 후 ~5일</td>
+                    <td>TBD</td>
                     <td><span class="badge badge-blue">다음</span></td>
                 </tr>
                 <tr>
                     <td></td>
                     <td>수조 완전 자동화</td>
-                    <td>+3일</td>
+                    <td>TBD</td>
                     <td><span class="badge badge-blue">다음</span></td>
                 </tr>
             </tbody>
@@ -787,12 +801,12 @@ flowchart TD
             <div class="gantt-track"><div class="gantt-bar done" style="left: 12%; width: 22%;">02/27 ~ 03/03</div></div>
         </div>
         <div class="gantt-row">
-            <span class="gantt-label">P3 자동화</span>
-            <div class="gantt-track"><div class="gantt-bar active" style="left: 34%; width: 30%;">03/03 ~ (대기)</div></div>
+            <span class="gantt-label">P3 S3 + 자동화</span>
+            <div class="gantt-track"><div class="gantt-bar done" style="left: 34%; width: 10%;">03/04</div></div>
         </div>
         <div class="gantt-row">
             <span class="gantt-label">P4 고도화</span>
-            <div class="gantt-track"><div class="gantt-bar pending" style="left: 64%; width: 36%;">TBD</div></div>
+            <div class="gantt-track"><div class="gantt-bar active" style="left: 44%; width: 36%;">03/04 ~ (진행중)</div></div>
         </div>
     </div>
 </div>
@@ -816,6 +830,7 @@ flowchart TD
         <tr><td>9</td><td>물류 재고</td><td>foret DB + Google Cloud SQL + 시트 분산. 현재 SKU 가용률만 사용</td></tr>
         <tr><td>10</td><td>수조 미확보</td><td>관세, 물류비(국내운임/포장), 판관비(급여/임차/보험) 3개 항목</td></tr>
         <tr><td>11</td><td>gcloud ADC</td><td>analytics.readonly + spreadsheets.readonly + drive.readonly + cloud-platform</td></tr>
+        <tr><td>12</td><td>스키마 변경 (03-04)</td><td>orders.csv: deposit_date 추가, return_ea/refund_goods_price 삭제 (DB 오류). 반품은 refund_status='complete' 기준 goods_price&times;ea로 계산</td></tr>
     </tbody>
 </table>
 

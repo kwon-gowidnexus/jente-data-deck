@@ -198,6 +198,7 @@ body {
   <button class="nav-btn" data-section="debt">부채</button>
   <button class="nav-btn" data-section="forecast">예측</button>
   <button class="nav-btn" data-section="cost">비용</button>
+  <button class="nav-btn" data-section="logistics">물류비</button>
   <button class="nav-btn" data-section="daily">일별</button>
 </div>
 
@@ -349,7 +350,36 @@ body {
   </div>
 </div>
 
-<!-- S8: Daily Cash Flow -->
+<!-- S8: Logistics Cost -->
+<div class="section" id="sec-logistics">
+  <div class="kpi-grid" id="kpi-logistics"></div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">월별 물류비용 추이</div>
+      <div class="chart-wrap tall"><canvas id="chart-logistics-trend"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">택배사별 비중</div>
+      <div class="chart-wrap tall"><canvas id="chart-courier-share"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">월별 물류비 상세</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="tbl-logistics-monthly"></table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">부티크별 물류비 TOP 20</div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="tbl-boutique-cost"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S9: Daily Cash Flow -->
 <div class="section" id="sec-daily">
   <div class="panel">
     <div class="panel-title">일별 자금수지 <span class="tag">3월</span></div>
@@ -475,6 +505,7 @@ function renderAll(selectedMonth) {
   renderDebt();
   renderForecast();
   renderCost();
+  renderLogistics();
   renderDaily();
 }
 
@@ -1194,7 +1225,169 @@ function renderCost() {
 }
 
 // ═══════════════════════════════════════
-// S8: DAILY CASH FLOW
+// S8: LOGISTICS COST
+// ═══════════════════════════════════════
+function renderLogistics() {
+  const LOG = RAW.logistics;
+  if (!LOG || !LOG.monthly || LOG.monthly.length === 0) {
+    document.getElementById('kpi-logistics').innerHTML = '<div class="kpi-card"><div class="kpi-value">데이터 없음</div></div>';
+    return;
+  }
+
+  const T = LOG.totals;
+  const months = LOG.monthly;
+  const latest = months[months.length - 1];
+  const prev = months.length > 1 ? months[months.length - 2] : null;
+
+  // KPI Cards
+  const shippingMoM = prev ? ((latest.shipping - prev.shipping) / prev.shipping * 100) : null;
+  const costPerUnit = latest.cost_per_unit || (latest.arrivals > 0 ? Math.round((latest.shipping + latest.customs_total) / latest.arrivals) : 0);
+
+  document.getElementById('kpi-logistics').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">누적 운임</div>
+      <div class="kpi-value">${fmtB(T.total_shipping)}</div>
+      <div class="kpi-sub">${T.months}개월 | ${fmt(T.total_arrivals)}건 입하</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">누적 관부가세</div>
+      <div class="kpi-value">${fmtB(T.total_customs)}</div>
+      <div class="kpi-sub">관세 ${fmtB(T.total_tariff)} + 부가세 ${fmtB(T.total_vat)}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">평균 물류비/건</div>
+      <div class="kpi-value">₩${fmt(T.avg_cost_per_unit)}</div>
+      <div class="kpi-sub">운임+관부가세 기준</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">최신월 (${latest.ym.slice(5)}월)</div>
+      <div class="kpi-value">${fmtB(latest.shipping)}</div>
+      <div class="kpi-sub">${latest.arrivals}건${shippingMoM != null ? ' | MoM ' + (shippingMoM > 0 ? '+' : '') + shippingMoM.toFixed(0) + '%' : ''}</div>
+    </div>
+  `;
+
+  // Chart 1: Monthly logistics trend (stacked bar: 운임 + 관부가세)
+  destroyChart('chart-logistics-trend');
+  const labels = months.map(m => shortMonth(m.ym));
+  charts['chart-logistics-trend'] = new Chart(document.getElementById('chart-logistics-trend'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '운임',
+          data: months.map(m => m.shipping / 1e8),
+          backgroundColor: 'rgba(59,130,246,0.7)',
+        },
+        {
+          label: '관부가세',
+          data: months.map(m => m.customs_total / 1e8),
+          backgroundColor: 'rgba(234,179,8,0.6)',
+        },
+        {
+          label: '건당비용 (만원)',
+          data: months.map(m => {
+            const cpu = m.cost_per_unit || (m.arrivals > 0 ? (m.shipping + m.customs_total) / m.arrivals : 0);
+            return cpu / 10000;
+          }),
+          type: 'line',
+          yAxisID: 'y1',
+          borderColor: '#ef4444',
+          backgroundColor: 'transparent',
+          pointRadius: 3,
+          tension: 0.3,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+        y: { title: { display: true, text: '억원', color: '#64748b' }, ticks: { color: '#64748b' }, grid: { color: 'rgba(148,163,184,0.1)' }, stacked: true },
+        y1: { position: 'right', title: { display: true, text: '만원/건', color: '#64748b' }, ticks: { color: '#ef4444' }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Chart 2: Courier share (doughnut)
+  destroyChart('chart-courier-share');
+  const cs = LOG.courier_share;
+  const courierLabels = Object.keys(cs).filter(k => cs[k] > 0);
+  const courierValues = courierLabels.map(k => cs[k] / 1e8);
+  const courierColors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'];
+  charts['chart-courier-share'] = new Chart(document.getElementById('chart-courier-share'), {
+    type: 'doughnut',
+    data: {
+      labels: courierLabels,
+      datasets: [{ data: courierValues, backgroundColor: courierColors.slice(0, courierLabels.length), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 11 }, generateLabels: (chart) => {
+          const data = chart.data;
+          const total = data.datasets[0].data.reduce((a,b) => a+b, 0);
+          return data.labels.map((l, i) => ({
+            text: `${l} ${(data.datasets[0].data[i]/total*100).toFixed(1)}% (${data.datasets[0].data[i].toFixed(1)}억)`,
+            fillStyle: data.datasets[0].backgroundColor[i],
+            index: i
+          }));
+        }}}
+      }
+    }
+  });
+
+  // Table 1: Monthly details
+  let html = '<thead><tr><th>월</th><th>입하</th><th>운임</th><th>관부가세</th><th>관세</th><th>부가세</th><th>DHL</th><th>UPS</th><th>건당비용</th></tr></thead><tbody>';
+  months.forEach(m => {
+    const cpu = m.cost_per_unit || (m.arrivals > 0 ? Math.round((m.shipping + m.customs_total) / m.arrivals) : 0);
+    html += `<tr>
+      <td>${m.ym}</td>
+      <td>${fmt(m.arrivals)}</td>
+      <td>${fmtM(m.shipping)}</td>
+      <td>${fmtM(m.customs_total)}</td>
+      <td>${fmtM(m.import_tariff)}</td>
+      <td>${fmtM(m.import_vat)}</td>
+      <td>${fmtM(m.dhl)}</td>
+      <td>${fmtM(m.ups)}</td>
+      <td>₩${fmt(cpu)}</td>
+    </tr>`;
+  });
+  // Totals row
+  html += `<tr style="font-weight:700;border-top:2px solid var(--accent);">
+    <td>합계</td>
+    <td>${fmt(T.total_arrivals)}</td>
+    <td>${fmtM(T.total_shipping)}</td>
+    <td>${fmtM(T.total_customs)}</td>
+    <td>${fmtM(T.total_tariff)}</td>
+    <td>${fmtM(T.total_vat)}</td>
+    <td>-</td><td>-</td>
+    <td>₩${fmt(T.avg_cost_per_unit)}</td>
+  </tr>`;
+  html += '</tbody>';
+  document.getElementById('tbl-logistics-monthly').innerHTML = html;
+
+  // Table 2: Boutique top 20
+  let bhtml = '<thead><tr><th>부티크</th><th>입하수량</th><th>운임</th><th>관부가세</th><th>건당운임</th><th>건당관부가세</th><th>건당합계</th></tr></thead><tbody>';
+  LOG.boutiques.forEach(b => {
+    bhtml += `<tr>
+      <td>${b.name}</td>
+      <td>${fmt(b.qty)}</td>
+      <td>${fmtM(b.shipping)}</td>
+      <td>${fmtM(b.customs)}</td>
+      <td>₩${fmt(b.shipping_rate)}</td>
+      <td>₩${fmt(b.customs_rate)}</td>
+      <td>₩${fmt(b.avg_cost)}</td>
+    </tr>`;
+  });
+  bhtml += '</tbody>';
+  document.getElementById('tbl-boutique-cost').innerHTML = bhtml;
+}
+
+
+// ═══════════════════════════════════════
+// S9: DAILY CASH FLOW
 // ═══════════════════════════════════════
 function renderDaily() {
   // Use sujo data if available

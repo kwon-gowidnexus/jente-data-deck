@@ -1501,7 +1501,7 @@ const RAW = {
     "period": "2020-05 ~ 2026-03",
     "months": 71,
     "generated": "2026-03-05",
-    "source": "CSV Transaction Data + S6 Financial",
+    "source": "CSV Transaction Data + S6 Financial + Logistics",
     "sources": {
       "csv_orders": {
         "last_modified": "2026-03-04T23:30:41+00:00",
@@ -1530,6 +1530,10 @@ const RAW = {
           "monthly_repayment",
           "forecast_debt_totals"
         ]
+      },
+      "logistics": {
+        "last_fetch": "2026-03-05T11:56:57",
+        "months": 15
       }
     }
   },
@@ -6647,5 +6651,432 @@ const RAW = {
         "total": 21750786756.0
       }
     ]
+  },
+  "logistics": {
+    "monthly": [
+      {
+        "ym": "2025-01",
+        "arrivals": 10025,
+        "imports": 5889,
+        "shipping": 158774419,
+        "customs_total": 480961340,
+        "cost_per_unit": 63814,
+        "dhl": 151062269,
+        "ups": 5732296,
+        "sdb": 1118345,
+        "unitrans": 0,
+        "hando": 861509,
+        "import_tariff": 124774750,
+        "import_vat": 356186590
+      },
+      {
+        "ym": "2025-02",
+        "arrivals": 13891,
+        "imports": 9231,
+        "shipping": 223118851,
+        "customs_total": 699267330,
+        "cost_per_unit": 66402,
+        "dhl": 200892510,
+        "ups": 15758047,
+        "sdb": 4119794,
+        "unitrans": 704440,
+        "hando": 1644060,
+        "import_tariff": 186655440,
+        "import_vat": 512611890
+      },
+      {
+        "ym": "2025-03",
+        "arrivals": 9842,
+        "imports": 8853,
+        "shipping": 230217234,
+        "customs_total": 680067800,
+        "cost_per_unit": 92490,
+        "dhl": 184637445,
+        "ups": 38665288,
+        "sdb": 4669621,
+        "unitrans": 551210,
+        "hando": 1693670,
+        "import_tariff": 186544180,
+        "import_vat": 493523620
+      },
+      {
+        "ym": "2025-04",
+        "arrivals": 9612,
+        "imports": 8697,
+        "shipping": 230613938,
+        "customs_total": 656069920,
+        "cost_per_unit": 92248,
+        "dhl": 210212493,
+        "ups": 15355534,
+        "sdb": 3050181,
+        "unitrans": 334840,
+        "hando": 1660890,
+        "import_tariff": 168801320,
+        "import_vat": 487268600
+      },
+      {
+        "ym": "2025-05",
+        "arrivals": 5140,
+        "imports": 4314,
+        "shipping": 100523593,
+        "customs_total": 299060360,
+        "cost_per_unit": 77740,
+        "dhl": 80309762,
+        "ups": 14727046,
+        "sdb": 3513715,
+        "unitrans": 1008260,
+        "hando": 964810,
+        "import_tariff": 74971260,
+        "import_vat": 224089100
+      },
+      {
+        "ym": "2025-06",
+        "arrivals": 5199,
+        "imports": 4619,
+        "shipping": 87301847,
+        "customs_total": 315108460,
+        "cost_per_unit": 77401,
+        "dhl": 72029577,
+        "ups": 7899017,
+        "sdb": 4539433,
+        "unitrans": 1152030,
+        "hando": 1681790,
+        "import_tariff": 89756810,
+        "import_vat": 225351650
+      },
+      {
+        "ym": "2025-07",
+        "arrivals": 3719,
+        "imports": 3070,
+        "shipping": 104496531,
+        "customs_total": 209383220,
+        "cost_per_unit": 84399,
+        "dhl": 97101640,
+        "ups": 6441718,
+        "sdb": 411643,
+        "unitrans": 122320,
+        "hando": 419210,
+        "import_tariff": 43651010,
+        "import_vat": 165732210
+      },
+      {
+        "ym": "2025-08",
+        "arrivals": 3540,
+        "imports": 3033,
+        "shipping": 77633456,
+        "customs_total": 268498210,
+        "cost_per_unit": 97777,
+        "dhl": 67653688,
+        "ups": 4632807,
+        "sdb": 4214181,
+        "unitrans": 265430,
+        "hando": 867350,
+        "import_tariff": 66645010,
+        "import_vat": 201853200
+      },
+      {
+        "ym": "2025-09",
+        "arrivals": 3885,
+        "imports": 3420,
+        "shipping": 95130433,
+        "customs_total": 297397090,
+        "cost_per_unit": 101037,
+        "dhl": 83047007,
+        "ups": 7431254,
+        "sdb": 3189282,
+        "unitrans": 487740,
+        "hando": 975150,
+        "import_tariff": 73493070,
+        "import_vat": 223904020
+      },
+      {
+        "ym": "2025-10",
+        "arrivals": 2846,
+        "imports": 2546,
+        "shipping": 73106642,
+        "customs_total": 190063490,
+        "cost_per_unit": 92470,
+        "dhl": 70494320,
+        "ups": 2013152,
+        "sdb": 0,
+        "unitrans": 297220,
+        "hando": 301950,
+        "import_tariff": 56216330,
+        "import_vat": 133847160
+      },
+      {
+        "ym": "2025-11",
+        "arrivals": 2930,
+        "imports": 2770,
+        "shipping": 80946638,
+        "customs_total": 306965220,
+        "cost_per_unit": 132393,
+        "dhl": 76405645,
+        "ups": 4375993,
+        "sdb": 0,
+        "unitrans": 0,
+        "hando": 165000,
+        "import_tariff": 102996260,
+        "import_vat": 203968960
+      },
+      {
+        "ym": "2025-12",
+        "arrivals": 3410,
+        "imports": 3062,
+        "shipping": 93118277,
+        "customs_total": 356861270,
+        "cost_per_unit": 131959,
+        "dhl": 91168325,
+        "ups": 1817952,
+        "sdb": 0,
+        "unitrans": 0,
+        "hando": 132000,
+        "import_tariff": 107527290,
+        "import_vat": 249333980
+      },
+      {
+        "ym": "2026-01",
+        "arrivals": 3370,
+        "imports": 3160,
+        "shipping": 102423356,
+        "customs_total": 245186030,
+        "cost_per_unit": 103148,
+        "dhl": 101955294,
+        "ups": 286562,
+        "sdb": 0,
+        "unitrans": 0,
+        "hando": 181500,
+        "import_tariff": 55887260,
+        "import_vat": 189298770
+      },
+      {
+        "ym": "2026-02",
+        "arrivals": 3951,
+        "imports": 3732,
+        "shipping": 98731008,
+        "customs_total": 264218940,
+        "cost_per_unit": 91863,
+        "dhl": 98731008,
+        "ups": 0,
+        "sdb": 0,
+        "unitrans": 0,
+        "hando": 0,
+        "import_tariff": 56179680,
+        "import_vat": 208039260
+      },
+      {
+        "ym": "2026-03",
+        "arrivals": 0,
+        "imports": 0,
+        "shipping": 140000,
+        "customs_total": 21184560,
+        "cost_per_unit": 0,
+        "dhl": 140000,
+        "ups": 0,
+        "sdb": 0,
+        "unitrans": 0,
+        "hando": 0,
+        "import_tariff": 4656610,
+        "import_vat": 16527950
+      }
+    ],
+    "boutiques": [
+      {
+        "name": "Sugar",
+        "qty": 4472,
+        "shipping": 93681556,
+        "customs": 344340382,
+        "avg_cost": 97948,
+        "shipping_rate": 20948,
+        "customs_rate": 76999
+      },
+      {
+        "name": "ERALDO",
+        "qty": 3213,
+        "shipping": 74473411,
+        "customs": 217894550,
+        "avg_cost": 90995,
+        "shipping_rate": 23179,
+        "customs_rate": 67817
+      },
+      {
+        "name": "G&B Negozionline",
+        "qty": 2619,
+        "shipping": 45367684,
+        "customs": 207215730,
+        "avg_cost": 96443,
+        "shipping_rate": 17323,
+        "customs_rate": 79120
+      },
+      {
+        "name": "BOUNTY",
+        "qty": 2618,
+        "shipping": 91900457,
+        "customs": 248379390,
+        "avg_cost": 129977,
+        "shipping_rate": 35103,
+        "customs_rate": 94874
+      },
+      {
+        "name": "VIETTI",
+        "qty": 2344,
+        "shipping": 40972205,
+        "customs": 141361090,
+        "avg_cost": 77787,
+        "shipping_rate": 17480,
+        "customs_rate": 60308
+      },
+      {
+        "name": "WISE",
+        "qty": 2339,
+        "shipping": 63893024,
+        "customs": 186679820,
+        "avg_cost": 107128,
+        "shipping_rate": 27316,
+        "customs_rate": 79812
+      },
+      {
+        "name": "BEAT",
+        "qty": 2292,
+        "shipping": 47223750,
+        "customs": 173091140,
+        "avg_cost": 96123,
+        "shipping_rate": 20604,
+        "customs_rate": 75520
+      },
+      {
+        "name": "JULIAN FASHION",
+        "qty": 1899,
+        "shipping": 55633134,
+        "customs": 181508050,
+        "avg_cost": 124877,
+        "shipping_rate": 29296,
+        "customs_rate": 95581
+      },
+      {
+        "name": "Eleonora Bonucci",
+        "qty": 1644,
+        "shipping": 34376708,
+        "customs": 85120280,
+        "avg_cost": 72687,
+        "shipping_rate": 20910,
+        "customs_rate": 51776
+      },
+      {
+        "name": "Gruppo Pritelli",
+        "qty": 1640,
+        "shipping": 46354653,
+        "customs": 112353980,
+        "avg_cost": 96774,
+        "shipping_rate": 28265,
+        "customs_rate": 68509
+      },
+      {
+        "name": "IMPACT",
+        "qty": 1186,
+        "shipping": 32071099,
+        "customs": 63145250,
+        "avg_cost": 80284,
+        "shipping_rate": 27041,
+        "customs_rate": 53242
+      },
+      {
+        "name": "TONY",
+        "qty": 1160,
+        "shipping": 46782081,
+        "customs": 111892050,
+        "avg_cost": 136788,
+        "shipping_rate": 40329,
+        "customs_rate": 96459
+      },
+      {
+        "name": "BRUNAROSSO",
+        "qty": 1132,
+        "shipping": 26396486,
+        "customs": 65981580,
+        "avg_cost": 81606,
+        "shipping_rate": 23318,
+        "customs_rate": 58288
+      },
+      {
+        "name": "MONNIER PARIS",
+        "qty": 1130,
+        "shipping": 34614939,
+        "customs": 64521960,
+        "avg_cost": 87732,
+        "shipping_rate": 30633,
+        "customs_rate": 57099
+      },
+      {
+        "name": "ILDUOMO",
+        "qty": 1111,
+        "shipping": 31619644,
+        "customs": 124124650,
+        "avg_cost": 140184,
+        "shipping_rate": 28461,
+        "customs_rate": 111723
+      },
+      {
+        "name": "ANTONIOLI",
+        "qty": 1111,
+        "shipping": 28587921,
+        "customs": 56335040,
+        "avg_cost": 76438,
+        "shipping_rate": 25732,
+        "customs_rate": 50707
+      },
+      {
+        "name": "PROGETTO 2017",
+        "qty": 1009,
+        "shipping": 8256811,
+        "customs": 33288070,
+        "avg_cost": 41174,
+        "shipping_rate": 8183,
+        "customs_rate": 32991
+      },
+      {
+        "name": "BASE BLU",
+        "qty": 971,
+        "shipping": 23223272,
+        "customs": 100320780,
+        "avg_cost": 127234,
+        "shipping_rate": 23917,
+        "customs_rate": 103317
+      },
+      {
+        "name": "G&B B2B",
+        "qty": 966,
+        "shipping": 22566590,
+        "customs": 96493020,
+        "avg_cost": 123250,
+        "shipping_rate": 23361,
+        "customs_rate": 99889
+      },
+      {
+        "name": "Angelo Minetti",
+        "qty": 950,
+        "shipping": 20724611,
+        "customs": 69460210,
+        "avg_cost": 94931,
+        "shipping_rate": 21815,
+        "customs_rate": 73116
+      }
+    ],
+    "courier_share": {
+      "DHL": 1585840983,
+      "UPS": 125136666,
+      "SDB": 28826195,
+      "Unitrans": 4923490,
+      "한동": 11548889
+    },
+    "totals": {
+      "total_arrivals": 81360,
+      "total_shipping": 1756276223,
+      "total_customs": 5290293240,
+      "total_tariff": 1398756280,
+      "total_vat": 3891536960,
+      "avg_cost_per_unit": 86610,
+      "months": 15
+    }
   }
 };

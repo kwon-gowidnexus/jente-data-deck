@@ -253,8 +253,8 @@
 
 <a class="back-link" href="jente_datadeck_draft.html">&larr; Data Deck</a>
 
-<h1>젠테 데이터 인프라 현황 <small>Updated 2026-03-04</small></h1>
-<p class="subtitle">젠테 담당자 응답 기반 &middot; 고위드 피트스탑 팀 &middot; Phase 3 완료</p>
+<h1>젠테 데이터 인프라 현황 <small>Updated 2026-03-05</small></h1>
+<p class="subtitle">젠테 담당자 응답 기반 &middot; 고위드 피트스탑 팀 &middot; Phase 4 진행중</p>
 
 <!-- ========== 0. 진행 현황 요약 ========== -->
 <h2>0. 진행 현황</h2>
@@ -300,13 +300,21 @@
         <span class="step-label">라이브 전환</span>
         <span class="step-status"><span class="badge badge-green">완료 03-04</span> kwon-gowidnexus.github.io/jente-data-deck/</span>
     </li>
-    <li class="active">
+    <li class="done">
         <span class="step-label">대시보드 고도화</span>
-        <span class="step-status"><span class="badge badge-orange">진행중</span> Weekly 뷰, 날짜 범위 필터, 프레시니스 바</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-04</span> Weekly 뷰, 날짜 범위 필터, 프레시니스 바</span>
     </li>
-    <li class="pending">
+    <li class="done">
+        <span class="step-label">S6 재무분석 탭 구현</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-05</span> P&L, FCF, 부채 추이, 대출 스케줄, 예측 → 재무분석 탭</span>
+    </li>
+    <li class="done">
         <span class="step-label">P&L 재무 데이터 연동</span>
-        <span class="step-status"><span class="badge badge-blue">다음</span> 관세, 물류비, 판관비 소스 확보 필요</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-05</span> external_pnl + monthly_pnl + debt_monthly + vertical_forecast → data.js</span>
+    </li>
+    <li class="active">
+        <span class="step-label">자금수지 대시보드 v2</span>
+        <span class="step-status"><span class="badge badge-orange">진행중</span> 8개 섹션 독립 자금수지 대시보드 구축</span>
     </li>
 </ul>
 
@@ -364,10 +372,10 @@ flowchart LR
     end
 
     subgraph GOWID["고위드 파이프라인"]
-        CONVERT["convert_csv.py\nCSV 집계\n코호트 계산\n수조 파서"]
-        DATAJS["data.js\nmonthly/yearly\ncohort 3종\nsujo"]
+        CONVERT["convert_csv.py\nCSV 집계\n코호트 계산\n수조 파서\n+S6 재무 파서"]
+        DATAJS["data.js\nmonthly/yearly\ncohort 3종\nsujo\n+financial 8종"]
         DEPLOY["GitHub Pages\n자동 배포"]
-        DASH["Data Deck\n2-탭 대시보드\n자금수지 + 운영데이터"]
+        DASH["Data Deck\n3-탭 대시보드\n자금수지 + 운영 + 재무"]
     end
 
     S3 -->|boto3| CONVERT
@@ -447,9 +455,9 @@ flowchart LR
         </tr>
         <tr>
             <td><strong>P&L (매출/원가/영업이익)</strong></td>
-            <td>재무 담당자 별도 논의</td>
-            <td><span class="badge badge-red">미착수</span></td>
-            <td>Phase 3 이후</td>
+            <td>S6 외부손익/월별손익 CSV (4종)</td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>pnl + fcf + debt + forecast → data.js financial 8키</td>
         </tr>
     </tbody>
 </table>
@@ -484,7 +492,7 @@ flowchart LR
             <td><strong>김동욱</strong></td>
             <td>재무, 자금</td>
             <td>P&L, 관세, 물류비, 판관비</td>
-            <td><span class="badge badge-red">미착수</span></td>
+            <td><span class="badge badge-green">CSV 완료</span></td>
         </tr>
     </tbody>
 </table>
@@ -621,10 +629,11 @@ flowchart TD
         YEARLY["7. compute_yearly\n연간 집계"]
         COHORT["8. calculate_cohorts\nAll/Repeat/VIP"]
         SUJO["9. fetch_sujo_data\n수조 5개 파서"]
+        S6FIN["10. load_s6_financial\nexternal_pnl/monthly_pnl\ndebt_monthly/vertical_forecast"]
     end
 
     subgraph OUTPUT["출력"]
-        DATAJS_OUT["data.js\nmonthly 48+ months\nyearly 4 years\ncohort 3 types\nsujo (자금수지)"]
+        DATAJS_OUT["data.js\nmonthly 48+ months\nyearly 4 years\ncohort 3 types\nsujo (자금수지)\nfinancial 8종"]
     end
 
     CSV1 --> AGG_ORD
@@ -645,6 +654,7 @@ flowchart TD
     YEARLY --> DATAJS_OUT
     COHORT --> DATAJS_OUT
     SUJO --> DATAJS_OUT
+    S6FIN --> DATAJS_OUT
     </pre>
 </div>
 
@@ -766,14 +776,20 @@ flowchart TD
                 <tr>
                     <td></td>
                     <td>P&L 재무 데이터 연동</td>
-                    <td>TBD</td>
-                    <td><span class="badge badge-blue">다음</span></td>
+                    <td>03-05</td>
+                    <td><span class="badge badge-green">완료</span></td>
                 </tr>
                 <tr>
                     <td></td>
-                    <td>관세 / 물류비 소스 확보</td>
-                    <td>TBD</td>
-                    <td><span class="badge badge-blue">다음</span></td>
+                    <td>S6 재무분석 탭 구현</td>
+                    <td>03-05</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>자금수지 대시보드 v2</td>
+                    <td>03-05 ~</td>
+                    <td><span class="badge badge-orange">진행중</span></td>
                 </tr>
                 <tr>
                     <td></td>
@@ -828,7 +844,7 @@ flowchart TD
         <tr><td>7</td><td>B2B</td><td>2023년 이후 중단. orders.csv 전부 B2C</td></tr>
         <tr><td>8</td><td>GMV 제외</td><td>결제중/주문접수/주문무효만 제외. 결제취소는 포함</td></tr>
         <tr><td>9</td><td>물류 재고</td><td>foret DB + Google Cloud SQL + 시트 분산. 현재 SKU 가용률만 사용</td></tr>
-        <tr><td>10</td><td>수조 미확보</td><td>관세, 물류비(국내운임/포장), 판관비(급여/임차/보험) 3개 항목</td></tr>
+        <tr><td>10</td><td>수조 확보 완료</td><td>관세, 물류비, 판관비 → S6 external_pnl/monthly_pnl CSV로 확보 (03-05)</td></tr>
         <tr><td>11</td><td>gcloud ADC</td><td>analytics.readonly + spreadsheets.readonly + drive.readonly + cloud-platform</td></tr>
         <tr><td>12</td><td>스키마 변경 (03-04)</td><td>orders.csv: deposit_date 추가, return_ea/refund_goods_price 삭제 (DB 오류). 반품은 refund_status='complete' 기준 goods_price&times;ea로 계산</td></tr>
     </tbody>

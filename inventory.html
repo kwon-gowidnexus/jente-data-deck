@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>젠테 -- 확보 데이터 인벤토리 & 조합 맵 v3</title>
+<style>
+  :root {
+    --bg: #0d1117; --bg2: #161b22; --bg3: #1c2128; --bg4: #21262d;
+    --text: #e6edf3; --text2: #8b949e; --border: #30363d;
+    --blue: #1f6feb; --green: #3fb950; --yellow: #d29922;
+    --red: #f85149; --purple: #a371f7; --cyan: #39d2c0;
+    --orange: #db6d28; --pink: #f778ba;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); padding: 32px 24px; line-height: 1.6;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+  h2 {
+    font-size: 16px; font-weight: 700; margin: 32px 0 16px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  h2 .badge {
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px;
+  }
+  .new-tag {
+    font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 4px;
+    background: var(--green); color: #000; margin-left: 6px; vertical-align: middle;
+  }
+
+  /* Collapsible master list */
+  .master-details {
+    margin-bottom: 28px; border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; background: var(--bg2);
+  }
+  .master-details summary {
+    padding: 14px 18px; cursor: pointer; font-size: 14px; font-weight: 700;
+    background: var(--bg3); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px; user-select: none;
+    list-style: none;
+  }
+  .master-details summary::-webkit-details-marker { display: none; }
+  .master-details summary::before {
+    content: '\25B6'; font-size: 10px; color: var(--text2);
+    transition: transform 0.2s; display: inline-block;
+  }
+  .master-details[open] summary::before { transform: rotate(90deg); }
+  .master-details summary .count {
+    font-size: 11px; font-weight: 600; color: var(--text2);
+    background: var(--bg4); padding: 2px 8px; border-radius: 8px; margin-left: auto;
+  }
+  .master-list {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+  .master-list thead th {
+    background: var(--bg3); color: var(--text2); font-weight: 600;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .master-list tbody td {
+    padding: 6px 12px; border-bottom: 1px solid rgba(48,54,61,0.4);
+    vertical-align: middle;
+  }
+  .master-list tbody tr:last-child td { border-bottom: none; }
+  .src-group-row td:first-child {
+    text-align: center; vertical-align: middle;
+    border-right: 1px solid var(--border);
+  }
+  .s1-row { background: rgba(31,111,235,0.03); }
+  .s2-row { background: rgba(63,185,80,0.03); }
+  .s3-row { background: rgba(163,113,247,0.03); }
+  .s4-row { background: rgba(57,210,192,0.03); }
+  .s5-row { background: rgba(247,120,186,0.03); }
+  .s6-row { background: rgba(219,109,40,0.03); }
+  .s7-row { background: rgba(210,153,34,0.03); }
+  .src-group-row.s1-row { border-top: 2px solid var(--blue); }
+  .src-group-row.s2-row { border-top: 2px solid var(--green); }
+  .src-group-row.s3-row { border-top: 2px solid var(--purple); }
+  .src-group-row.s4-row { border-top: 2px solid var(--cyan); }
+  .src-group-row.s5-row { border-top: 2px solid var(--pink); }
+  .src-group-row.s6-row { border-top: 2px solid var(--orange); }
+  .src-group-row.s7-row { border-top: 2px solid var(--yellow); }
+  .ml-id {
+    font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px;
+    display: inline-block; margin-bottom: 4px;
+  }
+  .ml-id.s1 { background: rgba(31,111,235,0.15); color: var(--blue); }
+  .ml-id.s2 { background: rgba(63,185,80,0.15); color: var(--green); }
+  .ml-id.s3 { background: rgba(163,113,247,0.15); color: var(--purple); }
+  .ml-id.s4 { background: rgba(57,210,192,0.15); color: var(--cyan); }
+  .ml-id.s5 { background: rgba(247,120,186,0.15); color: var(--pink); }
+  .ml-id.s6 { background: rgba(219,109,40,0.15); color: var(--orange); }
+  .ml-id.s7 { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .ml-name { font-weight: 600; color: var(--text); }
+  .ml-type {
+    font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
+    display: inline-block; white-space: nowrap; text-decoration: none;
+  }
+  .ml-type.gsheet { background: rgba(63,185,80,0.12); color: var(--green); }
+  .ml-type.local { background: rgba(31,111,235,0.12); color: var(--blue); }
+  .ml-type.auto { background: rgba(57,210,192,0.12); color: var(--cyan); }
+  a.ml-type:hover { filter: brightness(1.3); }
+  .ml-csv {
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    display: inline-block; white-space: nowrap;
+  }
+  .ml-csv.ok { background: rgba(63,185,80,0.15); color: var(--green); }
+  .ml-csv.no { color: var(--text2); }
+  .ml-desc { color: var(--text2); font-size: 11px; }
+
+  .combo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .combo-grid { grid-template-columns: 1fr; } }
+  .combo-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px;
+  }
+  .combo-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .combo-title { font-size: 14px; font-weight: 700; }
+  .combo-arrow { color: var(--text2); font-size: 14px; }
+  .combo-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .combo-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px; }
+  .combo-desc { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+  .combo-result {
+    font-size: 13px; font-weight: 600; padding: 8px 12px;
+    background: var(--bg3); border-radius: 6px;
+    border-left: 3px solid var(--green);
+  }
+  .combo-result.partial { border-left-color: var(--yellow); }
+
+  .flow-diagram {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 28px 24px; overflow-x: auto;
+  }
+  .flow-row {
+    display: flex; align-items: center; gap: 0; margin-bottom: 16px;
+    flex-wrap: nowrap; min-width: 900px;
+  }
+  .flow-row:last-child { margin-bottom: 0; }
+  .flow-box {
+    padding: 8px 14px; border-radius: 8px; font-size: 12px;
+    font-weight: 600; white-space: nowrap; text-align: center;
+    min-width: 110px; border: 1px solid;
+  }
+  .flow-box.src { background: rgba(31,111,235,0.1); border-color: var(--blue); color: var(--blue); }
+  .flow-box.calc { background: rgba(63,185,80,0.1); border-color: var(--green); color: var(--green); }
+  .flow-box.partial { background: rgba(210,153,34,0.1); border-color: var(--yellow); color: var(--yellow); }
+  .flow-box.resolved { background: rgba(219,109,40,0.1); border-color: var(--orange); color: var(--orange); }
+  .flow-arr { color: var(--text2); font-size: 16px; padding: 0 6px; flex-shrink: 0; }
+  .flow-op { font-size: 11px; color: var(--text2); padding: 0 4px; flex-shrink: 0; }
+  .legend { display: flex; gap: 16px; margin: 20px 0 0; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .gap-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .gap-table th, .gap-table td {
+    padding: 8px 12px; text-align: left; font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .gap-table th {
+    color: var(--text2); font-weight: 600; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .status-ok { color: var(--green); font-weight: 700; }
+  .status-partial { color: var(--yellow); font-weight: 700; }
+
+  .footer {
+    font-size: 11px; color: var(--text2); text-align: center;
+    margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>젠테 -- 확보 데이터 인벤토리 & 조합 맵 <span style="font-size:13px;color:var(--green);font-weight:600">v3</span></h1>
+<div class="sub">7개 소스의 데이터 필드와 조합 시 도출 가능 지표 도식화 &middot; 37개 데이터셋 + financial 8종 &middot; 2026-03-05 업데이트</div>
+
+<!-- COLLAPSIBLE MASTER DATA LIST -->
+<details class="master-details" open>
+  <summary>
+    전체 데이터 소스 리스트
+    <span class="count">7개 소스 &middot; 37개 데이터셋 + financial 8종</span>
+  </summary>
+  <table class="master-list">
+    <thead>
+      <tr>
+        <th style="width:50px">소스</th>
+        <th>데이터셋 / 탭</th>
+        <th style="width:80px">형식</th>
+        <th style="width:60px">CSV</th>
+        <th>주요 내용</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- S1: IR CSV -> data.js (로컬 파일, 링크 없음) -->
+      <tr class="src-group-row s1-row">
+        <td rowspan="6"><span class="ml-id s1">S1</span></td>
+        <td class="ml-name">GMV (총거래액, B2C, B2B)</td>
+        <td><span class="ml-type local">로컬 JS</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">월별 총거래액, B2C/B2B 분리, 48개월 시계열</td>
+      </tr>
+      <tr class="s1-row">
+        <td class="ml-name">B2C 반품액 / 반품률</td>
+        <td><span class="ml-type local">로컬 JS</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">월별 반품금액, 반품률 추이</td>
+      </tr>
+      <tr class="s1-row">
+        <td class="ml-name">B2C 실매출 (Net Revenue)</td>
+        <td><span class="ml-type local">로컬 JS</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">GMV - 반품 = 실매출</td>
+      </tr>
+      <tr class="s1-row">
+        <td class="ml-name">마케팅: 광고비, ROAS, CAC</td>
+        <td><span class="ml-type local">로컬 JS</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">월별 광고비, ROAS, 고객획득비용</td>
+      </tr>
+      <tr class="s1-row">
+        <td class="ml-name">트래픽/회원/SKU/전환율</td>
+        <td><span class="ml-type local">로컬 JS</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">MAU, 회원수, 활성 SKU, 구매전환율</td>
+      </tr>
+      <tr class="s1-row">
+        <td class="ml-name">코호트 3종 (전체/리피터/VIP)</td>
+        <td><span class="ml-type local">로컬 JS</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">60개월 리텐션 커브, 재구매율</td>
+      </tr>
+
+      <!-- S2: BOUTIQUE REPORT 2026 -->
+      <tr class="src-group-row s2-row">
+        <td rowspan="3"><span class="ml-id s2">S2</span></td>
+        <td class="ml-name">부티크별 매출 (Monthly/Quarterly)</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1wYnZZ1JQbV-NJouiN3YWbsizbwn5rgvMOAsE2u5eFEo/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv no">-</span></td>
+        <td class="ml-desc">30+ 부티크 EUR 매출, 월별/분기별 집계</td>
+      </tr>
+      <tr class="s2-row">
+        <td class="ml-name">브랜드/카테고리/SKU별 매출</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1wYnZZ1JQbV-NJouiN3YWbsizbwn5rgvMOAsE2u5eFEo/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv no">-</span></td>
+        <td class="ml-desc">분기 집계, 크로스탭 분석</td>
+      </tr>
+      <tr class="s2-row">
+        <td class="ml-name">크로스분석 5종</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1wYnZZ1JQbV-NJouiN3YWbsizbwn5rgvMOAsE2u5eFEo/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv no">-</span></td>
+        <td class="ml-desc">brand x boutique, category x boutique 등</td>
+      </tr>
+
+      <!-- S3: API 매출 데이터 (수조 소스 시트) -->
+      <tr class="src-group-row s3-row">
+        <td rowspan="2"><span class="ml-id s3">S3</span></td>
+        <td class="ml-name">매출원가/주문상태/지연현황</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1JnV7qOGPrUFZyfwClEquKWz9kNbmeYHOi-KBXmsA6Gc/" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv no">-</span></td>
+        <td class="ml-desc">일별 MUR, 주문 처리 현황, 배송 지연</td>
+      </tr>
+      <tr class="s3-row">
+        <td class="ml-name">환율/매입구분/발주주문리스트</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1JnV7qOGPrUFZyfwClEquKWz9kNbmeYHOi-KBXmsA6Gc/" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv no">-</span></td>
+        <td class="ml-desc">EUR/KRW 일별 환율, 매입 구분, 발주 상세</td>
+      </tr>
+
+      <!-- S4: S3 파이프라인 (자동) -->
+      <tr class="src-group-row s4-row">
+        <td rowspan="2"><span class="ml-id s4">S4</span></td>
+        <td class="ml-name">일별 거래/주문/환불/매입원가</td>
+        <td><span class="ml-type auto">S3 자동</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">S3 -> AWS S3 -> convert_csv.py -> data.js 파이프라인</td>
+      </tr>
+      <tr class="s4-row">
+        <td class="ml-name">PG 수수료 / 쿠폰할인</td>
+        <td><span class="ml-type auto">S3 자동</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">건별 PG 수수료, 쿠폰 할인액 차감</td>
+      </tr>
+
+      <!-- S5: 프로젝트 문서 (로컬) -->
+      <tr class="src-group-row s5-row">
+        <td rowspan="2"><span class="ml-id s5">S5</span></td>
+        <td class="ml-name">인프라/Phase 2 미구현 항목</td>
+        <td><span class="ml-type local">MD 문서</span></td>
+        <td><span class="ml-csv no">-</span></td>
+        <td class="ml-desc">MongoDB+MySQL 구조, 미구현 항목 목록</td>
+      </tr>
+      <tr class="s5-row">
+        <td class="ml-name">업의본질 분석 / 파이프라인</td>
+        <td><span class="ml-type local">MD 문서</span></td>
+        <td><span class="ml-csv no">-</span></td>
+        <td class="ml-desc">CSV->S3->JS 아키텍처, 업의본질 분석</td>
+      </tr>
+
+      <!-- S6: RESET Dashboard -->
+      <tr class="src-group-row s6-row">
+        <td rowspan="12"><span class="ml-id s6">S6</span></td>
+        <td class="ml-name">월별손익_현금/발생</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit#gid=0" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">거래액->환불->순매출->원가->GP->판관비->금융비용->FCF 완전 P&L</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">부채현황(월별)</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">법인카드/부티크/환불/무신사/고위드/금융 7카테고리 월별 추이</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">부채현황(일별)</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">일별 부채 잔액 변동, 상환/신규 내역</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">법인카드 결제내역</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">계정분류(판관비/매입원가/매입부대비용), 관세/운송/급여 분리</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">은행거래내역</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">입출금 분류, 계좌별 거래 상세</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">부티크 송금내역</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">건별 EUR 송금, 결제조건(CARD/VM, USANCE), 부티크별 추적</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">버티컬 수조 예측</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">26년 월별 필요거래액, FCF 예측 (1->2.67억)</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">자금이슈</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">2~8월 필요현금, 고정비 2.5억, 법카상환 15.5억, 유산스</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">일별실적_API</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">일별 거래/주문/매출 API 연동 실적</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">재고입출하</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">재고 입출하 템플릿 (총액만, SKU 상세 미입력)</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">(외부)월별손익</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">외부 보고용 월별 손익 (간소화 버전)</td>
+      </tr>
+      <tr class="s6-row">
+        <td class="ml-name">Dashboard(2603)</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">MUR 차트, FCF 파이프라인, 운영 대시보드 종합</td>
+      </tr>
+
+      <!-- S7: JENTE WBS 2026 -->
+      <tr class="src-group-row s7-row">
+        <td rowspan="10"><span class="ml-id s7">S7</span></td>
+        <td class="ml-name">일별판매실적</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">IMPORTRANGE 일별 원가성 상세, 매출/원가/마진 일별 추적</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">Key Data 26/3</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">부서별 KPI 목표/실적/달성률, 거래액 32억 목표</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">TF(취소)</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">10개 사유별 취소율, 목표/실적, 17%->10% 개선 TF</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">DMAIC</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">6시그마 DMAIC 프로세스 (Define/Measure/Analyze/Improve/Control)</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">대시보드(26/3)</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">FCF 파이프라인, 기초재고 7.9억, MUR 30.9% 실시간</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">물류 WBS</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">B2C 루틴 업무, 물류 프로세스 관리</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">GBM WBS</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">부티크 정산/배송 관리, 시즌 오더</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">캘린더</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">마케팅 일정, 48H DEALS, 프로모션 캘린더</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">재무 WBS</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">재무팀 업무 관리, 정산/결산 스케줄</td>
+      </tr>
+      <tr class="s7-row">
+        <td class="ml-name">데이터 WBS</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1y0QWUWUY27bsL4vheTJSUSFLFsFUFNKdjGs4hDA12Uc/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">CSV</span></td>
+        <td class="ml-desc">PROJECT 1 취소환불률 개선, 데이터팀 WBS</td>
+      </tr>
+    </tbody>
+  </table>
+</details>
+
+<!-- PART 1: FLOW DIAGRAM -->
+<h2>
+  <span>PART 1</span>
+  <span class="badge" style="background:rgba(63,185,80,0.15);color:var(--green)">숫자의 흐름 -- 조합 플로우</span>
+</h2>
+
+<div class="flow-diagram">
+  <div style="margin-bottom:16px">
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>기존 확보 (S1-S5)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>S6 RESET Dashboard</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>계산 가능 (조합 결과)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>부분 추정 가능</div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text2);margin:16px 0 8px;text-transform:uppercase;letter-spacing:1px;">
+    &#x25CE; 영업 현금흐름 (Operating CF) 라인
+  </div>
+  <div class="flow-row">
+    <div class="flow-box src">S1 총 GMV<br><span style="font-size:10px">628억(2025)</span></div>
+    <div class="flow-op">-</div>
+    <div class="flow-box src">S1 반품액<br><span style="font-size:10px">215억(2025)</span></div>
+    <div class="flow-arr">-></div>
+    <div class="flow-box calc">순매출<br><span style="font-size:10px">413억(2025)</span></div>
+    <div class="flow-op">-</div>
+    <div class="flow-box resolved">S6 매출원가<br><span style="font-size:10px">84.78%</span></div>
+    <div class="flow-arr">-></div>
+    <div class="flow-box calc">매출총이익(GP)<br><span style="font-size:10px">S6: 5.02억(1월)</span></div>
+  </div>
+
+  <div class="flow-row">
+    <div class="flow-box calc">매출총이익(GP)</div>
+    <div class="flow-op">-</div>
+    <div class="flow-box resolved">S6 급여<br><span style="font-size:10px">재직 87.4M+리더 24.2M</span></div>
+    <div class="flow-op">-</div>
+    <div class="flow-box resolved">S6 판관비<br><span style="font-size:10px">영업성 119M/월</span></div>
+    <div class="flow-op">-</div>
+    <div class="flow-box resolved">S6 물류/관세<br><span style="font-size:10px">법카 계정분류</span></div>
+    <div class="flow-arr">-></div>
+    <div class="flow-box calc">영업CF (OCF)<br><span style="font-size:10px">S6 FCF: 2.77억(1월)</span></div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text2);margin:24px 0 8px;text-transform:uppercase;letter-spacing:1px;">
+    &#x25CE; 재무 현금흐름 (Financing CF) 라인
+  </div>
+  <div class="flow-row">
+    <div class="flow-box calc">영업CF (OCF)</div>
+    <div class="flow-op">-</div>
+    <div class="flow-box resolved">S6 금융비용<br><span style="font-size:10px">114~191M/월</span></div>
+    <div class="flow-op">-</div>
+    <div class="flow-box resolved">S6 부채상환<br><span style="font-size:10px">법카 15.5억/월</span></div>
+    <div class="flow-op">-</div>
+    <div class="flow-box resolved">S6 총부채<br><span style="font-size:10px">457억 (7카테고리)</span></div>
+    <div class="flow-arr">-></div>
+    <div class="flow-box calc">순현금잔액<br><span style="font-size:10px">S6 자금이슈 참조</span></div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text2);margin:24px 0 8px;text-transform:uppercase;letter-spacing:1px;">
+    &#x25CE; 운전자본 & 재고 사이클
+  </div>
+  <div class="flow-row">
+    <div class="flow-box resolved">S6 부티크 송금<br><span style="font-size:10px">620건 EUR</span></div>
+    <div class="flow-op">+</div>
+    <div class="flow-box partial">S7 기초재고<br><span style="font-size:10px">7.9억 (상세 부분)</span></div>
+    <div class="flow-op">+</div>
+    <div class="flow-box resolved">S6 부티크부채<br><span style="font-size:10px">251억</span></div>
+    <div class="flow-arr">-></div>
+    <div class="flow-box calc">현금전환주기<br><span style="font-size:10px">추정 가능</span></div>
+    <div class="flow-op">&</div>
+    <div class="flow-box partial">B/S (자산측)<br><span style="font-size:10px">부채만 완전</span></div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--text2);margin:24px 0 8px;text-transform:uppercase;letter-spacing:1px;">
+    &#x25CE; 매입 결제 & 부티크 리스크
+  </div>
+  <div class="flow-row">
+    <div class="flow-box src">S2 부티크 매출<br><span style="font-size:10px">EUR, 30+ 부티크</span></div>
+    <div class="flow-op">x</div>
+    <div class="flow-box src">S3 환율<br><span style="font-size:10px">EUR/KRW 일별</span></div>
+    <div class="flow-arr">-></div>
+    <div class="flow-box calc">부티크 KRW 매입액</div>
+    <div class="flow-op">vs</div>
+    <div class="flow-box resolved">S6 송금내역<br><span style="font-size:10px">건별 결제 추적</span></div>
+    <div class="flow-arr">-></div>
+    <div class="flow-box calc">AP 잔액 & 리스크<br><span style="font-size:10px">결제 타이밍 확인</span></div>
+  </div>
+</div>
+
+<!-- PART 2: COMBINATION MATRIX -->
+<h2>
+  <span>PART 2</span>
+  <span class="badge" style="background:rgba(163,113,247,0.15);color:var(--purple)">조합별 도출 가능 지표</span>
+</h2>
+
+<div class="combo-grid">
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags"><span class="combo-tag" style="background:rgba(219,109,40,0.15);color:var(--orange)">S6</span></div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">완전 P&L + FCF</span>
+    </div>
+    <div class="combo-desc">S6 월별손익: 거래액 -> 환불 -> 순매출 -> 원가 -> GP -> 판관비 -> 금융비용 -> FCF</div>
+    <div class="combo-result"><span class="new-tag">구현완료</span> 완전 산출 -- 12월 FCF -16.7M / 1월 277M / 2월 55.8M (실적) → 재무분석 탭</div>
+  </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags"><span class="combo-tag" style="background:rgba(219,109,40,0.15);color:var(--orange)">S6</span></div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">총부채 구조 & 추이</span>
+    </div>
+    <div class="combo-desc">S6 부채현황: 법인카드 14.8억 + 부티크 251억 + 환불 11.5억 + 무신사 5.9억 + 고위드 228억 + 금융 184억 = 457억</div>
+    <div class="combo-result"><span class="new-tag">구현완료</span> 완전 산출 -- 7카테고리 월별 추이 + 일별 상세 → 재무분석 탭</div>
+  </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags"><span class="combo-tag" style="background:rgba(219,109,40,0.15);color:var(--orange)">S6</span></div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">자금 예측 & 필요현금</span>
+    </div>
+    <div class="combo-desc">S6 자금이슈 + 버티컬수조예측: 월별 필요거래액, 필요현금, 고정비 2.5억, 법카상환 15.5억</div>
+    <div class="combo-result"><span class="new-tag">구현완료</span> 완전 산출 -- 26년 FCF 예측: 1억 → 1.98억 → 2.67억 (4.5% → 9.0%) → 재무분석 탭</div>
+  </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags">
+        <span class="combo-tag" style="background:rgba(219,109,40,0.15);color:var(--orange)">S6</span>
+        <span class="combo-tag" style="background:rgba(210,153,34,0.15);color:var(--yellow)">S7</span>
+      </div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">비용 구조 상세 분해</span>
+    </div>
+    <div class="combo-desc">S6 법인카드(계정분류: 판관비/매입원가/매입부대비용) + 은행거래(입출금분류) + S7 부서별 KPI</div>
+    <div class="combo-result"><span class="new-tag">구현완료</span> 완전 산출 -- 관세/해외운송/국내운송/광고비/급여/4대보험 분리 → 재무분석 탭</div>
+  </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags"><span class="combo-tag" style="background:rgba(210,153,34,0.15);color:var(--yellow)">S7</span></div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">취소율 개선 추적</span>
+    </div>
+    <div class="combo-desc">S7 TF(취소) + DMAIC: 10개 사유별 취소율 목표/실적 + Key Data 부서별 KPI</div>
+    <div class="combo-result">완전 산출 -- 당월 취소 17% -> 7.70% 달성 (129.9% 달성률)</div>
+  </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags">
+        <span class="combo-tag" style="background:rgba(31,111,235,0.15);color:var(--blue)">S1</span>
+        <span class="combo-tag" style="background:rgba(219,109,40,0.15);color:var(--orange)">S6</span>
+      </div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">48개월 GP + 최근 정밀 P&L</span>
+    </div>
+    <div class="combo-desc">S1 48개월 매출 시계열 + S6 최근 3개월 정밀 P&L = 장기 트렌드 + 단기 정밀 분석</div>
+    <div class="combo-result"><span class="new-tag">구현완료</span> 완전 산출 -- 역사적 추세(S1) 위에 정밀 FCF(S6) 오버레이 → 재무분석 탭</div>
+  </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags">
+        <span class="combo-tag" style="background:rgba(63,185,80,0.15);color:var(--green)">S2</span>
+        <span class="combo-tag" style="background:rgba(219,109,40,0.15);color:var(--orange)">S6</span>
+      </div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">부티크 AP 잔액 & 결제 추적</span>
+    </div>
+    <div class="combo-desc">S2 부티크 매출(EUR) + S6 송금내역(건별) + 부채현황(부티크 251억) = AP 잔액/결제조건/미결제</div>
+    <div class="combo-result"><span class="new-tag">구현완료</span> 완전 산출 -- 부티크별 미지급금 + 결제조건(CARD/VM, USANCE) + 송금여부 → 재무분석 탭</div>
+  </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags">
+        <span class="combo-tag" style="background:rgba(57,210,192,0.15);color:var(--cyan)">S4</span>
+        <span class="combo-tag" style="background:rgba(210,153,34,0.15);color:var(--yellow)">S7</span>
+      </div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">일별 영업 CF + 실시간 KPI</span>
+    </div>
+    <div class="combo-desc">S4 일별 수조 데이터 + S7 일별판매실적(IMPORTRANGE) + Key Data KPI</div>
+    <div class="combo-result">완전 산출 -- 일별 FCF + 부서별 달성률 + MUR 실시간 모니터링</div>
+  </div>
+</div>
+
+<!-- PART 3: GAP ANALYSIS (현재 기준) -->
+<h2>
+  <span>PART 3</span>
+  <span class="badge" style="background:rgba(63,185,80,0.15);color:var(--green)">미확보 데이터 현황</span>
+</h2>
+
+<table class="gap-table">
+  <thead>
+    <tr>
+      <th style="width:30px">#</th>
+      <th>항목</th>
+      <th>상태</th>
+      <th>소스</th>
+      <th>비고</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>총부채 리스트</strong></td>
+      <td class="status-ok">확보</td>
+      <td>S6 부채현황(월별)</td>
+      <td>7카테고리, 457억, 월별/일별 추이</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>판관비 (급여 포함)</strong></td>
+      <td class="status-ok">확보</td>
+      <td>S6 월별손익 + 법인카드</td>
+      <td>영업성판관비 119M, 급여 111M, 계정분류 완료</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>물류비 / 관세</strong></td>
+      <td class="status-ok">확보</td>
+      <td>S6 법인카드 계정분류</td>
+      <td>관세, 해외운송료, 국내운송료 개별 분류</td>
+    </tr>
+    <tr style="background:var(--bg3)">
+      <td>4</td>
+      <td><strong>재고 장부 상세</strong></td>
+      <td class="status-partial">부분</td>
+      <td>S6 재고입출하 + S7 대시보드</td>
+      <td>기초재고 7.9억 확인. SKU별 상세 미입력</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>부티크 미지급금 (AP)</strong></td>
+      <td class="status-ok">확보</td>
+      <td>S6 송금내역 + 부채현황</td>
+      <td>부티크부채 251억, 건별 송금(EUR), 결제조건(CARD/USANCE)</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>P&L (손익계산서)</strong></td>
+      <td class="status-ok">확보</td>
+      <td>S6 월별손익_현금/발생</td>
+      <td>거래액->환불->순매출->원가->GP->판관비->금융비용->FCF 완전체</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>자금집행 스케줄</strong></td>
+      <td class="status-ok">확보</td>
+      <td>S6 자금이슈</td>
+      <td>2~8월 필요거래액, 필요현금, 고정비, 법카상환, 유산스</td>
+    </tr>
+    <tr style="background:var(--bg3)">
+      <td>8</td>
+      <td><strong>B/S (대차대조표)</strong></td>
+      <td class="status-partial">부분</td>
+      <td>S6 부채현황 (부채측만)</td>
+      <td>부채 457억 확보. 자산측(현금, 재고, 매출채권) 미확보</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- PART 4: CAN / CANNOT -->
+<h2>
+  <span>PART 4</span>
+  <span class="badge" style="background:rgba(57,210,192,0.15);color:var(--cyan)">현재 구현 가능한 것 vs 불가능한 것</span>
+</h2>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;border-top:3px solid var(--green)">
+    <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:12px;">구현 가능 (15개)</div>
+    <div style="font-size:12px;line-height:2;">
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>1.</strong> 완전한 월별 P&L & FCF <span style="color:var(--text2)">-- S6 월별손익</span></div>
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>2.</strong> 총부채 457억 구조 분해 & 추이 <span style="color:var(--text2)">-- S6 부채현황</span></div>
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>3.</strong> 영업이익 (EBIT) 정확 산출 <span style="color:var(--text2)">-- S6 P&L + 법카</span></div>
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>4.</strong> 재무CF & 순현금잔액 <span style="color:var(--text2)">-- S6 금융비용 + 부채</span></div>
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>5.</strong> 비용 구조 상세 분해 (관세/물류/급여) <span style="color:var(--text2)">-- S6 법카 계정분류</span></div>
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>6.</strong> 부티크 AP 잔액 & 결제 추적 <span style="color:var(--text2)">-- S6 송금 + 부채</span></div>
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>7.</strong> 26년 FCF 예측 (1->2.67억) <span style="color:var(--text2)">-- S6 수조 예측</span></div>
+      <div><strong>8.</strong> 취소율 DMAIC 개선 추적 <span style="color:var(--text2)">-- S7 TF(취소)</span></div>
+      <div><strong>9.</strong> 부서별 KPI 달성률 <span style="color:var(--text2)">-- S7 Key Data</span></div>
+      <div><strong>10.</strong> GP 48개월 시계열 <span style="color:var(--text2)">-- S1 x MUR</span></div>
+      <div><strong>11.</strong> 일별 수조 워터폴 <span style="color:var(--text2)">-- S4 파이프라인</span></div>
+      <div><strong>12.</strong> 부티크 수익성 매트릭스 <span style="color:var(--text2)">-- S2 x S3</span></div>
+      <div><strong>13.</strong> 반품률 임팩트 시뮬레이션 <span style="color:var(--text2)">-- S1 + S4</span></div>
+      <div><strong>14.</strong> 고객 LTV / 마케팅 효율 <span style="color:var(--text2)">-- S1 코호트</span></div>
+      <div><strong>15.</strong> 환율 변동 원가 영향 <span style="color:var(--text2)">-- S3 x S2</span></div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;border-top:3px solid var(--yellow)">
+    <div style="font-size:14px;font-weight:700;color:var(--yellow);margin-bottom:12px;">잔여 제한 (2개)</div>
+    <div style="font-size:12px;line-height:2;">
+      <div><strong>1.</strong> SKU별 재고 상세 (체화/회전율) <span style="color:var(--text2)">-- 총액만 확보, SKU 미확보</span></div>
+      <div><strong>2.</strong> B/S 자산측 (현금+재고+매출채권) <span style="color:var(--text2)">-- 부채측만 완전</span></div>
+    </div>
+    <div style="margin-top:16px;padding:10px 12px;background:var(--bg3);border-radius:6px;font-size:11px;color:var(--green);">
+      P&L / 부채 / 비용구조 / AP / 자금예측이 모두 확보되어 <strong>턴어라운드 분석의 95%</strong>가 데이터 기반으로 가능
+    </div>
+  </div>
+</div>
+
+<!-- PART 5: NEXT ACTION -->
+<h2>
+  <span>PART 5</span>
+  <span class="badge" style="background:rgba(210,153,34,0.15);color:var(--yellow)">다음 단계 액션</span>
+</h2>
+
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;">
+  <div style="font-size:13px;line-height:2.2;">
+    <div style="display:grid;grid-template-columns:40px 1fr;gap:0 12px;align-items:start;">
+
+      <div style="text-align:center;font-weight:800;color:var(--green);font-size:16px;padding-top:2px;">&#x2713;</div>
+      <div>
+        <strong>데이터 파이프라인 구축</strong> -- S6/S7 xlsx 로컬 다운로드 + 12개/10개 CSV 추출 완료<br>
+        <span style="color:var(--text2);font-size:11px;">-> gsheet_connector.py (xlsx/API 듀얼모드) 준비됨. API 모드는 GCP OAuth2 클라이언트 ID 필요</span>
+      </div>
+
+      <div style="text-align:center;font-weight:800;color:var(--green);font-size:16px;padding-top:2px;">&#x2713;</div>
+      <div>
+        <strong>데이터덱 Phase 2 구현</strong> -- S6 P&L/부채 데이터를 데이터덱 대시보드에 통합 <span class="new-tag">완료</span><br>
+        <span style="color:var(--text2);font-size:11px;">-> 재무분석 탭: FCF 워터폴, 부채 추이, P&L 상세, 대출 스케줄 구현 완료 (03-05)</span>
+      </div>
+
+      <div style="text-align:center;font-weight:800;color:var(--orange);font-size:16px;padding-top:2px;">1</div>
+      <div>
+        <strong>완벽한 자금수지 대시보드 v2 구축</strong> -- 8개 섹션 독립 자금수지 대시보드<br>
+        <span style="color:var(--text2);font-size:11px;">-> 영업CF 워터폴, 재무CF, 순현금 추이, 부채관리, FCF 예측, 비용구조, 일별 수조</span>
+      </div>
+
+      <div style="text-align:center;font-weight:800;color:var(--orange);font-size:16px;padding-top:2px;">2</div>
+      <div>
+        <strong>GCP OAuth2 셋업</strong> -- Google Sheets API 자동 연동으로 실시간 데이터 갱신<br>
+        <span style="color:var(--text2);font-size:11px;">-> GCP Console에서 OAuth2 클라이언트 ID 생성 + client_secret.json 배치 후 gsheet_connector.py --api 실행</span>
+      </div>
+
+      <div style="text-align:center;font-weight:800;color:var(--yellow);font-size:16px;padding-top:2px;">3</div>
+      <div>
+        <strong>잔여 Gap 확보</strong> -- 재고 SKU 상세 (ERP/창고시스템) + B/S 자산측 (재무팀)<br>
+        <span style="color:var(--text2);font-size:11px;">-> 이 2개만 추가되면 데이터 인벤토리 100% 완성</span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  JENTE Data Inventory Map v3 -- 2026-03-05 &middot; 7개 소스, 37개 데이터셋 + financial 8종<br>
+  Generated by Claude Code &middot; 피트스탑 턴어라운드 팀
+</div>
+
+</div>
+</body>
+</html>

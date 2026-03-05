@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JENTE 자금수지 v2.0</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<style>
+:root {
+  --bg: #0a0e14; --bg2: #111820; --bg3: #171f2a; --bg4: #1d2735;
+  --text: #e2e8f0; --text2: #8899a6; --text3: #556677;
+  --border: #1e2d3d; --border2: #2a3a4d;
+  --green: #00d97e; --green-bg: rgba(0,217,126,0.08);
+  --red: #ff6b6b; --red-bg: rgba(255,107,107,0.08);
+  --yellow: #ffc107; --yellow-bg: rgba(255,193,7,0.08);
+  --blue: #4da6ff; --blue-bg: rgba(77,166,255,0.08);
+  --purple: #a78bfa; --cyan: #22d3ee; --orange: #f59e0b;
+  --accent: #4da6ff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+  background: var(--bg); color: var(--text); line-height: 1.5;
+}
+
+/* PIN overlay */
+#pin-overlay {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center; z-index: 9999;
+}
+#pin-box {
+  text-align: center; padding: 40px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; min-width: 320px;
+}
+#pin-box h2 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+#pin-box p { font-size: 12px; color: var(--text2); margin-bottom: 20px; }
+#pin-input {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 6px;
+  color: var(--text); font-size: 24px; letter-spacing: 12px; text-align: center;
+  padding: 12px 20px; width: 200px; outline: none;
+  font-family: inherit;
+}
+#pin-input:focus { border-color: var(--accent); }
+#pin-error { color: var(--red); font-size: 11px; margin-top: 8px; display: none; }
+
+/* Header */
+.header {
+  padding: 16px 24px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100;
+}
+.header h1 { font-size: 16px; font-weight: 700; white-space: nowrap; }
+.header h1 span { color: var(--accent); font-weight: 400; font-size: 12px; }
+.header-controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.month-select {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); padding: 6px 12px; font-size: 12px; font-family: inherit;
+}
+
+/* Nav */
+.nav {
+  padding: 8px 24px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  display: flex; gap: 4px; overflow-x: auto;
+}
+.nav-btn {
+  background: none; border: 1px solid transparent; border-radius: 6px;
+  color: var(--text2); padding: 6px 14px; font-size: 12px; cursor: pointer;
+  font-family: inherit; white-space: nowrap; transition: all 0.15s;
+}
+.nav-btn:hover { color: var(--text); background: var(--bg3); }
+.nav-btn.active { color: var(--accent); border-color: var(--accent); background: var(--blue-bg); }
+
+/* Main */
+.main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* Cards */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.kpi-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; border-top: 3px solid var(--border2);
+}
+.kpi-card.green { border-top-color: var(--green); }
+.kpi-card.red { border-top-color: var(--red); }
+.kpi-card.yellow { border-top-color: var(--yellow); }
+.kpi-card.blue { border-top-color: var(--blue); }
+.kpi-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-value { font-size: 28px; font-weight: 700; margin: 4px 0; }
+.kpi-sub { font-size: 11px; color: var(--text2); }
+.kpi-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600;
+}
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+.badge-blue { background: var(--blue-bg); color: var(--blue); }
+
+/* Panels */
+.panel {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 20px; margin-bottom: 16px;
+}
+.panel-title {
+  font-size: 13px; font-weight: 700; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-title .tag {
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+  background: var(--blue-bg); color: var(--accent);
+}
+
+/* Tables */
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th {
+  text-align: left; padding: 8px 10px; font-size: 10px; font-weight: 600;
+  color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border); background: var(--bg3);
+  position: sticky; top: 0;
+}
+.data-table td {
+  padding: 6px 10px; border-bottom: 1px solid rgba(30,45,61,0.5);
+  font-variant-numeric: tabular-nums;
+}
+.data-table tr:hover td { background: rgba(77,166,255,0.03); }
+.text-right { text-align: right; }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+.text-yellow { color: var(--yellow); }
+.text-muted { color: var(--text2); }
+
+/* Charts */
+.chart-wrap { position: relative; height: 300px; margin: 12px 0; }
+.chart-wrap.tall { height: 400px; }
+
+/* Grid layouts */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* Signal light */
+.signal { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.signal.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.signal.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.signal.yellow { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
+
+/* Waterfall */
+.waterfall-label { font-size: 11px; color: var(--text2); text-align: center; margin-top: 4px; }
+
+/* Slider */
+.sim-slider {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 8px;
+  font-size: 12px;
+}
+.sim-slider label { min-width: 100px; color: var(--text2); }
+.sim-slider input[type=range] { flex: 1; accent-color: var(--accent); }
+.sim-slider .val { min-width: 80px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .header { flex-wrap: wrap; }
+}
+@media (max-width: 600px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+  .main { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- PIN Overlay -->
+<div id="pin-overlay">
+  <div id="pin-box">
+    <h2>JENTE 자금수지 v2.0</h2>
+    <p>Confidential &middot; PIN Required</p>
+    <input type="password" id="pin-input" maxlength="4" placeholder="----" autofocus>
+    <div id="pin-error">Incorrect PIN</div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header" id="app" style="display:none;">
+  <h1>JENTE 자금수지 <span>v2.0</span></h1>
+  <div class="header-controls">
+    <select class="month-select" id="month-select"></select>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav" id="nav" style="display:none;">
+  <button class="nav-btn active" data-section="summary">요약</button>
+  <button class="nav-btn" data-section="operating">영업CF</button>
+  <button class="nav-btn" data-section="financing">재무CF</button>
+  <button class="nav-btn" data-section="netcash">순현금</button>
+  <button class="nav-btn" data-section="debt">부채</button>
+  <button class="nav-btn" data-section="forecast">예측</button>
+  <button class="nav-btn" data-section="cost">비용</button>
+  <button class="nav-btn" data-section="daily">일별</button>
+</div>
+
+<!-- Main Content -->
+<div class="main" id="main-content" style="display:none;">
+
+<!-- S1: Executive Summary -->
+<div class="section active" id="sec-summary">
+  <div class="kpi-grid" id="kpi-cards"></div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">FCF 월별 추이 <span class="tag">현금주의</span></div>
+      <div class="chart-wrap"><canvas id="chart-fcf-trend"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">총부채 추이 <span class="tag">11개월</span></div>
+      <div class="chart-wrap"><canvas id="chart-debt-trend-mini"></canvas></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">월별 P&L 요약</div>
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="tbl-pnl-summary"></table>
+    </div>
+  </div>
+</div>
+
+<!-- S2: Operating CF Waterfall -->
+<div class="section" id="sec-operating">
+  <div class="panel">
+    <div class="panel-title">영업 현금흐름 워터폴 <span class="tag" id="op-month-tag">선택월</span></div>
+    <div class="chart-wrap tall"><canvas id="chart-waterfall-op"></canvas></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">현금주의 vs 발생주의 비교</div>
+      <table class="data-table" id="tbl-cash-vs-accrual"></table>
+    </div>
+    <div class="panel">
+      <div class="panel-title">영업CF MoM 추이</div>
+      <div class="chart-wrap"><canvas id="chart-opcf-mom"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- S3: Financing CF -->
+<div class="section" id="sec-financing">
+  <div class="kpi-grid" id="kpi-financing"></div>
+  <div class="panel">
+    <div class="panel-title">재무 현금흐름 워터폴 <span class="tag" id="fin-month-tag">선택월</span></div>
+    <div class="chart-wrap tall"><canvas id="chart-waterfall-fin"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">금융비용 상세</div>
+    <table class="data-table" id="tbl-finance-detail"></table>
+  </div>
+</div>
+
+<!-- S4: Net Cash Trend -->
+<div class="section" id="sec-netcash">
+  <div class="panel">
+    <div class="panel-title">순현금 추이 (실적 + 예측) <span class="tag">10개월</span></div>
+    <div class="chart-wrap tall"><canvas id="chart-netcash"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">실적 vs 예측 데이터</div>
+    <table class="data-table" id="tbl-netcash"></table>
+  </div>
+</div>
+
+<!-- S5: Debt Management -->
+<div class="section" id="sec-debt">
+  <div class="kpi-grid" id="kpi-debt"></div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">부채 카테고리별 추이 <span class="tag">7카테고리</span></div>
+      <div class="chart-wrap tall"><canvas id="chart-debt-stacked"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">최신월 부채 비중</div>
+      <div class="chart-wrap tall"><canvas id="chart-debt-donut"></canvas></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">대출 상환 스케줄 <span class="tag" id="debt-lines-count">14 Lines</span></div>
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="tbl-debt-schedule"></table>
+    </div>
+  </div>
+</div>
+
+<!-- S6: Forecast vs Actual -->
+<div class="section" id="sec-forecast">
+  <div class="panel">
+    <div class="panel-title">예측 FCF vs 실적 FCF</div>
+    <div class="chart-wrap tall"><canvas id="chart-forecast"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">시나리오 시뮬레이터</div>
+    <div id="simulator">
+      <div class="sim-slider">
+        <label>GMV (억)</label>
+        <input type="range" id="sim-gmv" min="20" max="80" value="34" step="1">
+        <span class="val" id="sim-gmv-val">34</span>
+      </div>
+      <div class="sim-slider">
+        <label>환불율 (%)</label>
+        <input type="range" id="sim-refund" min="15" max="55" value="34" step="1">
+        <span class="val" id="sim-refund-val">34%</span>
+      </div>
+      <div class="sim-slider">
+        <label>원가율 (%)</label>
+        <input type="range" id="sim-cogs" min="60" max="95" value="77" step="1">
+        <span class="val" id="sim-cogs-val">77%</span>
+      </div>
+      <div style="margin-top:16px;padding:16px;background:var(--bg3);border-radius:8px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;">
+          <div><div class="kpi-label">순매출</div><div id="sim-rev" style="font-size:20px;font-weight:700;">-</div></div>
+          <div><div class="kpi-label">GP</div><div id="sim-gp" style="font-size:20px;font-weight:700;">-</div></div>
+          <div><div class="kpi-label">영업CF</div><div id="sim-opcf" style="font-size:20px;font-weight:700;">-</div></div>
+          <div><div class="kpi-label">FCF</div><div id="sim-fcf" style="font-size:20px;font-weight:700;">-</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">예측 정확도 분석</div>
+    <table class="data-table" id="tbl-forecast"></table>
+  </div>
+</div>
+
+<!-- S7: Cost Structure -->
+<div class="section" id="sec-cost">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-title">비용 구조 (최신월)</div>
+      <div class="chart-wrap tall"><canvas id="chart-cost-bar"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">원가율 / GP율 / 영업이익률 추이</div>
+      <div class="chart-wrap tall"><canvas id="chart-margin-trend"></canvas></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">월별 비용 상세</div>
+    <div style="overflow-x:auto;">
+      <table class="data-table" id="tbl-cost-detail"></table>
+    </div>
+  </div>
+</div>
+
+<!-- S8: Daily Cash Flow -->
+<div class="section" id="sec-daily">
+  <div class="panel">
+    <div class="panel-title">일별 자금수지 <span class="tag">3월</span></div>
+    <div class="chart-wrap tall"><canvas id="chart-daily"></canvas></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">일별 데이터</div>
+    <table class="data-table" id="tbl-daily"></table>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ─── Utilities ───
+const fmt = (n, d=0) => {
+  if (n == null || isNaN(n)) return '-';
+  return n.toLocaleString('ko-KR', {minimumFractionDigits: d, maximumFractionDigits: d});
+};
+const fmtB = (n) => {  // 억 단위
+  if (n == null || isNaN(n)) return '-';
+  const v = n / 1e8;
+  return v.toFixed(1) + '억';
+};
+const fmtM = (n) => {  // 백만 단위
+  if (n == null || isNaN(n)) return '-';
+  return (n / 1e6).toFixed(0) + 'M';
+};
+const pct = (n) => {
+  if (n == null || isNaN(n)) return '-';
+  return (n * 100).toFixed(1) + '%';
+};
+const colorVal = (n, inv=false) => {
+  if (n == null || isNaN(n)) return '';
+  const pos = inv ? n < 0 : n > 0;
+  return pos ? 'text-green' : n < 0 && !inv ? 'text-red' : (n > 0 && inv ? 'text-red' : '');
+};
+const shortMonth = (m) => {
+  if (!m) return '';
+  const [y, mo] = m.split('-');
+  return `${y.slice(2)}.${mo}`;
+};
+
+// ─── Data Access ───
+const FIN = (typeof RAW !== 'undefined' && RAW.financial) ? RAW.financial : {};
+const MONTHLY = (typeof RAW !== 'undefined' && RAW.monthly) ? RAW.monthly : [];
+
+// ─── PIN ───
+document.getElementById('pin-input').addEventListener('input', function() {
+  if (this.value === '2026') {
+    document.getElementById('pin-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('nav').style.display = 'flex';
+    document.getElementById('main-content').style.display = 'block';
+    initApp();
+  } else if (this.value.length >= 4) {
+    document.getElementById('pin-error').style.display = 'block';
+    this.value = '';
+  }
+});
+
+// ─── Navigation ───
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + btn.dataset.section).classList.add('active');
+  });
+});
+
+// ─── Chart defaults ───
+Chart.defaults.color = '#8899a6';
+Chart.defaults.borderColor = '#1e2d3d';
+Chart.defaults.font.family = "'SF Mono','Cascadia Code','Fira Code','Consolas',monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.padding = 12;
+
+// ─── Month Selector ───
+function populateMonthSelect() {
+  const sel = document.getElementById('month-select');
+  const fcf = FIN.fcf || [];
+  if (fcf.length === 0) return;
+  fcf.slice().reverse().forEach((d, i) => {
+    const opt = document.createElement('option');
+    opt.value = d.month;
+    opt.textContent = d.month;
+    if (i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', () => renderAll(sel.value));
+}
+
+let charts = {};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+// ─── Signal Logic ───
+function getSignal(opcf) {
+  if (opcf == null) return { cls: 'yellow', text: 'N/A' };
+  if (opcf > 3e8) return { cls: 'green', text: 'Strong' };
+  if (opcf > 2e8) return { cls: 'yellow', text: 'Marginal' };
+  return { cls: 'red', text: 'Alert' };
+}
+
+// ─── INIT ───
+function initApp() {
+  populateMonthSelect();
+  const sel = document.getElementById('month-select');
+  const month = sel.value || (FIN.fcf && FIN.fcf.length ? FIN.fcf[FIN.fcf.length - 1].month : '');
+  renderAll(month);
+  initSimulator();
+}
+
+function renderAll(selectedMonth) {
+  renderSummary(selectedMonth);
+  renderOperating(selectedMonth);
+  renderFinancing(selectedMonth);
+  renderNetCash();
+  renderDebt();
+  renderForecast();
+  renderCost();
+  renderDaily();
+}
+
+// ═══════════════════════════════════════
+// S1: EXECUTIVE SUMMARY
+// ═══════════════════════════════════════
+function renderSummary(month) {
+  const fcfData = (FIN.fcf || []).find(d => d.month === month);
+  const debtData = (FIN.debt || []);
+  const latestDebt = debtData.length ? debtData[debtData.length - 1] : null;
+  const repayData = (FIN.monthly_repayment || []).find(d => d.month === month);
+
+  const opcf = fcfData ? fcfData.gross_profit : null;
+  const fcfVal = fcfData ? fcfData.fcf : null;
+  const finCost = fcfData ? fcfData.finance_cost : null;
+  const totalDebt = latestDebt ? latestDebt.total : null;
+
+  const sig = getSignal(opcf);
+
+  const cardsEl = document.getElementById('kpi-cards');
+  cardsEl.innerHTML = `
+    <div class="kpi-card ${sig.cls}">
+      <div class="kpi-label"><span class="signal ${sig.cls}"></span>영업 CF (GP)</div>
+      <div class="kpi-value">${fmtB(opcf)}</div>
+      <div class="kpi-sub">${month} | ${sig.text}</div>
+    </div>
+    <div class="kpi-card ${fcfVal > 0 ? 'green' : 'red'}">
+      <div class="kpi-label">FCF (순현금)</div>
+      <div class="kpi-value">${fmtB(fcfVal)}</div>
+      <div class="kpi-sub">${month} | 금융비용 차감 후</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">금융비용</div>
+      <div class="kpi-value">${fmtB(finCost)}</div>
+      <div class="kpi-sub">${month} | 이자 + 원금상환</div>
+    </div>
+    <div class="kpi-card ${totalDebt > 45e9 ? 'red' : 'yellow'}">
+      <div class="kpi-label">총부채</div>
+      <div class="kpi-value">${fmtB(totalDebt)}</div>
+      <div class="kpi-sub">${latestDebt ? latestDebt.month : '-'} | 7카테고리</div>
+    </div>
+  `;
+
+  // FCF trend mini chart
+  destroyChart('chart-fcf-trend');
+  const fcfArr = FIN.fcf || [];
+  charts['chart-fcf-trend'] = new Chart(document.getElementById('chart-fcf-trend'), {
+    type: 'bar',
+    data: {
+      labels: fcfArr.map(d => shortMonth(d.month)),
+      datasets: [{
+        label: 'FCF',
+        data: fcfArr.map(d => d.fcf / 1e8),
+        backgroundColor: fcfArr.map(d => d.fcf >= 0 ? 'rgba(0,217,126,0.6)' : 'rgba(255,107,107,0.6)'),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c) => c.parsed.y.toFixed(1) + '억' } }
+      },
+      scales: {
+        y: { title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Debt trend mini chart
+  destroyChart('chart-debt-trend-mini');
+  charts['chart-debt-trend-mini'] = new Chart(document.getElementById('chart-debt-trend-mini'), {
+    type: 'line',
+    data: {
+      labels: debtData.map(d => shortMonth(d.month)),
+      datasets: [{
+        label: '총부채',
+        data: debtData.map(d => d.total / 1e8),
+        borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,0.1)',
+        fill: true, tension: 0.3, pointRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: (c) => c.parsed.y.toFixed(0) + '억' } }
+      },
+      scales: {
+        y: { title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // P&L summary table
+  const pnl = FIN.pnl || [];
+  const tbl = document.getElementById('tbl-pnl-summary');
+  let html = '<thead><tr><th>항목</th>';
+  pnl.forEach(d => html += `<th class="text-right">${shortMonth(d.month)}</th>`);
+  html += '</tr></thead><tbody>';
+  const rows = [
+    ['GMV', d => d.gmv], ['환불+취소', d => (d.cancel||0)+(d.return||0)],
+    ['순매출', d => d.revenue], ['원가', d => d.cogs],
+    ['GP', d => d.gross_profit], ['판관비', d => d.sga],
+    ['영업이익', d => d.operating_income],
+  ];
+  rows.forEach(([label, fn]) => {
+    html += `<tr><td><strong>${label}</strong></td>`;
+    pnl.forEach(d => {
+      const v = fn(d);
+      html += `<td class="text-right ${colorVal(v)}">${fmtM(v)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// S2: OPERATING CF WATERFALL
+// ═══════════════════════════════════════
+function renderOperating(month) {
+  const fcfData = (FIN.fcf || []).find(d => d.month === month);
+  document.getElementById('op-month-tag').textContent = month;
+
+  destroyChart('chart-waterfall-op');
+  if (!fcfData) return;
+
+  const items = [
+    { label: 'GMV', val: fcfData.gmv, type: 'start' },
+    { label: '환불', val: -fcfData.refund, type: 'neg' },
+    { label: '순매출', val: fcfData.net_revenue, type: 'subtotal' },
+    { label: '원가', val: -fcfData.cogs, type: 'neg' },
+    { label: '판관비', val: -fcfData.sga_ops, type: 'neg' },
+    { label: 'GP', val: fcfData.gross_profit, type: 'subtotal' },
+    { label: '급여(직원)', val: -fcfData.salary_staff, type: 'neg' },
+    { label: '급여(임원)', val: -fcfData.salary_leader, type: 'neg' },
+    { label: '영업CF', val: fcfData.gross_profit - fcfData.salary_staff - fcfData.salary_leader, type: 'result' },
+  ];
+
+  // Build waterfall data - proper floating bars
+  let running = 0;
+  const bases = [], values = [], colors = [];
+  items.forEach(item => {
+    if (item.type === 'start') {
+      bases.push(0);
+      values.push(item.val / 1e8);
+      colors.push('rgba(77,166,255,0.7)');
+      running = item.val;
+    } else if (item.type === 'subtotal' || item.type === 'result') {
+      bases.push(0);
+      values.push(item.val / 1e8);
+      colors.push(item.val >= 0 ? 'rgba(0,217,126,0.7)' : 'rgba(255,107,107,0.7)');
+      running = item.val;
+    } else {
+      // Negative: base = new running total, height = amount removed
+      const absVal = Math.abs(item.val);
+      const newRunning = running + item.val;
+      bases.push(Math.min(running, newRunning) / 1e8);
+      values.push(absVal / 1e8);
+      colors.push('rgba(255,107,107,0.5)');
+      running = newRunning;
+    }
+  });
+
+  charts['chart-waterfall-op'] = new Chart(document.getElementById('chart-waterfall-op'), {
+    type: 'bar',
+    data: {
+      labels: items.map(i => i.label),
+      datasets: [
+        { label: 'base', data: bases, backgroundColor: 'transparent', borderWidth: 0, barPercentage: 0.6 },
+        { label: 'value', data: values, backgroundColor: colors, borderRadius: 4, barPercentage: 0.6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: (c) => c.datasetIndex === 1 ? c.parsed.y.toFixed(1) + '억' : '' } }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' },
+          ticks: { callback: v => v.toFixed(0) }
+        }
+      }
+    }
+  });
+
+  // Target lines annotation via plugin
+  const targetPlugin = {
+    id: 'targetLines',
+    afterDraw(chart) {
+      const yScale = chart.scales.y;
+      const ctx = chart.ctx;
+      [3, 2].forEach((target, i) => {
+        const y = yScale.getPixelForValue(target);
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = i === 0 ? '#00d97e' : '#ffc107';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(chart.chartArea.left, y);
+        ctx.lineTo(chart.chartArea.right, y);
+        ctx.stroke();
+        ctx.fillStyle = i === 0 ? '#00d97e' : '#ffc107';
+        ctx.font = '10px monospace';
+        ctx.fillText(i === 0 ? '목표 3억' : '커버 2억', chart.chartArea.right - 50, y - 4);
+        ctx.restore();
+      });
+    }
+  };
+  charts['chart-waterfall-op'].options.plugins.targetLines = true;
+
+  // Cash vs Accrual table
+  const pnlData = (FIN.pnl || []).find(d => d.month === month);
+  const tbl = document.getElementById('tbl-cash-vs-accrual');
+  if (pnlData && fcfData) {
+    tbl.innerHTML = `
+      <thead><tr><th>항목</th><th class="text-right">발생주의</th><th class="text-right">현금주의</th><th class="text-right">차이</th></tr></thead>
+      <tbody>
+        <tr><td>순매출</td><td class="text-right">${fmtM(pnlData.revenue)}</td><td class="text-right">${fmtM(fcfData.net_revenue)}</td><td class="text-right ${colorVal(fcfData.net_revenue - pnlData.revenue)}">${fmtM(fcfData.net_revenue - pnlData.revenue)}</td></tr>
+        <tr><td>원가</td><td class="text-right">${fmtM(pnlData.cogs)}</td><td class="text-right">${fmtM(fcfData.cogs)}</td><td class="text-right">${fmtM(fcfData.cogs - pnlData.cogs)}</td></tr>
+        <tr><td>GP</td><td class="text-right ${colorVal(pnlData.gross_profit)}">${fmtM(pnlData.gross_profit)}</td><td class="text-right ${colorVal(fcfData.gross_profit)}">${fmtM(fcfData.gross_profit)}</td><td class="text-right">${fmtM(fcfData.gross_profit - pnlData.gross_profit)}</td></tr>
+      </tbody>`;
+  }
+
+  // OpCF MoM chart
+  destroyChart('chart-opcf-mom');
+  const fcfArr = FIN.fcf || [];
+  charts['chart-opcf-mom'] = new Chart(document.getElementById('chart-opcf-mom'), {
+    type: 'bar',
+    data: {
+      labels: fcfArr.map(d => shortMonth(d.month)),
+      datasets: [{
+        label: 'GP (영업CF)',
+        data: fcfArr.map(d => d.gross_profit / 1e8),
+        backgroundColor: fcfArr.map(d => d.gross_profit >= 0 ? 'rgba(0,217,126,0.5)' : 'rgba(255,107,107,0.5)'),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// S3: FINANCING CF
+// ═══════════════════════════════════════
+function renderFinancing(month) {
+  const fcfData = (FIN.fcf || []).find(d => d.month === month);
+  const repay = (FIN.monthly_repayment || []).find(d => d.month === month);
+  document.getElementById('fin-month-tag').textContent = month;
+
+  const finCost = fcfData ? fcfData.finance_cost : 0;
+  const repayAmt = repay ? repay.amount : 0;
+  const opcf = fcfData ? (fcfData.gross_profit - fcfData.salary_staff - fcfData.salary_leader) : 0;
+  const netCash = opcf - finCost;
+  const dscr = (finCost + repayAmt) > 0 ? opcf / (finCost + repayAmt) : 0;
+
+  const kpi = document.getElementById('kpi-financing');
+  kpi.innerHTML = `
+    <div class="kpi-card blue">
+      <div class="kpi-label">영업CF</div>
+      <div class="kpi-value">${fmtB(opcf)}</div>
+      <div class="kpi-sub">GP - 급여</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">금융이자</div>
+      <div class="kpi-value">${fmtB(finCost)}</div>
+      <div class="kpi-sub">${month}</div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">원금상환</div>
+      <div class="kpi-value">${fmtB(repayAmt)}</div>
+      <div class="kpi-sub">${month}</div>
+    </div>
+    <div class="kpi-card ${dscr >= 1.2 ? 'green' : dscr >= 1.0 ? 'yellow' : 'red'}">
+      <div class="kpi-label">DSCR</div>
+      <div class="kpi-value">${dscr.toFixed(2)}x</div>
+      <div class="kpi-sub">${dscr >= 1.2 ? 'Safe' : dscr >= 1.0 ? 'Marginal' : 'Under Coverage'}</div>
+    </div>
+  `;
+
+  // Financing waterfall
+  destroyChart('chart-waterfall-fin');
+  const items = [
+    { label: '영업CF', val: opcf / 1e8, color: 'rgba(0,217,126,0.7)' },
+    { label: '금융이자', val: -finCost / 1e8, color: 'rgba(255,107,107,0.5)' },
+    { label: '원금상환', val: -repayAmt / 1e8, color: 'rgba(255,107,107,0.5)' },
+    { label: '순현금', val: netCash / 1e8, color: netCash >= 0 ? 'rgba(0,217,126,0.7)' : 'rgba(255,107,107,0.7)' },
+  ];
+
+  let run = 0;
+  const bases2 = [], vals2 = [], colors2 = [];
+  items.forEach((item, i) => {
+    if (i === 0 || i === items.length - 1) {
+      bases2.push(0); vals2.push(item.val); colors2.push(item.color);
+      run = item.val;
+    } else {
+      const newRun = run + item.val;
+      bases2.push(Math.min(run, newRun));
+      vals2.push(Math.abs(item.val));
+      colors2.push(item.color);
+      run = newRun;
+    }
+  });
+
+  charts['chart-waterfall-fin'] = new Chart(document.getElementById('chart-waterfall-fin'), {
+    type: 'bar',
+    data: {
+      labels: items.map(i => i.label),
+      datasets: [
+        { label: 'base', data: bases2, backgroundColor: 'transparent', borderWidth: 0, barPercentage: 0.5 },
+        { label: 'value', data: vals2, backgroundColor: colors2, borderRadius: 4, barPercentage: 0.5 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => c.datasetIndex === 1 ? c.parsed.y.toFixed(1) + '억' : '' } }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' } }
+      }
+    }
+  });
+
+  // Finance detail table
+  const tbl = document.getElementById('tbl-finance-detail');
+  const fcfArr = FIN.fcf || [];
+  let html = '<thead><tr><th>항목</th>';
+  fcfArr.forEach(d => html += `<th class="text-right">${shortMonth(d.month)}</th>`);
+  html += '</tr></thead><tbody>';
+  html += '<tr><td>금융비용</td>';
+  fcfArr.forEach(d => html += `<td class="text-right text-red">${fmtM(d.finance_cost)}</td>`);
+  html += '</tr><tr><td>FCF</td>';
+  fcfArr.forEach(d => html += `<td class="text-right ${colorVal(d.fcf)}">${fmtM(d.fcf)}</td>`);
+  html += '</tr></tbody>';
+  tbl.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// S4: NET CASH TREND
+// ═══════════════════════════════════════
+function renderNetCash() {
+  const actual = (FIN.fcf || []).map(d => ({ month: d.month, fcf: d.fcf, type: 'actual' }));
+  const forecast = (FIN.forecast || []).map(d => ({ month: d.month, fcf: d.fcf, type: 'forecast' }));
+  const combined = [...actual, ...forecast];
+
+  destroyChart('chart-netcash');
+  charts['chart-netcash'] = new Chart(document.getElementById('chart-netcash'), {
+    type: 'bar',
+    data: {
+      labels: combined.map(d => shortMonth(d.month)),
+      datasets: [
+        {
+          label: '실적 FCF',
+          data: combined.map(d => d.type === 'actual' ? d.fcf / 1e8 : null),
+          backgroundColor: combined.map(d => d.fcf >= 0 ? 'rgba(0,217,126,0.6)' : 'rgba(255,107,107,0.6)'),
+          borderRadius: 4,
+        },
+        {
+          label: '예측 FCF',
+          data: combined.map(d => d.type === 'forecast' ? d.fcf / 1e8 : null),
+          backgroundColor: 'rgba(77,166,255,0.3)',
+          borderColor: 'rgba(77,166,255,0.8)',
+          borderWidth: 2,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        tooltip: { callbacks: { label: c => c.parsed.y ? c.parsed.y.toFixed(1) + '억' : '' } }
+      },
+      scales: {
+        y: { title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Table
+  const tbl = document.getElementById('tbl-netcash');
+  let html = '<thead><tr><th>월</th><th class="text-right">FCF</th><th class="text-right">FCF%</th><th>구분</th></tr></thead><tbody>';
+  combined.forEach(d => {
+    const fcfPct = d.type === 'forecast' ? ((FIN.forecast || []).find(f => f.month === d.month) || {}).fcf_pct : null;
+    html += `<tr>
+      <td>${d.month}</td>
+      <td class="text-right ${colorVal(d.fcf)}">${fmtB(d.fcf)}</td>
+      <td class="text-right">${fcfPct != null ? pct(fcfPct) : '-'}</td>
+      <td><span class="kpi-badge ${d.type === 'actual' ? 'badge-green' : 'badge-blue'}">${d.type === 'actual' ? '실적' : '예측'}</span></td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// S5: DEBT MANAGEMENT
+// ═══════════════════════════════════════
+function renderDebt() {
+  const debt = FIN.debt || [];
+  if (debt.length === 0) return;
+  const latest = debt[debt.length - 1];
+  const prev = debt.length >= 2 ? debt[debt.length - 2] : null;
+  const mom = prev ? latest.total - prev.total : 0;
+  const gowidPct = latest.gowid / latest.total;
+
+  const kpi = document.getElementById('kpi-debt');
+  kpi.innerHTML = `
+    <div class="kpi-card red">
+      <div class="kpi-label">총부채</div>
+      <div class="kpi-value">${fmtB(latest.total)}</div>
+      <div class="kpi-sub">${latest.month}</div>
+    </div>
+    <div class="kpi-card ${mom > 0 ? 'red' : 'green'}">
+      <div class="kpi-label">MoM 변화</div>
+      <div class="kpi-value">${mom > 0 ? '+' : ''}${fmtB(mom)}</div>
+      <div class="kpi-sub">전월 대비</div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">고위드 비중</div>
+      <div class="kpi-value">${pct(gowidPct)}</div>
+      <div class="kpi-sub">${fmtB(latest.gowid)}</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">금융부채</div>
+      <div class="kpi-value">${fmtB(latest.financial)}</div>
+      <div class="kpi-sub">${pct(latest.financial / latest.total)}</div>
+    </div>
+  `;
+
+  // Stacked bar
+  destroyChart('chart-debt-stacked');
+  const cats = [
+    { key: 'corp_card', label: '법인카드', color: '#4da6ff' },
+    { key: 'boutique', label: '부티크', color: '#a78bfa' },
+    { key: 'customer_refund', label: '환불', color: '#f59e0b' },
+    { key: 'musinsa', label: '무신사', color: '#22d3ee' },
+    { key: 'gowid', label: '고위드', color: '#ff6b6b' },
+    { key: 'financial', label: '금융', color: '#f472b6' },
+    { key: 'other_ops', label: '기타', color: '#8899a6' },
+  ];
+
+  charts['chart-debt-stacked'] = new Chart(document.getElementById('chart-debt-stacked'), {
+    type: 'bar',
+    data: {
+      labels: debt.map(d => shortMonth(d.month)),
+      datasets: cats.map(c => ({
+        label: c.label,
+        data: debt.map(d => (d[c.key] || 0) / 1e8),
+        backgroundColor: c.color + '99',
+        borderRadius: 2,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toFixed(0) + '억' } }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' } }
+      }
+    }
+  });
+
+  // Donut
+  destroyChart('chart-debt-donut');
+  const donutData = cats.map(c => (latest[c.key] || 0) / 1e8);
+  charts['chart-debt-donut'] = new Chart(document.getElementById('chart-debt-donut'), {
+    type: 'doughnut',
+    data: {
+      labels: cats.map(c => c.label),
+      datasets: [{ data: donutData, backgroundColor: cats.map(c => c.color + 'cc'), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '55%',
+      plugins: {
+        tooltip: { callbacks: { label: c => c.label + ': ' + c.parsed.toFixed(0) + '억 (' + ((c.parsed / donutData.reduce((a,b) => a+b, 0)) * 100).toFixed(1) + '%)' } }
+      }
+    }
+  });
+
+  // Debt schedule table
+  const schedule = FIN.debt_schedule || [];
+  document.getElementById('debt-lines-count').textContent = schedule.length + ' Lines';
+  const tbl = document.getElementById('tbl-debt-schedule');
+  if (schedule.length === 0) { tbl.innerHTML = '<tr><td>No data</td></tr>'; return; }
+  const months = Object.keys(schedule[0].balances || {}).sort();
+  let html = '<thead><tr><th>대출명</th><th>만기</th><th>대주</th>';
+  months.forEach(m => html += `<th class="text-right">${shortMonth(m)}</th>`);
+  html += '</tr></thead><tbody>';
+  schedule.forEach(loan => {
+    const matDate = loan.maturity ? new Date(loan.maturity) : null;
+    const now = new Date();
+    const monthsLeft = matDate ? ((matDate.getFullYear() - now.getFullYear()) * 12 + matDate.getMonth() - now.getMonth()) : 999;
+    const matCls = monthsLeft < 3 ? 'text-red' : monthsLeft < 6 ? 'text-yellow' : '';
+    html += `<tr><td>${loan.name || '-'}</td><td class="${matCls}">${loan.maturity || '-'}</td><td>${loan.lender || '-'}</td>`;
+    months.forEach(m => {
+      const bal = (loan.balances || {})[m];
+      html += `<td class="text-right">${bal != null ? fmtM(bal) : '-'}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// S6: FORECAST VS ACTUAL
+// ═══════════════════════════════════════
+function renderForecast() {
+  const forecast = FIN.forecast || [];
+  const actual = FIN.fcf || [];
+
+  destroyChart('chart-forecast');
+
+  // Combine all months
+  const allMonths = [...new Set([...actual.map(d => d.month), ...forecast.map(d => d.month)])].sort();
+
+  charts['chart-forecast'] = new Chart(document.getElementById('chart-forecast'), {
+    type: 'bar',
+    data: {
+      labels: allMonths.map(m => shortMonth(m)),
+      datasets: [
+        {
+          label: '예측 FCF',
+          data: allMonths.map(m => { const f = forecast.find(d => d.month === m); return f ? f.fcf / 1e8 : null; }),
+          backgroundColor: 'rgba(77,166,255,0.4)', borderColor: 'rgba(77,166,255,0.8)',
+          borderWidth: 1, borderRadius: 4,
+        },
+        {
+          label: '실적 FCF',
+          type: 'scatter',
+          data: allMonths.map((m, i) => { const a = actual.find(d => d.month === m); return a ? { x: i, y: a.fcf / 1e8 } : null; }).filter(Boolean),
+          backgroundColor: '#00d97e', borderColor: '#00d97e',
+          pointRadius: 8, pointStyle: 'rectRounded',
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.parsed.y || 0).toFixed(1) + '억' } }
+      },
+      scales: {
+        y: { title: { display: true, text: '억원' }, grid: { color: 'rgba(30,45,61,0.5)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Forecast accuracy table
+  const tbl = document.getElementById('tbl-forecast');
+  let html = '<thead><tr><th>월</th><th class="text-right">예측 FCF</th><th class="text-right">실적 FCF</th><th class="text-right">Variance</th><th class="text-right">정확도</th></tr></thead><tbody>';
+  forecast.forEach(f => {
+    const a = actual.find(d => d.month === f.month);
+    const variance = a ? (a.fcf - f.fcf) : null;
+    const accuracy = (a && f.fcf !== 0) ? (1 - Math.abs(a.fcf - f.fcf) / Math.abs(f.fcf)) * 100 : null;
+    html += `<tr>
+      <td>${f.month}</td>
+      <td class="text-right">${fmtB(f.fcf)}</td>
+      <td class="text-right ${a ? colorVal(a.fcf) : ''}">${a ? fmtB(a.fcf) : '-'}</td>
+      <td class="text-right ${variance != null ? colorVal(variance) : ''}">${variance != null ? fmtB(variance) : '-'}</td>
+      <td class="text-right">${accuracy != null ? accuracy.toFixed(0) + '%' : '-'}</td>
+    </tr>`;
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+// ─── Simulator ───
+function initSimulator() {
+  const sliders = ['sim-gmv', 'sim-refund', 'sim-cogs'];
+  sliders.forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', updateSim);
+  });
+  updateSim();
+}
+
+function updateSim() {
+  const gmv = +document.getElementById('sim-gmv').value * 1e8;
+  const refundPct = +document.getElementById('sim-refund').value / 100;
+  const cogsPct = +document.getElementById('sim-cogs').value / 100;
+
+  document.getElementById('sim-gmv-val').textContent = document.getElementById('sim-gmv').value;
+  document.getElementById('sim-refund-val').textContent = document.getElementById('sim-refund').value + '%';
+  document.getElementById('sim-cogs-val').textContent = document.getElementById('sim-cogs').value + '%';
+
+  const rev = gmv * (1 - refundPct);
+  const cogs = rev * cogsPct;
+  const gp = rev - cogs;
+  const sga = 1.7e8; // ~판관비 1.7억 고정
+  const salary = 1.13e8; // 급여 1.13억
+  const opcf = gp - sga;
+  const finCost = 1.14e8; // 금융비용 1.14억
+  const fcf = opcf - salary - finCost;
+
+  document.getElementById('sim-rev').textContent = fmtB(rev);
+  document.getElementById('sim-rev').style.color = rev > 0 ? 'var(--text)' : 'var(--red)';
+  document.getElementById('sim-gp').textContent = fmtB(gp);
+  document.getElementById('sim-gp').style.color = gp > 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('sim-opcf').textContent = fmtB(opcf);
+  document.getElementById('sim-opcf').style.color = opcf > 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('sim-fcf').textContent = fmtB(fcf);
+  document.getElementById('sim-fcf').style.color = fcf > 0 ? 'var(--green)' : 'var(--red)';
+}
+
+// ═══════════════════════════════════════
+// S7: COST STRUCTURE
+// ═══════════════════════════════════════
+function renderCost() {
+  const pnl = FIN.pnl || [];
+  if (pnl.length === 0) return;
+  const latest = pnl[pnl.length - 1];
+
+  // Cost breakdown bar
+  destroyChart('chart-cost-bar');
+  const costItems = [
+    { label: '관세(일)', val: latest.customs_daily || 0, color: '#ff6b6b' },
+    { label: '관세(선)', val: latest.customs_prepaid || 0, color: '#f472b6' },
+    { label: '해외운송', val: latest.logistics_overseas || 0, color: '#a78bfa' },
+    { label: '국내운송', val: latest.logistics_domestic || 0, color: '#8b5cf6' },
+    { label: '급여', val: latest.sga_salary || 0, color: '#4da6ff' },
+    { label: '광고비', val: latest.sga_ad || 0, color: '#22d3ee' },
+    { label: 'SW', val: latest.sga_software || 0, color: '#00d97e' },
+    { label: '4대보험', val: latest.sga_insurance || 0, color: '#f59e0b' },
+    { label: '창고', val: latest.sga_warehouse || 0, color: '#fb923c' },
+    { label: '건물', val: latest.sga_building || 0, color: '#8899a6' },
+    { label: '세금', val: latest.sga_tax || 0, color: '#64748b' },
+    { label: '차량', val: latest.sga_vehicle || 0, color: '#475569' },
+    { label: '기타', val: latest.sga_other || 0, color: '#334155' },
+  ].filter(c => c.val > 0).sort((a, b) => b.val - a.val);
+
+  charts['chart-cost-bar'] = new Chart(document.getElementById('chart-cost-bar'), {
+    type: 'bar',
+    data: {
+      labels: costItems.map(c => c.label),
+      datasets: [{
+        data: costItems.map(c => c.val / 1e6),
+        backgroundColor: costItems.map(c => c.color + 'aa'),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: c => c.parsed.x.toFixed(0) + 'M' } }
+      },
+      scales: {
+        x: { title: { display: true, text: '백만원' }, grid: { color: 'rgba(30,45,61,0.5)' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Margin trend
+  destroyChart('chart-margin-trend');
+  charts['chart-margin-trend'] = new Chart(document.getElementById('chart-margin-trend'), {
+    type: 'line',
+    data: {
+      labels: pnl.map(d => shortMonth(d.month)),
+      datasets: [
+        { label: '원가율', data: pnl.map(d => (d.cogs_ratio || 0) * 100), borderColor: '#ff6b6b', tension: 0.3, pointRadius: 4 },
+        { label: 'GP율', data: pnl.map(d => (d.gp_ratio || 0) * 100), borderColor: '#00d97e', tension: 0.3, pointRadius: 4 },
+        { label: '영업이익률', data: pnl.map(d => (d.oi_ratio || 0) * 100), borderColor: '#4da6ff', tension: 0.3, pointRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toFixed(1) + '%' } }
+      },
+      scales: {
+        y: { title: { display: true, text: '%' }, grid: { color: 'rgba(30,45,61,0.5)' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // Cost detail table
+  const tbl = document.getElementById('tbl-cost-detail');
+  let html = '<thead><tr><th>비용 항목</th>';
+  pnl.forEach(d => html += `<th class="text-right">${shortMonth(d.month)}</th>`);
+  html += '</tr></thead><tbody>';
+  const costRows = [
+    ['관세(일)', d => d.customs_daily], ['관세(선)', d => d.customs_prepaid],
+    ['해외운송', d => d.logistics_overseas], ['국내운송', d => d.logistics_domestic],
+    ['급여', d => d.sga_salary], ['4대보험', d => d.sga_insurance],
+    ['광고비', d => d.sga_ad], ['SW', d => d.sga_software],
+    ['창고', d => d.sga_warehouse], ['건물', d => d.sga_building],
+    ['기타', d => d.sga_other],
+  ];
+  costRows.forEach(([label, fn]) => {
+    html += `<tr><td>${label}</td>`;
+    pnl.forEach(d => html += `<td class="text-right">${fmtM(fn(d))}</td>`);
+    html += '</tr>';
+  });
+  html += '<tr style="border-top:2px solid var(--border);font-weight:700;"><td>합계 (원가+SGA)</td>';
+  pnl.forEach(d => html += `<td class="text-right">${fmtM((d.cogs||0) + (d.sga||0))}</td>`);
+  html += '</tr></tbody>';
+  tbl.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+// S8: DAILY CASH FLOW
+// ═══════════════════════════════════════
+function renderDaily() {
+  // Use sujo data if available
+  const sujo = (typeof RAW !== 'undefined' && RAW.sujo) ? RAW.sujo : null;
+  if (!sujo || !sujo.months || sujo.months.length === 0) {
+    document.getElementById('tbl-daily').innerHTML = '<tr><td class="text-muted">일별 수조 데이터 없음 (운영 시트 기반)</td></tr>';
+    return;
+  }
+
+  // Use latest month data
+  const latestMonth = sujo.months[sujo.months.length - 1];
+  const monthData = sujo[latestMonth.key || latestMonth] || sujo.data?.[sujo.months.length - 1];
+
+  if (!monthData) {
+    document.getElementById('tbl-daily').innerHTML = '<tr><td class="text-muted">일별 데이터를 찾을 수 없습니다</td></tr>';
+    return;
+  }
+
+  // Try to render whatever data structure is available
+  const tbl = document.getElementById('tbl-daily');
+  if (Array.isArray(monthData)) {
+    let html = '<thead><tr><th>일</th><th class="text-right">순매출</th><th class="text-right">원가</th><th class="text-right">마진</th><th class="text-right">누적</th></tr></thead><tbody>';
+    let cumul = 0;
+    monthData.forEach((d, i) => {
+      const rev = d.net_revenue || d.revenue || 0;
+      const cost = d.cogs || d.cost || 0;
+      const margin = rev - cost;
+      cumul += margin;
+      html += `<tr><td>${i + 1}일</td>
+        <td class="text-right">${fmtM(rev)}</td>
+        <td class="text-right">${fmtM(cost)}</td>
+        <td class="text-right ${colorVal(margin)}">${fmtM(margin)}</td>
+        <td class="text-right ${colorVal(cumul)}">${fmtM(cumul)}</td></tr>`;
+    });
+    html += '</tbody>';
+    tbl.innerHTML = html;
+  } else {
+    tbl.innerHTML = '<tr><td class="text-muted">일별 수조 데이터 형식이 다릅니다. 수조 시트 기반 데이터를 확인해주세요.</td></tr>';
+  }
+}
+
+</script>
+</body>
+</html>

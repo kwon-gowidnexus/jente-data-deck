@@ -520,6 +520,103 @@ footer {
   text-align: center; padding: 24px; color: var(--text2); font-size: 12px;
   border-top: 1px solid var(--border);
 }
+
+/* ── 재무분석 탭 ── */
+.fin-container { padding: 16px 24px; max-width: 1400px; margin: 0 auto; }
+.fin-section {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; margin-bottom: 16px;
+}
+.fin-section h2 { font-size: 15px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.fin-section h2 .fin-badge {
+  font-size: 11px; padding: 2px 8px; border-radius: 4px;
+  background: var(--accent); color: #fff; font-weight: 500;
+}
+.fin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .fin-grid { grid-template-columns: 1fr; } }
+
+.fin-kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.fin-kpi-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px; text-align: center;
+}
+.fin-kpi-card .kpi-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.fin-kpi-card .kpi-value { font-size: 20px; font-weight: 700; }
+.fin-kpi-card .kpi-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+/* 바 차트 */
+.fin-bar-chart { display: flex; flex-direction: column; gap: 4px; }
+.fin-bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.fin-bar-label { width: 50px; text-align: right; color: var(--text2); flex-shrink: 0; }
+.fin-bar-outer { flex: 1; height: 22px; background: var(--bg3); border-radius: 4px; position: relative; overflow: hidden; }
+.fin-bar-inner { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 6px; font-size: 11px; color: #fff; font-weight: 600; min-width: 2px; }
+.fin-bar-val { width: 80px; text-align: right; font-size: 12px; flex-shrink: 0; }
+.fin-bar-val.neg { color: var(--red); }
+.fin-bar-val.pos { color: var(--green); }
+
+/* 스택드 바 차트 */
+.fin-stacked-chart { margin-top: 8px; }
+.fin-stacked-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+.fin-stacked-label { width: 50px; text-align: right; color: var(--text2); flex-shrink: 0; }
+.fin-stacked-bar { flex: 1; height: 28px; display: flex; border-radius: 4px; overflow: hidden; }
+.fin-stacked-seg { height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: 600; }
+
+/* 워터폴 차트 */
+.fin-waterfall { display: flex; flex-direction: column; gap: 6px; }
+.fin-wf-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.fin-wf-label { width: 80px; text-align: right; color: var(--text2); flex-shrink: 0; font-size: 11px; }
+.fin-wf-bar-outer { flex: 1; height: 24px; position: relative; }
+.fin-wf-bar { height: 100%; border-radius: 4px; position: absolute; display: flex; align-items: center; padding: 0 6px; font-size: 11px; color: #fff; font-weight: 600; }
+.fin-wf-val { width: 90px; text-align: right; font-size: 12px; flex-shrink: 0; }
+
+/* 목표선 */
+.fin-target-line {
+  position: absolute; top: -4px; bottom: -4px; width: 2px; z-index: 2;
+  border-left: 2px dashed var(--yellow);
+}
+.fin-target-tag {
+  position: absolute; top: -16px; font-size: 9px; color: var(--yellow);
+  white-space: nowrap; transform: translateX(-50%);
+}
+
+/* 테이블 */
+.fin-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+.fin-table th { background: var(--bg3); padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text2); font-size: 11px; }
+.fin-table th:first-child { text-align: left; }
+.fin-table td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.fin-table td:first-child { text-align: left; color: var(--text2); }
+.fin-table tr:hover { background: var(--bg3); }
+.fin-table .total-row { font-weight: 700; border-top: 2px solid var(--border); }
+.fin-table .maturity-soon { color: var(--red); font-weight: 600; }
+.fin-table .maturity-ok { color: var(--green); }
+
+/* 도넛 차트 (CSS-only) */
+.fin-donut-wrap { display: flex; align-items: center; gap: 16px; }
+.fin-donut { width: 140px; height: 140px; border-radius: 50%; position: relative; flex-shrink: 0; }
+.fin-donut-center {
+  position: absolute; inset: 30px; border-radius: 50%; background: var(--bg2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+}
+.fin-donut-center small { font-size: 10px; color: var(--text2); font-weight: 400; }
+.fin-donut-legend { font-size: 12px; }
+.fin-donut-legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.fin-donut-legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* 비용 구조 (treemap 스타일 그리드) */
+.fin-cost-grid { display: flex; flex-wrap: wrap; gap: 4px; }
+.fin-cost-block {
+  border-radius: 6px; padding: 8px; display: flex; flex-direction: column;
+  justify-content: center; align-items: center; color: #fff; font-size: 11px;
+  font-weight: 600; min-height: 60px;
+}
+.fin-cost-block small { font-size: 9px; opacity: 0.8; font-weight: 400; }
+
+/* 라인 차트 (CSS-only 도트+라인) */
+.fin-line-chart { position: relative; height: 120px; margin-top: 8px; display: flex; align-items: flex-end; gap: 2px; }
+.fin-line-col { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
+.fin-line-dot { width: 8px; height: 8px; border-radius: 50%; position: absolute; z-index: 2; }
+.fin-line-label { font-size: 10px; color: var(--text2); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -539,6 +636,7 @@ footer {
   <div class="view-tabs">
     <button class="view-tab active" id="tab-sujo" onclick="setTab('sujo')">자금수지</button>
     <button class="view-tab" id="tab-ops" onclick="setTab('ops')">운영데이터</button>
+    <button class="view-tab" id="tab-fin" onclick="setTab('fin')">재무분석</button>
   </div>
   <div class="header-controls">
     <a class="pipeline-btn" href="JENTE_데이터_인프라_현황.html" target="_blank">Pipeline</a>
@@ -733,6 +831,18 @@ footer {
 </div>
 
 </div><!-- /view-ops -->
+
+<!-- VIEW 3: 재무분석 (숨김) -->
+<div id="view-fin" style="display:none;">
+<div class="fin-container">
+  <div id="fin-pnl"></div>
+  <div id="fin-fcf"></div>
+  <div id="fin-debt"></div>
+  <div id="fin-forecast"></div>
+  <div id="fin-schedule"></div>
+  <div id="fin-cost"></div>
+</div>
+</div><!-- /view-fin -->
 
 <footer>
   JENTE Data Deck &middot; Confidential &middot; Generated 2026-03-04 &middot; GONEX
@@ -1813,11 +1923,14 @@ function setTab(tab) {
   currentTab = tab;
   document.getElementById('view-sujo').style.display = tab === 'sujo' ? 'block' : 'none';
   document.getElementById('view-ops').style.display = tab === 'ops' ? 'block' : 'none';
+  document.getElementById('view-fin').style.display = tab === 'fin' ? 'block' : 'none';
   document.getElementById('tab-sujo').classList.toggle('active', tab === 'sujo');
   document.getElementById('tab-ops').classList.toggle('active', tab === 'ops');
+  document.getElementById('tab-fin').classList.toggle('active', tab === 'fin');
   renderFreshness();
   if (tab === 'sujo') renderSujo(currentMonth);
   if (tab === 'ops') renderAll();
+  if (tab === 'fin') renderFinancial();
 }
 
 // Theme & View
@@ -2898,6 +3011,434 @@ function renderAll() {
   renderCohort();
   renderYoY();
 }
+
+// ══════════════════════════════════════════
+// 재무분석 탭 렌더링
+// ══════════════════════════════════════════
+
+function finFmt(v) {
+  if (v === null || v === undefined) return '-';
+  const abs = Math.abs(v);
+  if (abs >= 1e8) return (v < 0 ? '-' : '') + (abs / 1e8).toFixed(1) + '억';
+  if (abs >= 1e4) return (v < 0 ? '-' : '') + Math.round(abs / 1e4).toLocaleString() + '만';
+  return v.toLocaleString();
+}
+function finPct(v) { return v !== null && v !== undefined ? (v * 100).toFixed(1) + '%' : '-'; }
+function finM(ym) { return ym ? ym.slice(5) + '월' : ''; }
+
+const FIN_COLORS = {
+  revenue: '#58a6ff', cogs: '#f85149', gp: '#3fb950', sga: '#d29922',
+  oi: '#bc8cff', fcf: '#39d2c0', finance: '#db6d28', salary: '#79c0ff',
+  debt_corp: '#58a6ff', debt_boutique: '#bc8cff', debt_refund: '#d29922',
+  debt_musinsa: '#db6d28', debt_ops: '#79c0ff', debt_gowid: '#f85149',
+  debt_fin: '#3fb950',
+};
+const DEBT_CATS = [
+  {key:'financial', label:'금융부채', color:FIN_COLORS.debt_fin},
+  {key:'gowid', label:'고위드', color:FIN_COLORS.debt_gowid},
+  {key:'boutique', label:'부티크', color:FIN_COLORS.debt_boutique},
+  {key:'corp_card', label:'법인카드', color:FIN_COLORS.debt_corp},
+  {key:'customer_refund', label:'고객환불', color:FIN_COLORS.debt_refund},
+  {key:'musinsa', label:'무신사', color:FIN_COLORS.debt_musinsa},
+  {key:'other_ops', label:'기타영업', color:FIN_COLORS.debt_ops},
+];
+
+function renderFinancial() {
+  if (!RAW.financial) {
+    document.getElementById('fin-pnl').innerHTML = '<div class="fin-section"><h2>재무 데이터 없음</h2><p style="color:var(--text2)">S6 CSV 데이터가 로드되지 않았습니다. convert_csv.py를 --no-s6 없이 재실행해주세요.</p></div>';
+    return;
+  }
+  renderFinPnL();
+  renderFinFCF();
+  renderFinDebt();
+  renderFinForecast();
+  renderFinSchedule();
+  renderFinCost();
+}
+
+// Section 1: P&L 트렌드
+function renderFinPnL() {
+  const pnl = RAW.financial.pnl;
+  if (!pnl || !pnl.length) { document.getElementById('fin-pnl').innerHTML = ''; return; }
+
+  const maxRev = Math.max(...pnl.map(d => d.revenue));
+
+  // 스택드 바: 매출 vs 원가 vs GP
+  const bars = pnl.map(d => {
+    const revW = maxRev > 0 ? (d.revenue / maxRev * 100) : 0;
+    const cogsW = maxRev > 0 ? (d.cogs / maxRev * 100) : 0;
+    const gpW = maxRev > 0 ? (d.gross_profit / maxRev * 100) : 0;
+    const oiW = maxRev > 0 ? (Math.abs(d.operating_income) / maxRev * 100) : 0;
+    const oiColor = d.operating_income >= 0 ? FIN_COLORS.gp : FIN_COLORS.cogs;
+    return `<div class="fin-bar-row">
+      <div class="fin-bar-label">${finM(d.month)}</div>
+      <div class="fin-bar-outer">
+        <div class="fin-bar-inner" style="width:${revW.toFixed(1)}%;background:${FIN_COLORS.revenue}">${revW > 15 ? finFmt(d.revenue) : ''}</div>
+      </div>
+      <div class="fin-bar-val">${finFmt(d.revenue)}</div>
+    </div>
+    <div class="fin-bar-row">
+      <div class="fin-bar-label" style="font-size:10px;opacity:0.6">원가</div>
+      <div class="fin-bar-outer">
+        <div class="fin-bar-inner" style="width:${cogsW.toFixed(1)}%;background:${FIN_COLORS.cogs};opacity:0.7"></div>
+      </div>
+      <div class="fin-bar-val" style="font-size:11px">${finFmt(d.cogs)}</div>
+    </div>
+    <div class="fin-bar-row" style="margin-bottom:8px">
+      <div class="fin-bar-label" style="font-size:10px;opacity:0.6">영업</div>
+      <div class="fin-bar-outer">
+        <div class="fin-bar-inner" style="width:${oiW.toFixed(1)}%;background:${oiColor}">${oiW > 8 ? finFmt(d.operating_income) : ''}</div>
+      </div>
+      <div class="fin-bar-val ${d.operating_income >= 0 ? 'pos' : 'neg'}">${finFmt(d.operating_income)}</div>
+    </div>`;
+  }).join('');
+
+  // 비율 테이블
+  const ratioRows = pnl.map(d => `<tr>
+    <td>${finM(d.month)}</td>
+    <td>${finPct(d.cogs_ratio)}</td>
+    <td>${finPct(d.gp_ratio)}</td>
+    <td style="color:${(d.oi_ratio||0) >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:600">${finPct(d.oi_ratio)}</td>
+  </tr>`).join('');
+
+  document.getElementById('fin-pnl').innerHTML = `<div class="fin-section">
+    <h2>P&L 트렌드 <span class="fin-badge">${pnl.length}개월</span></h2>
+    <p style="color:var(--text2);font-size:12px;margin-bottom:12px">발생주의 기준 영업이익 추이 — 플러스 전환 여부 모니터링</p>
+    <div class="fin-grid">
+      <div><div class="fin-bar-chart">${bars}</div></div>
+      <div>
+        <table class="fin-table">
+          <thead><tr><th>월</th><th>원가율</th><th>GP율</th><th>영업이익률</th></tr></thead>
+          <tbody>${ratioRows}</tbody>
+        </table>
+        <div style="margin-top:12px;padding:8px;background:var(--bg3);border-radius:6px;font-size:12px">
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <span><span style="color:${FIN_COLORS.revenue}">■</span> 매출</span>
+            <span><span style="color:${FIN_COLORS.cogs}">■</span> 원가</span>
+            <span><span style="color:${FIN_COLORS.gp}">■</span> 흑자 영업</span>
+            <span><span style="color:${FIN_COLORS.cogs}">■</span> 적자 영업</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Section 2: FCF 워터폴
+function renderFinFCF() {
+  const fcf = RAW.financial.fcf;
+  if (!fcf || !fcf.length) { document.getElementById('fin-fcf').innerHTML = ''; return; }
+
+  const latest = fcf[fcf.length - 1];
+  const gmv = latest.gmv;
+  const target2 = 200000000;   // 2억 (금융이자)
+  const target275 = 275000000; // 2.75억 (이자+분기원금)
+
+  // 워터폴 항목
+  const items = [
+    {label:'거래액', value:latest.gmv, color:FIN_COLORS.revenue, type:'start'},
+    {label:'환불', value:-latest.refund, color:FIN_COLORS.cogs, type:'neg'},
+    {label:'순매출', value:latest.net_revenue, color:FIN_COLORS.revenue, type:'sub'},
+    {label:'원가', value:-latest.cogs, color:FIN_COLORS.cogs, type:'neg'},
+    {label:'판관비', value:-latest.sga_ops, color:'#d29922', type:'neg'},
+    {label:'GP', value:latest.gross_profit, color:FIN_COLORS.gp, type:'sub'},
+    {label:'급여', value:-(latest.salary_staff+latest.salary_leader), color:'#79c0ff', type:'neg'},
+    {label:'금융비용', value:-latest.finance_cost, color:FIN_COLORS.finance, type:'neg'},
+    {label:'FCF', value:latest.fcf, color:FIN_COLORS.fcf, type:'result'},
+  ];
+
+  const maxVal = gmv;
+  const wfBars = items.map(it => {
+    const abs = Math.abs(it.value);
+    const w = maxVal > 0 ? (abs / maxVal * 100) : 0;
+    const isResult = it.type === 'result';
+    const isSub = it.type === 'sub';
+    const labelStyle = isResult ? ' style="color:var(--green);font-weight:700"' : (isSub ? ' style="color:var(--accent)"' : '');
+    return `<div class="fin-wf-row"${isResult ? ' style="margin-top:6px"' : ''}>
+      <div class="fin-wf-label"${labelStyle}>${it.label}</div>
+      <div class="fin-wf-bar-outer">
+        <div class="fin-wf-bar" style="width:${w.toFixed(1)}%;background:${it.color};${isResult ? 'box-shadow:0 0 8px ' + it.color : ''}">${w > 10 ? finFmt(abs) : ''}</div>
+      </div>
+      <div class="fin-wf-val ${it.value < 0 ? 'neg' : (isResult ? 'pos' : '')}">${it.value < 0 ? '-' : ''}${finFmt(abs)}</div>
+    </div>`;
+  }).join('');
+
+  // 목표선 위치
+  const t2Pct = maxVal > 0 ? (target2 / maxVal * 100) : 0;
+  const t275Pct = maxVal > 0 ? (target275 / maxVal * 100) : 0;
+
+  // FCF 추이 테이블
+  const tblRows = fcf.map(d => {
+    const fcfColor = d.fcf >= target2 ? 'var(--green)' : (d.fcf >= 0 ? 'var(--yellow)' : 'var(--red)');
+    return `<tr>
+      <td>${finM(d.month)}</td>
+      <td>${finFmt(d.gmv)}</td>
+      <td>${finFmt(d.refund)}</td>
+      <td>${finFmt(d.net_revenue)}</td>
+      <td>${finFmt(d.gross_profit)}</td>
+      <td style="color:${fcfColor};font-weight:700">${finFmt(d.fcf)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('fin-fcf').innerHTML = `<div class="fin-section">
+    <h2>FCF 워터폴 <span class="fin-badge">${finM(latest.month)}</span></h2>
+    <p style="color:var(--text2);font-size:12px;margin-bottom:4px">수조(현금주의) 기준 — A대표 목표: <b style="color:var(--yellow)">월 2억</b>(금융이자) / <b style="color:var(--orange)">2.75억</b>(이자+원금)</p>
+    <div class="fin-kpi-row">
+      <div class="fin-kpi-card"><div class="kpi-label">이번달 FCF</div><div class="kpi-value" style="color:${latest.fcf >= 0 ? 'var(--green)' : 'var(--red)'}">${finFmt(latest.fcf)}</div></div>
+      <div class="fin-kpi-card"><div class="kpi-label">목표 대비 (2억)</div><div class="kpi-value" style="color:${latest.fcf >= target2 ? 'var(--green)' : 'var(--red)'}">${latest.fcf >= target2 ? 'PASS' : finFmt(latest.fcf - target2)}</div></div>
+      <div class="fin-kpi-card"><div class="kpi-label">환불율</div><div class="kpi-value">${finPct(latest.refund_pct)}</div></div>
+      <div class="fin-kpi-card"><div class="kpi-label">원가율</div><div class="kpi-value">${finPct(latest.cogs_ratio)}</div></div>
+    </div>
+    <div class="fin-grid">
+      <div><div class="fin-waterfall">${wfBars}</div></div>
+      <div>
+        <h3 style="font-size:13px;margin-bottom:6px;color:var(--text2)">FCF 추이</h3>
+        <table class="fin-table">
+          <thead><tr><th>월</th><th>거래액</th><th>환불</th><th>순매출</th><th>GP</th><th>FCF</th></tr></thead>
+          <tbody>${tblRows}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Section 3: 부채 구조 & 추이
+function renderFinDebt() {
+  const debt = RAW.financial.debt;
+  if (!debt || !debt.length) { document.getElementById('fin-debt').innerHTML = ''; return; }
+
+  const latest = debt[debt.length - 1];
+  const prev = debt.length > 1 ? debt[debt.length - 2] : null;
+  const mom = prev ? latest.total - prev.total : 0;
+
+  // 스택드 바 차트 (11개월)
+  const maxTotal = Math.max(...debt.map(d => d.total));
+  const stackBars = debt.map(d => {
+    const segs = DEBT_CATS.map(c => {
+      const w = maxTotal > 0 ? (d[c.key] / maxTotal * 100) : 0;
+      return w > 0 ? `<div class="fin-stacked-seg" style="width:${w.toFixed(1)}%;background:${c.color}" title="${c.label}: ${finFmt(d[c.key])}">${w > 8 ? Math.round(d[c.key]/1e8) : ''}</div>` : '';
+    }).join('');
+    return `<div class="fin-stacked-row">
+      <div class="fin-stacked-label">${finM(d.month)}</div>
+      <div class="fin-stacked-bar">${segs}</div>
+      <div style="width:80px;text-align:right;font-size:12px">${finFmt(d.total)}</div>
+    </div>`;
+  }).join('');
+
+  // 도넛 (최신월)
+  const total = latest.total;
+  let cumulDeg = 0;
+  const gradParts = [];
+  DEBT_CATS.forEach(c => {
+    const deg = total > 0 ? (latest[c.key] / total * 360) : 0;
+    gradParts.push(`${c.color} ${cumulDeg.toFixed(1)}deg ${(cumulDeg + deg).toFixed(1)}deg`);
+    cumulDeg += deg;
+  });
+  const donutGrad = `conic-gradient(${gradParts.join(', ')})`;
+
+  const legendItems = DEBT_CATS.map(c => {
+    const pct = total > 0 ? (latest[c.key] / total * 100).toFixed(1) : 0;
+    return `<div class="fin-donut-legend-item"><div class="fin-donut-legend-dot" style="background:${c.color}"></div><span>${c.label} ${pct}% (${finFmt(latest[c.key])})</span></div>`;
+  }).join('');
+
+  // 고위드/금융 비중 KPI
+  const gowidPct = total > 0 ? (latest.gowid / total * 100).toFixed(1) : 0;
+  const finPctV = total > 0 ? (latest.financial / total * 100).toFixed(1) : 0;
+
+  document.getElementById('fin-debt').innerHTML = `<div class="fin-section">
+    <h2>부채 구조 & 추이 <span class="fin-badge">${debt.length}개월</span></h2>
+    <p style="color:var(--text2);font-size:12px;margin-bottom:12px">7카테고리 부채 분해 — 총 ${finFmt(total)} (단위: 억)</p>
+    <div class="fin-kpi-row">
+      <div class="fin-kpi-card"><div class="kpi-label">총부채</div><div class="kpi-value">${finFmt(total)}</div></div>
+      <div class="fin-kpi-card"><div class="kpi-label">고위드 비중</div><div class="kpi-value" style="color:var(--red)">${gowidPct}%</div></div>
+      <div class="fin-kpi-card"><div class="kpi-label">금융부채 비중</div><div class="kpi-value">${finPctV}%</div></div>
+      <div class="fin-kpi-card"><div class="kpi-label">MoM 변화</div><div class="kpi-value" style="color:${mom <= 0 ? 'var(--green)' : 'var(--red)'}">${mom > 0 ? '+' : ''}${finFmt(mom)}</div></div>
+    </div>
+    <div class="fin-grid">
+      <div><div class="fin-stacked-chart">${stackBars}</div></div>
+      <div>
+        <div class="fin-donut-wrap">
+          <div class="fin-donut" style="background:${donutGrad}">
+            <div class="fin-donut-center">${(total/1e8).toFixed(0)}억<small>총부채</small></div>
+          </div>
+          <div class="fin-donut-legend">${legendItems}</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// Section 4: FCF 예측 vs 실적
+function renderFinForecast() {
+  const fc = RAW.financial.forecast;
+  if (!fc || !fc.length) { document.getElementById('fin-forecast').innerHTML = ''; return; }
+
+  const fcf_actual = RAW.financial.fcf || [];
+  const maxFCF = Math.max(...fc.map(d => d.fcf), ...fcf_actual.map(d => d.fcf));
+
+  // 바 차트: 예측 FCF
+  const fcBars = fc.map(d => {
+    const w = maxFCF > 0 ? (d.fcf / maxFCF * 100) : 0;
+    // 실적 매칭
+    const actual = fcf_actual.find(a => a.month === d.month);
+    const actualDot = actual ? `<span style="color:var(--yellow);font-size:11px;margin-left:8px" title="실적">[실적: ${finFmt(actual.fcf)}]</span>` : '';
+    return `<div class="fin-bar-row">
+      <div class="fin-bar-label">${finM(d.month)}</div>
+      <div class="fin-bar-outer">
+        <div class="fin-bar-inner" style="width:${w.toFixed(1)}%;background:${FIN_COLORS.fcf}">${w > 15 ? finFmt(d.fcf) : ''}</div>
+      </div>
+      <div class="fin-bar-val pos">${finFmt(d.fcf)}${actualDot}</div>
+    </div>`;
+  }).join('');
+
+  // 상세 테이블
+  const tblRows = fc.map(d => `<tr>
+    <td>${finM(d.month)}</td>
+    <td>${finFmt(d.gmv)}</td>
+    <td>${finPct(d.refund_pct)}</td>
+    <td>${finFmt(d.revenue)}</td>
+    <td>${finFmt(d.cogs)}</td>
+    <td>${finFmt(d.gp)}</td>
+    <td>${finFmt(d.sga)}</td>
+    <td>${finFmt(d.finance)}</td>
+    <td>${finFmt(d.salary)}</td>
+    <td style="color:var(--green);font-weight:700">${finFmt(d.fcf)}</td>
+    <td>${finPct(d.fcf_pct)}</td>
+  </tr>`).join('');
+
+  document.getElementById('fin-forecast').innerHTML = `<div class="fin-section">
+    <h2>FCF 예측 (26년) <span class="fin-badge">${fc.length}개월</span></h2>
+    <p style="color:var(--text2);font-size:12px;margin-bottom:12px">수조 기준 FCF 개선 경로 — 환불율 ${finPct(fc[0].refund_pct)} → ${finPct(fc[fc.length-1].refund_pct)} / GP ${finPct(fc[0].gp_pct)}</p>
+    <div class="fin-bar-chart" style="margin-bottom:16px">${fcBars}</div>
+    <div style="overflow-x:auto">
+      <table class="fin-table">
+        <thead><tr><th>월</th><th>거래액</th><th>환불율</th><th>매출</th><th>원가</th><th>GP</th><th>판관비</th><th>금융</th><th>급여</th><th>FCF</th><th>FCF%</th></tr></thead>
+        <tbody>${tblRows}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// Section 5: 부채 상환 타임라인
+function renderFinSchedule() {
+  const schedule = RAW.financial.debt_schedule;
+  const repay = RAW.financial.monthly_repayment;
+  if (!schedule || !schedule.length) { document.getElementById('fin-schedule').innerHTML = ''; return; }
+
+  // 모든 월 추출
+  const allMonths = new Set();
+  schedule.forEach(s => Object.keys(s.balances).forEach(m => allMonths.add(m)));
+  const months = [...allMonths].sort();
+
+  const now = new Date();
+
+  const headerCells = months.map(m => `<th>${finM(m)}</th>`).join('');
+  const bodyRows = schedule.map(s => {
+    const matDate = s.maturity ? new Date(s.maturity) : null;
+    const matSoon = matDate && matDate < new Date(now.getFullYear(), now.getMonth() + 6, now.getDate());
+    const matClass = matDate ? (matSoon ? 'maturity-soon' : 'maturity-ok') : '';
+    const matStr = s.maturity ? s.maturity.slice(0, 10) : '-';
+    const lender = s.lender || '-';
+    const guarantee = s.guarantee || s.collateral || '-';
+    const balCells = months.map(m => {
+      const v = s.balances[m];
+      return `<td>${v !== undefined ? finFmt(v) : '-'}</td>`;
+    }).join('');
+    return `<tr>
+      <td style="white-space:nowrap">${s.name}</td>
+      <td>${lender}</td>
+      <td class="${matClass}">${matStr}</td>
+      <td>${guarantee}</td>
+      ${balCells}
+    </tr>`;
+  }).join('');
+
+  // 합계행
+  const totalCells = months.map(m => {
+    const sum = schedule.reduce((acc, s) => acc + (s.balances[m] || 0), 0);
+    return `<td style="font-weight:700">${finFmt(sum)}</td>`;
+  }).join('');
+
+  // 상환액
+  const repayCells = months.map(m => {
+    const r = repay ? repay.find(x => x.month === m) : null;
+    return `<td style="color:var(--yellow)">${r ? finFmt(r.amount) : '-'}</td>`;
+  }).join('');
+
+  document.getElementById('fin-schedule').innerHTML = `<div class="fin-section">
+    <h2>부채 상환 타임라인 <span class="fin-badge">${schedule.length}건</span></h2>
+    <p style="color:var(--text2);font-size:12px;margin-bottom:8px">대출 라인별 잔액 추이 — <span class="maturity-soon">빨강</span>: 6개월 내 만기</p>
+    <div style="overflow-x:auto">
+      <table class="fin-table">
+        <thead><tr><th>대출명</th><th>대출기관</th><th>만기일</th><th>담보/보증</th>${headerCells}</tr></thead>
+        <tbody>
+          ${bodyRows}
+          <tr class="total-row"><td>합계</td><td></td><td></td><td></td>${totalCells}</tr>
+          <tr style="background:var(--bg3)"><td style="color:var(--yellow)">월 상환액</td><td></td><td></td><td></td>${repayCells}</tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// Section 6: 비용 구조 분해
+function renderFinCost() {
+  const pnl = RAW.financial.pnl;
+  if (!pnl || !pnl.length) { document.getElementById('fin-cost').innerHTML = ''; return; }
+
+  const d = pnl[pnl.length - 1]; // 최신월
+
+  const costItems = [
+    {label:'상품원가', value:d.cogs, color:'#f85149'},
+    {label:'관세(일일)', value:d.customs_daily, color:'#d29922'},
+    {label:'관세(선납)', value:d.customs_prepaid, color:'#db6d28'},
+    {label:'물류(해외)', value:d.logistics_overseas, color:'#bc8cff'},
+    {label:'인건비', value:d.sga_salary, color:'#58a6ff'},
+    {label:'소프트웨어', value:d.sga_software, color:'#39d2c0'},
+    {label:'광고선전비', value:d.sga_ad, color:'#3fb950'},
+    {label:'기타비용', value:d.sga_other, color:'#79c0ff'},
+    {label:'창고임차', value:d.sga_warehouse, color:'#56d364'},
+    {label:'물류(국내)', value:d.logistics_domestic, color:'#e3b341'},
+    {label:'건물관리', value:d.sga_building, color:'#8b949e'},
+    {label:'4대보험', value:d.sga_insurance, color:'#6e7681'},
+    {label:'차량유지', value:d.sga_vehicle, color:'#484f58'},
+    {label:'세금공과', value:d.sga_tax, color:'#30363d'},
+  ].filter(c => c.value > 0).sort((a, b) => b.value - a.value);
+
+  const totalCost = costItems.reduce((s, c) => s + c.value, 0);
+
+  // Treemap 스타일: 크기 비례 블록
+  const blocks = costItems.map(c => {
+    const pct = totalCost > 0 ? (c.value / totalCost * 100) : 0;
+    // 크기: 최소 80px, 비례로
+    const basis = Math.max(80, pct * 3.5);
+    return `<div class="fin-cost-block" style="background:${c.color};flex-basis:${basis}px;flex-grow:${Math.max(1, Math.round(pct / 5))}">
+      ${c.label}<br>${finFmt(c.value)}<br><small>${pct.toFixed(1)}%</small>
+    </div>`;
+  }).join('');
+
+  // 상위 5개 바 차트 (보충)
+  const top5 = costItems.slice(0, 7);
+  const maxCost = top5.length ? top5[0].value : 1;
+  const top5Bars = top5.map(c => {
+    const w = maxCost > 0 ? (c.value / maxCost * 100) : 0;
+    return `<div class="fin-bar-row">
+      <div class="fin-bar-label" style="width:70px">${c.label}</div>
+      <div class="fin-bar-outer"><div class="fin-bar-inner" style="width:${w.toFixed(1)}%;background:${c.color}">${w > 20 ? finFmt(c.value) : ''}</div></div>
+      <div class="fin-bar-val">${finFmt(c.value)}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('fin-cost').innerHTML = `<div class="fin-section">
+    <h2>비용 구조 분해 <span class="fin-badge">${finM(d.month)}</span></h2>
+    <p style="color:var(--text2);font-size:12px;margin-bottom:12px">총 비용 ${finFmt(totalCost)} — 어디서 돈이 새는가</p>
+    <div class="fin-grid">
+      <div><div class="fin-cost-grid">${blocks}</div></div>
+      <div><div class="fin-bar-chart">${top5Bars}</div></div>
+    </div>
+  </div>`;
+}
+
 </script>
 </body>
 </html>

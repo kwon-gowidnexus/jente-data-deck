@@ -79,6 +79,7 @@
   .s5-row { background: rgba(247,120,186,0.03); }
   .s6-row { background: rgba(219,109,40,0.03); }
   .s7-row { background: rgba(210,153,34,0.03); }
+  .s8-row { background: rgba(59,130,246,0.03); }
   .src-group-row.s1-row { border-top: 2px solid var(--blue); }
   .src-group-row.s2-row { border-top: 2px solid var(--green); }
   .src-group-row.s3-row { border-top: 2px solid var(--purple); }
@@ -86,6 +87,7 @@
   .src-group-row.s5-row { border-top: 2px solid var(--pink); }
   .src-group-row.s6-row { border-top: 2px solid var(--orange); }
   .src-group-row.s7-row { border-top: 2px solid var(--yellow); }
+  .src-group-row.s8-row { border-top: 2px solid #3b82f6; }
   .ml-id {
     font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 8px;
     display: inline-block; margin-bottom: 4px;
@@ -97,6 +99,7 @@
   .ml-id.s5 { background: rgba(247,120,186,0.15); color: var(--pink); }
   .ml-id.s6 { background: rgba(219,109,40,0.15); color: var(--orange); }
   .ml-id.s7 { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .ml-id.s8 { background: rgba(59,130,246,0.15); color: #3b82f6; }
   .ml-name { font-weight: 600; color: var(--text); }
   .ml-type {
     font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
@@ -181,13 +184,13 @@
 <div class="container">
 
 <h1>젠테 -- 확보 데이터 인벤토리 & 조합 맵 <span style="font-size:13px;color:var(--green);font-weight:600">v3</span></h1>
-<div class="sub">7개 소스의 데이터 필드와 조합 시 도출 가능 지표 도식화 &middot; 37개 데이터셋 + financial 8종 &middot; 2026-03-05 업데이트</div>
+<div class="sub">8개 소스의 데이터 필드와 조합 시 도출 가능 지표 도식화 &middot; 37개 데이터셋 + financial 8종 + logistics 4종 &middot; 2026-03-05 업데이트</div>
 
 <!-- COLLAPSIBLE MASTER DATA LIST -->
 <details class="master-details" open>
   <summary>
     전체 데이터 소스 리스트
-    <span class="count">7개 소스 &middot; 37개 데이터셋 + financial 8종</span>
+    <span class="count">8개 소스 &middot; 37개 데이터셋 + financial 8종 + logistics 4종</span>
   </summary>
   <table class="master-list">
     <thead>
@@ -442,6 +445,33 @@
         <td><span class="ml-csv ok">CSV</span></td>
         <td class="ml-desc">PROJECT 1 취소환불률 개선, 데이터팀 WBS</td>
       </tr>
+
+      <!-- S8: 물류비용 마감 -->
+      <tr class="src-group-row s8-row">
+        <td rowspan="4"><span class="ml-id s8">S8</span></td>
+        <td class="ml-name">물류비용 마감 2025</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1EpHvADmRPhIWAHllMoyPEVSjrh54uyqPOjs1XJ_60Is/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">월별 물류비 마감 (실입하/운임/관부가세/택배사별), 부티크 74개, 12개월</td>
+      </tr>
+      <tr class="s8-row">
+        <td class="ml-name">물류비용 마감 2026</td>
+        <td><a href="https://docs.google.com/spreadsheets/d/1cMxKNV_vixIdTNMH1HdWZ-0mczSlLwEAxqYzTHdAJ5w/edit" target="_blank" class="ml-type gsheet">GSheet</a></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">월별 물류비 마감 (2026년), 1~2월 데이터</td>
+      </tr>
+      <tr class="s8-row">
+        <td class="ml-name">월별 물류비 집계</td>
+        <td><span class="ml-type auto">자동계산</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">월별 실입하건수/운임/관부가세/건당비용 15개월 시계열</td>
+      </tr>
+      <tr class="s8-row">
+        <td class="ml-name">부티크별 물류비 TOP 20</td>
+        <td><span class="ml-type auto">자동계산</span></td>
+        <td><span class="ml-csv ok">data.js</span></td>
+        <td class="ml-desc">부티크별 실입하/운임/관세/건당비용 상위 20개</td>
+      </tr>
     </tbody>
   </table>
 </details>
@@ -457,6 +487,7 @@
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>기존 확보 (S1-S5)</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>S6 RESET Dashboard</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>S8 물류비용 마감</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>계산 가능 (조합 결과)</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>부분 추정 가능</div>
     </div>
@@ -485,6 +516,8 @@
     <div class="flow-box resolved">S6 판관비<br><span style="font-size:10px">영업성 119M/월</span></div>
     <div class="flow-op">-</div>
     <div class="flow-box resolved">S6 물류/관세<br><span style="font-size:10px">법카 계정분류</span></div>
+    <div class="flow-op">+</div>
+    <div class="flow-box src" style="background:rgba(59,130,246,0.1);border-color:#3b82f6;color:#3b82f6">S8 물류비 상세<br><span style="font-size:10px">운임/관세/택배사별</span></div>
     <div class="flow-arr">-></div>
     <div class="flow-box calc">영업CF (OCF)<br><span style="font-size:10px">S6 FCF: 2.77억(1월)</span></div>
   </div>
@@ -626,6 +659,18 @@
     <div class="combo-desc">S4 일별 수조 데이터 + S7 일별판매실적(IMPORTRANGE) + Key Data KPI</div>
     <div class="combo-result">완전 산출 -- 일별 FCF + 부서별 달성률 + MUR 실시간 모니터링</div>
   </div>
+  <div class="combo-card">
+    <div class="combo-header">
+      <div class="combo-tags">
+        <span class="combo-tag" style="background:rgba(59,130,246,0.15);color:#3b82f6">S8</span>
+        <span class="combo-tag" style="background:rgba(219,109,40,0.15);color:var(--orange)">S6</span>
+      </div>
+      <span class="combo-arrow">-></span>
+      <span class="combo-title">물류비 구조 분석 & 부티크별 비용</span>
+    </div>
+    <div class="combo-desc">S8 물류비 마감(운임/관부가세/택배사별) + S6 법카 매입부대비용 = 물류비 구조 + 부티크별 건당비용 분석</div>
+    <div class="combo-result"><span class="new-tag">구현완료</span> 완전 산출 -- 15개월 물류비 추이 + 택배사 점유율 + 부티크 TOP 20 → 자금수지 물류비 탭</div>
+  </div>
 </div>
 
 <!-- PART 3: GAP ANALYSIS (현재 기준) -->
@@ -712,7 +757,7 @@
 
 <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;">
   <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:18px;border-top:3px solid var(--green)">
-    <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:12px;">구현 가능 (15개)</div>
+    <div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:12px;">구현 가능 (16개)</div>
     <div style="font-size:12px;line-height:2;">
       <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>1.</strong> 완전한 월별 P&L & FCF <span style="color:var(--text2)">-- S6 월별손익</span></div>
       <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>2.</strong> 총부채 457억 구조 분해 & 추이 <span style="color:var(--text2)">-- S6 부채현황</span></div>
@@ -729,6 +774,7 @@
       <div><strong>13.</strong> 반품률 임팩트 시뮬레이션 <span style="color:var(--text2)">-- S1 + S4</span></div>
       <div><strong>14.</strong> 고객 LTV / 마케팅 효율 <span style="color:var(--text2)">-- S1 코호트</span></div>
       <div><strong>15.</strong> 환율 변동 원가 영향 <span style="color:var(--text2)">-- S3 x S2</span></div>
+      <div><span style="color:var(--green);font-weight:700">&#x2713;</span> <strong>16.</strong> 물류비 구조 분석 & 부티크별 비용 <span style="color:var(--text2)">-- S8 물류비 마감</span></div>
     </div>
   </div>
 
@@ -766,10 +812,16 @@
         <span style="color:var(--text2);font-size:11px;">-> 재무분석 탭: FCF 워터폴, 부채 추이, P&L 상세, 대출 스케줄 구현 완료 (03-05)</span>
       </div>
 
-      <div style="text-align:center;font-weight:800;color:var(--orange);font-size:16px;padding-top:2px;">1</div>
+      <div style="text-align:center;font-weight:800;color:var(--green);font-size:16px;padding-top:2px;">&#x2713;</div>
       <div>
-        <strong>완벽한 자금수지 대시보드 v2 구축</strong> -- 8개 섹션 독립 자금수지 대시보드<br>
-        <span style="color:var(--text2);font-size:11px;">-> 영업CF 워터폴, 재무CF, 순현금 추이, 부채관리, FCF 예측, 비용구조, 일별 수조</span>
+        <strong>완벽한 자금수지 대시보드 v2 구축</strong> -- 9개 섹션 독립 자금수지 대시보드 <span class="new-tag">완료</span><br>
+        <span style="color:var(--text2);font-size:11px;">-> 영업CF 워터폴, 재무CF, 순현금 추이, 부채관리, FCF 예측, 비용구조, 물류비, 일별 수조 (03-05)</span>
+      </div>
+
+      <div style="text-align:center;font-weight:800;color:var(--green);font-size:16px;padding-top:2px;">&#x2713;</div>
+      <div>
+        <strong>S8 물류비용 데이터 연동</strong> -- 물류비 마감 시트(2025+2026) → data.js + 물류비 탭 <span class="new-tag">완료</span><br>
+        <span style="color:var(--text2);font-size:11px;">-> 15개월 운임/관부가세 추이, 택배사 점유율, 부티크 TOP 20 건당비용 (03-05)</span>
       </div>
 
       <div style="text-align:center;font-weight:800;color:var(--orange);font-size:16px;padding-top:2px;">2</div>
@@ -789,7 +841,7 @@
 </div>
 
 <div class="footer">
-  JENTE Data Inventory Map v3 -- 2026-03-05 &middot; 7개 소스, 37개 데이터셋 + financial 8종<br>
+  JENTE Data Inventory Map v3 -- 2026-03-05 &middot; 8개 소스, 37개 데이터셋 + financial 8종 + logistics 4종<br>
   Generated by Claude Code &middot; 피트스탑 턴어라운드 팀
 </div>
 

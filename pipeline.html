@@ -312,9 +312,17 @@
         <span class="step-label">P&L 재무 데이터 연동</span>
         <span class="step-status"><span class="badge badge-green">완료 03-05</span> external_pnl + monthly_pnl + debt_monthly + vertical_forecast → data.js</span>
     </li>
-    <li class="active">
+    <li class="done">
         <span class="step-label">자금수지 대시보드 v2</span>
-        <span class="step-status"><span class="badge badge-orange">진행중</span> 8개 섹션 독립 자금수지 대시보드 구축</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-05</span> 9개 섹션 독립 자금수지 대시보드 (영업CF~물류비~일별수조)</span>
+    </li>
+    <li class="done">
+        <span class="step-label">S8 물류비용 데이터 연동</span>
+        <span class="step-status"><span class="badge badge-green">완료 03-05</span> 물류비 마감 시트(2025+2026) → data.js logistics 4종 + 물류비 탭</span>
+    </li>
+    <li class="active">
+        <span class="step-label">수조 완전 자동화</span>
+        <span class="step-status"><span class="badge badge-orange">진행중</span> GCP OAuth2 + 실시간 시트 연동</span>
     </li>
 </ul>
 
@@ -369,19 +377,21 @@ flowchart LR
         GA4["GA4 API\nProperty 280664290\n뷰어 권한 완료"]
         SHEETS_AD["광고비 시트\n월별 통합"]
         SHEETS_OPS["운영 시트\nforet/PG/할인/환불"]
+        SHEETS_LOG["물류비 마감 시트\n2025+2026\n운임/관부가세/택배사"]
     end
 
     subgraph GOWID["고위드 파이프라인"]
-        CONVERT["convert_csv.py\nCSV 집계\n코호트 계산\n수조 파서\n+S6 재무 파서"]
-        DATAJS["data.js\nmonthly/yearly\ncohort 3종\nsujo\n+financial 8종"]
+        CONVERT["convert_csv.py\nCSV 집계\n코호트 계산\n수조 파서\n+S6 재무 파서\n+S8 물류비 파서"]
+        DATAJS["data.js\nmonthly/yearly\ncohort 3종\nsujo\n+financial 8종\n+logistics 4종"]
         DEPLOY["GitHub Pages\n자동 배포"]
-        DASH["Data Deck\n3-탭 대시보드\n자금수지 + 운영 + 재무"]
+        DASH["Data Deck\n3-탭 대시보드\n자금수지 + 운영 + 재무\n+물류비 탭"]
     end
 
     S3 -->|boto3| CONVERT
     GA4 -->|google-analytics-data| CONVERT
     SHEETS_AD -->|gspread| CONVERT
     SHEETS_OPS -->|gspread| CONVERT
+    SHEETS_LOG -->|gspread| CONVERT
     CONVERT --> DATAJS
     DATAJS --> DEPLOY
     DEPLOY --> DASH
@@ -458,6 +468,15 @@ flowchart LR
             <td>S6 외부손익/월별손익 CSV (4종)</td>
             <td><span class="badge badge-green">완료</span></td>
             <td>pnl + fcf + debt + forecast → data.js financial 8키</td>
+        </tr>
+        <tr>
+            <td><strong>물류비 (운임/관부가세)</strong></td>
+            <td>
+                <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1EpHvADmRPhIWAHllMoyPEVSjrh54uyqPOjs1XJ_60Is/" target="_blank" rel="noopener">물류비 2025</a>
+                <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1cMxKNV_vixIdTNMH1HdWZ-0mczSlLwEAxqYzTHdAJ5w/" target="_blank" rel="noopener">물류비 2026</a>
+            </td>
+            <td><span class="badge badge-green">완료</span></td>
+            <td>monthly 15개월 + boutiques TOP 20 + courier_share → data.js logistics 4종</td>
         </tr>
     </tbody>
 </table>
@@ -609,7 +628,7 @@ flowchart LR
 <div class="chart-container">
     <pre class="mermaid">
 flowchart TD
-    subgraph INPUT["입력 (8개 소스)"]
+    subgraph INPUT["입력 (9개 소스)"]
         CSV1["orders.csv\n903K rows"]
         CSV2["users.csv\n248K rows"]
         CSV3["products.csv\n2.3M rows"]
@@ -617,6 +636,7 @@ flowchart TD
         GA4_IN["GA4 API\nsessions/MAU/채널"]
         SHEETS_IN["Sheets API\n광고비 (월)"]
         OPS_IN["운영 시트 5종\nforet/PG/할인/환불/환율"]
+        LOG_IN["물류비 마감 시트\n2025+2026\nDashboard 탭"]
     end
 
     subgraph PIPELINE["convert_csv.py"]
@@ -630,10 +650,11 @@ flowchart TD
         COHORT["8. calculate_cohorts\nAll/Repeat/VIP"]
         SUJO["9. fetch_sujo_data\n수조 5개 파서"]
         S6FIN["10. load_s6_financial\nexternal_pnl/monthly_pnl\ndebt_monthly/vertical_forecast"]
+        S8LOG["11. fetch_logistics_cost\n물류비 마감 2025+2026\nmonthly/boutiques/courier"]
     end
 
     subgraph OUTPUT["출력"]
-        DATAJS_OUT["data.js\nmonthly 48+ months\nyearly 4 years\ncohort 3 types\nsujo (자금수지)\nfinancial 8종"]
+        DATAJS_OUT["data.js\nmonthly 48+ months\nyearly 4 years\ncohort 3 types\nsujo (자금수지)\nfinancial 8종\nlogistics 4종"]
     end
 
     CSV1 --> AGG_ORD
@@ -643,6 +664,7 @@ flowchart TD
     GA4_IN --> FETCH_GA
     SHEETS_IN --> FETCH_AD
     OPS_IN --> SUJO
+    LOG_IN --> S8LOG
 
     AGG_ORD --> BACKFILL
     AGG_USR --> BACKFILL
@@ -655,6 +677,7 @@ flowchart TD
     COHORT --> DATAJS_OUT
     SUJO --> DATAJS_OUT
     S6FIN --> DATAJS_OUT
+    S8LOG --> DATAJS_OUT
     </pre>
 </div>
 
@@ -788,8 +811,14 @@ flowchart TD
                 <tr>
                     <td></td>
                     <td>자금수지 대시보드 v2</td>
-                    <td>03-05 ~</td>
-                    <td><span class="badge badge-orange">진행중</span></td>
+                    <td>03-05</td>
+                    <td><span class="badge badge-green">완료</span></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td>S8 물류비용 데이터 연동</td>
+                    <td>03-05</td>
+                    <td><span class="badge badge-green">완료</span></td>
                 </tr>
                 <tr>
                     <td></td>
@@ -845,6 +874,7 @@ flowchart TD
         <tr><td>8</td><td>GMV 제외</td><td>결제중/주문접수/주문무효만 제외. 결제취소는 포함</td></tr>
         <tr><td>9</td><td>물류 재고</td><td>foret DB + Google Cloud SQL + 시트 분산. 현재 SKU 가용률만 사용</td></tr>
         <tr><td>10</td><td>수조 확보 완료</td><td>관세, 물류비, 판관비 → S6 external_pnl/monthly_pnl CSV로 확보 (03-05)</td></tr>
+        <tr><td>13</td><td>S8 물류비</td><td>물류비 마감 시트 2종(2025+2026) → gspread fetch → data.js logistics 4종 (monthly/boutiques/courier_share/totals)</td></tr>
         <tr><td>11</td><td>gcloud ADC</td><td>analytics.readonly + spreadsheets.readonly + drive.readonly + cloud-platform</td></tr>
         <tr><td>12</td><td>스키마 변경 (03-04)</td><td>orders.csv: deposit_date 추가, return_ea/refund_goods_price 삭제 (DB 오류). 반품은 refund_status='complete' 기준 goods_price&times;ea로 계산</td></tr>
     </tbody>

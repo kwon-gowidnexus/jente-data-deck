@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JENTE Cash Command Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Sans:wght@300;400;600;700&family=Noto+Sans+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══ IB Design System (REPORT_STYLE_GUIDE.md) ═══ */
+:root {
+  --black: #000000;
+  --near-black: #111111;
+  --dark: #222222;
+  --text: #1a1a1a;
+  --text2: #4a4a4a;
+  --text3: #777777;
+  --border: #c8c8c8;
+  --border-light: #e0e0e0;
+  --rule: #000000;
+  --bg: #ffffff;
+  --bg-alt: #f5f5f5;
+  --bg-warm: #f5f3ed;
+  --negative: #8b0000;
+  --positive: #1a4d2e;
+  --caution: #7a5c00;
+  --accent: #1a1a1a;
+}
+:root.dark {
+  --black: #e6edf3;
+  --near-black: #c9d1d9;
+  --dark: #b1bac4;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #6e7681;
+  --border: #30363d;
+  --border-light: #21262d;
+  --rule: #8b949e;
+  --bg: #0d1117;
+  --bg-alt: #161b22;
+  --bg-warm: #161b22;
+  --negative: #f85149;
+  --positive: #3fb950;
+  --caution: #d29922;
+  --accent: #58a6ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Noto Sans KR', 'Noto Sans', -apple-system, sans-serif;
+  background: var(--bg); color: var(--text);
+  line-height: 1.55; font-size: 13px; font-weight: 400;
+}
+a { color: var(--accent); text-decoration: none; }
+
+/* ═══ PIN ═══ */
+#pin-overlay {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  height:100vh; background:var(--bg);
+}
+#pin-overlay h2 { font-size:14px; font-weight:600; color:var(--text2); margin-bottom:16px; letter-spacing:2px; text-transform:uppercase; }
+#pin-overlay input {
+  width:160px; padding:10px; text-align:center; font-size:20px; letter-spacing:8px;
+  font-family:'Noto Sans Mono',monospace;
+  background:var(--bg-alt); border:1px solid var(--border); color:var(--text); outline:none;
+}
+#pin-overlay input:focus { border-color:var(--black); }
+#pin-error { color:var(--negative); font-size:11px; margin-top:6px; min-height:16px; }
+
+/* ═══ Layout ═══ */
+#app { display:none; max-width:1400px; margin:0 auto; padding:0 24px 60px; }
+
+/* ═══ Header ═══ */
+.header-bar {
+  background:var(--black); color:var(--bg); padding:16px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  margin:0 -24px 0; /* full bleed */
+}
+.header-bar h1 { font-size:14px; font-weight:700; letter-spacing:1px; }
+.header-bar .meta { font-size:10px; opacity:.7; display:flex; gap:16px; align-items:center; }
+.header-btn {
+  padding:3px 10px; font-size:10px; cursor:pointer;
+  border:1px solid rgba(255,255,255,.3); background:transparent; color:var(--bg);
+  font-family:inherit; letter-spacing:.3px;
+}
+.header-btn:hover { border-color:#fff; }
+
+/* ═══ Section ═══ */
+.section { margin-top:28px; }
+.section h2 {
+  font-size:16px; font-weight:700; letter-spacing:.5px;
+  border-bottom:2px solid var(--rule); padding-bottom:6px; margin-bottom:12px;
+}
+.section h3 { font-size:14px; font-weight:700; margin:16px 0 6px; }
+.section h4 { font-size:12px; font-weight:600; margin:12px 0 4px; }
+
+/* ═══ KPI Grid ═══ */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:8px; margin-bottom:16px; }
+.kpi-card {
+  border:1px solid var(--border); padding:10px 14px;
+  border-left:3px solid var(--border);
+}
+.kpi-card.highlight { border-left-color:var(--caution); }
+.kpi-card.danger { border-left-color:var(--negative); }
+.kpi-card.success { border-left-color:var(--positive); }
+.kpi-card.info { border-left-color:var(--dark); }
+.kpi-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--text2); }
+.kpi-value { font-family:'Noto Sans Mono',monospace; font-size:20px; font-weight:700; margin:2px 0; font-variant-numeric:tabular-nums lining-nums; }
+.kpi-sub { font-size:10px; color:var(--text3); }
+.kpi-value.neg { color:var(--negative); }
+.kpi-value.pos { color:var(--positive); }
+.kpi-value.warn { color:var(--caution); }
+
+/* ═══ Signal dots ═══ */
+.sig { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+.sig-g { background:var(--positive); }
+.sig-y { background:var(--caution); }
+.sig-r { background:var(--negative); }
+
+/* ═══ Tables ═══ */
+.tbl-wrap { overflow-x:auto; margin-bottom:12px; }
+table { width:100%; border-collapse:collapse; font-size:12px; white-space:nowrap; }
+th { font-size:10px; font-weight:600; text-align:right; padding:5px 10px;
+  border-bottom:1px solid var(--rule); color:var(--text2); background:var(--bg);
+  position:sticky; top:0; z-index:2; letter-spacing:.3px; }
+td { text-align:right; padding:5px 10px; border-bottom:1px solid var(--border-light);
+  font-family:'Noto Sans Mono',monospace; font-size:11px; font-weight:400;
+  font-variant-numeric:tabular-nums lining-nums; }
+td:first-child, th:first-child { text-align:left; font-family:'Noto Sans KR',sans-serif;
+  position:sticky; left:0; background:var(--bg); z-index:1; min-width:140px; font-weight:500; }
+th:first-child { z-index:3; }
+tr:hover td { background:var(--bg-warm); }
+tr:hover td:first-child { background:var(--bg-warm); }
+tr.sub td { font-weight:700; border-top:2px solid var(--rule); }
+tr.sub td:first-child { background:var(--bg); }
+tr.cat td { font-weight:700; color:var(--text2); font-size:10px; text-transform:uppercase;
+  letter-spacing:.5px; border-bottom:1px solid var(--border); font-family:'Noto Sans KR',sans-serif; }
+td.future { color:var(--text3); opacity:.4; }
+td.today { background:rgba(0,0,0,.04) !important; border-left:2px solid var(--rule); }
+:root.dark td.today { background:rgba(255,255,255,.04) !important; }
+td.neg { color:var(--negative); }
+td.pos { color:var(--positive); }
+
+/* ═══ Custom Tooltip ═══ */
+td[data-tip] { cursor:help; }
+#cc-tooltip {
+  display:none; position:fixed; z-index:9999; pointer-events:none;
+  background:var(--dark); color:var(--bg); font-family:'Noto Sans KR',sans-serif;
+  font-size:10px; font-weight:400; line-height:1.5; padding:6px 10px;
+  white-space:pre-line; max-width:280px;
+  border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+.tag { display:inline-block; padding:1px 6px; font-size:9px; font-weight:600; border:1px solid; }
+.tag-g { color:var(--positive); border-color:var(--positive); }
+.tag-y { color:var(--caution); border-color:var(--caution); }
+.tag-r { color:var(--negative); border-color:var(--negative); }
+
+/* ═══ Panels ═══ */
+.panel { border:1px solid var(--border); margin-bottom:16px; }
+.panel-hd { padding:8px 14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+  background:var(--bg-alt); border-bottom:1px solid var(--border); }
+.panel-hd:hover { background:var(--bg-warm); }
+.panel-hd h3 { margin:0; font-size:13px; }
+.panel-chev { font-size:10px; color:var(--text3); transition:transform .2s; }
+.panel-chev.open { transform:rotate(180deg); }
+.panel-bd { padding:14px; }
+.panel.collapsed .panel-bd { display:none; }
+
+/* ═══ Stack Bar ═══ */
+.stack-bar { display:flex; height:16px; overflow:hidden; margin:6px 0; border:1px solid var(--border); }
+.stack-seg { display:flex; align-items:center; justify-content:center; font-size:8px; font-weight:700; color:#fff; }
+
+/* ═══ Insight ═══ */
+.insight { background:var(--bg-alt); padding:8px 14px; font-size:11px; margin-top:8px;
+  border-left:3px solid var(--border); line-height:1.7; color:var(--text2); }
+.insight.warn { border-left-color:var(--caution); }
+.insight.danger { border-left-color:var(--negative); }
+.insight.good { border-left-color:var(--positive); }
+
+/* ═══ TOC (Table of Contents) ═══ */
+.toc { display:flex; gap:4px; flex-wrap:wrap; margin:12px 0 0; padding:10px 0; border-top:1px solid var(--border-light); }
+.toc a { font-size:10px; padding:3px 10px; border:1px solid var(--border); color:var(--text2);
+  font-weight:500; letter-spacing:.3px; }
+.toc a:hover { border-color:var(--text); color:var(--text); }
+
+/* ═══ Modal ═══ */
+.modal-overlay {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:100;
+  align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--bg); border:1px solid var(--border); max-width:720px; width:90%;
+  max-height:85vh; overflow-y:auto; padding:24px; position:relative;
+}
+.modal-close {
+  position:absolute; top:10px; right:14px; font-size:18px; cursor:pointer;
+  background:none; border:none; color:var(--text2); font-family:inherit;
+}
+.modal-close:hover { color:var(--text); }
+.modal h2 { font-size:14px; font-weight:700; margin-bottom:12px; border-bottom:2px solid var(--rule); padding-bottom:6px; }
+.modal h3 { font-size:12px; font-weight:600; margin:16px 0 6px; color:var(--text2); }
+.modal p, .modal li { font-size:11px; line-height:1.7; color:var(--text2); }
+.modal ul { padding-left:18px; margin-bottom:8px; }
+.modal table { margin:8px 0; }
+.modal td, .modal th { font-size:10px; padding:4px 8px; }
+.modal .mermaid-box { background:var(--bg-alt); padding:12px; border:1px solid var(--border-light); margin:8px 0; min-height:60px; }
+.modal a[href] { color:#1a6dcc; text-decoration:underline; }
+.modal a[href]:hover { color:#0f4d99; }
+:root.dark .modal a[href] { color:#58a6ff; }
+:root.dark .modal a[href]:hover { color:#79b8ff; }
+
+/* ═══ Target table ═══ */
+#target-table { border-collapse:collapse; width:100%; }
+#target-table th, #target-table td { padding:4px 3px; font-size:10px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--border-light); }
+#target-table th { font-weight:600; position:sticky; top:0; background:var(--bg-alt); z-index:1; }
+#target-table th.month-group { text-align:center; border-bottom:2px solid var(--border); }
+#target-table th.sub-col { font-size:9px; font-weight:400; color:var(--text3); }
+#target-table th.sub-col.actual { color:var(--green); }
+#target-table td.metric-label { text-align:left; font-family:'Noto Sans KR',sans-serif; font-weight:600; font-size:11px; min-width:110px; position:sticky; left:0; background:var(--bg-alt); z-index:1; }
+#target-table td.metric-child { text-align:left; font-family:'Noto Sans KR',sans-serif; font-size:10px; padding-left:16px; color:var(--text2); position:sticky; left:0; background:var(--bg-alt); z-index:1; }
+#target-table td.actual-val { color:var(--green); font-weight:500; background:color-mix(in srgb, var(--green) 4%, transparent); }
+#target-table td.gap-pos { color:var(--green); font-size:9px; }
+#target-table td.gap-neg { color:var(--red); font-size:9px; }
+#target-table input {
+  width:58px; padding:2px 3px; text-align:right; font-size:10px;
+  font-family:'Noto Sans Mono',monospace; border:1px solid var(--border-light);
+  background:var(--bg); color:var(--text); outline:none;
+}
+#target-table input:focus { border-color:var(--rule); }
+#target-table input:disabled { background:transparent; border-color:transparent; color:var(--text); }
+#target-table .future-month { opacity:0.4; }
+.target-toolbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.target-toolbar .desc { font-size:11px; color:var(--text3); }
+.target-toolbar button { font-size:10px; padding:4px 14px; cursor:pointer; border:1px solid var(--border); background:var(--bg-alt); color:var(--text); font-family:'Noto Sans KR',sans-serif; }
+.target-toolbar button.primary { background:var(--text); color:var(--bg); font-weight:600; }
+.target-toolbar button:hover { opacity:0.8; }
+
+/* ═══ Print ═══ */
+@media print {
+  body { background:#fff !important; color:#000 !important; font-size:9.5pt; line-height:1.35; }
+  .header-bar { background:#000 !important; color:#fff !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .header-btn, #pin-overlay { display:none !important; }
+  #app { display:block !important; padding:0; max-width:none; }
+  td:first-child, th:first-child { position:static; }
+  th { position:static; }
+  .panel.collapsed .panel-bd { display:block; }
+  table { font-size:8.5pt; }
+  th { font-size:7pt; }
+  .section { page-break-inside:avoid; }
+  h2 { page-break-after:avoid; }
+}
+</style>
+</head>
+<body>
+<div id="cc-tooltip"></div>
+
+<!-- PIN -->
+<div id="pin-overlay">
+  <h2>JENTE Cash Command</h2>
+  <input type="password" id="pin-input" maxlength="4" placeholder="PIN" autofocus>
+  <div id="pin-error"></div>
+</div>
+
+<!-- App -->
+<div id="app">
+
+<!-- Header -->
+<div class="header-bar">
+  <h1>JENTE &mdash; Cash Command Board</h1>
+  <div class="meta">
+    <span>Updated: <span id="meta-date"></span> <span id="meta-time" style="opacity:.6"></span></span>
+    <button class="header-btn" onclick="openInfo()">i</button>
+    <button class="header-btn" id="theme-btn" onclick="toggleTheme()">Dark</button>
+    <a class="header-btn" href="jente_datadeck_draft.html">Data Deck &rarr;</a>
+  </div>
+</div>
+
+<!-- TOC -->
+<nav class="toc">
+  <a href="#sec-kpi">KPI</a>
+  <a href="#sec-daily">Daily CF</a>
+  <a href="#sec-monthly">Monthly</a>
+  <a href="#sec-inv">Inventory</a>
+  <a href="#sec-debt">Debt</a>
+  <a href="#sec-sched">Schedule</a>
+</nav>
+
+<!-- ═══ S0: KPI ═══ -->
+<div class="section" id="sec-kpi">
+  <h2 style="display:flex;align-items:center;justify-content:space-between">KPI Overview
+    <button class="header-btn" style="font-size:10px;color:var(--text2);border-color:var(--border);background:var(--bg-alt)" onclick="openTarget()">Target</button></h2>
+  <div class="kpi-grid" id="kpi-row"></div>
+  <div class="insight" id="s0-insight"></div>
+</div>
+
+<!-- ═══ S1: Daily CF ═══ -->
+<div class="section" id="sec-daily">
+  <h2>당월 일별 현금흐름 <span style="font-size:12px;font-weight:400;color:var(--text3)" id="s1-month"></span></h2>
+  <div class="tbl-wrap" id="s1-table"></div>
+  <div class="insight" id="s1-insight"></div>
+</div>
+
+<!-- ═══ S2: Monthly ═══ -->
+<div class="section" id="sec-monthly">
+  <h2>월별 요약 (2026)</h2>
+  <div class="tbl-wrap" id="s2-table"></div>
+  <div class="insight" id="s2-insight"></div>
+</div>
+
+<!-- ═══ S3-A: Inventory ═══ -->
+<div class="section" id="sec-inv">
+  <h2>재고 상세</h2>
+  <h3>수불부</h3>
+  <div class="tbl-wrap" id="s3a-subul"></div>
+  <h4>재고 구성</h4>
+  <div class="tbl-wrap" id="s3a-composition"></div>
+  <h4 style="margin-top:14px">반품-재고 대조</h4>
+  <div class="tbl-wrap" id="s3a-return"></div>
+</div>
+
+<!-- ═══ S3-B: Debt ═══ -->
+<div class="section" id="sec-debt">
+  <h2>부채 상세</h2>
+  <div class="tbl-wrap" id="s3b-debt"></div>
+  <div class="insight warn" id="s3b-gap"></div>
+</div>
+
+<!-- ═══ S4: Schedule ═══ -->
+<div class="section" id="sec-sched">
+  <h2>자금 스케줄</h2>
+
+  <div class="panel" id="panel-monthly-sched">
+    <div class="panel-hd" onclick="togglePanel('panel-monthly-sched')">
+      <h3>당월 자금 스케줄 (일별)</h3>
+      <span class="panel-chev open">&#9660;</span>
+    </div>
+    <div class="panel-bd">
+      <div class="tbl-wrap" id="s4b-table"></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-annual">
+    <div class="panel-hd" onclick="togglePanel('panel-annual')">
+      <h3>연간 자금 스케줄 (2026)</h3>
+      <span class="panel-chev open">&#9660;</span>
+    </div>
+    <div class="panel-bd">
+      <div class="tbl-wrap" id="s4a-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal-overlay" id="info-modal" onclick="if(event.target===this)closeInfo()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeInfo()">&times;</button>
+    <h2>Cash Command Board</h2>
+    <p>매일 아침 <strong>현금 상황을 1분 안에 완전 장악</strong>하기 위한 CEO 전용 대시보드.<br>
+    젠테 수조 분석 시트 → 수기 정리 → 인라인 데이터(CASH_DATA)로 렌더링.</p>
+
+    <h3>데이터 흐름</h3>
+    <div class="mermaid-box" id="mermaid-container">
+      <pre class="mermaid">
+graph LR
+  A["RESET 대시보드<br/>(합산관리·부채·재고)"] -->|자동 파싱| B["CASH_DATA<br/>(인라인 JS)"]
+  M["매출데이터 (월별)<br/>(거래·환불·정산·MUR·foret)"] -->|환불 집행 원천| A
+  R["환불리뷰<br/>(환불 건별)"] -->|환불율 산정| A
+  C["고위드 DW<br/>(BigQuery)"] -->|은행잔고| B
+  W["API 매출원가<br/>(발주·부대비용)"] -->|원가 산정| A
+  B --> D["S0: KPI 카드"]
+  B --> E["S1: 일별 CF"]
+  B --> F["S2: 월별 요약"]
+  B --> G["S3: 재고/부채"]
+  B --> H["S4: 자금 스케줄"]
+      </pre>
+    </div>
+
+    <h3>섹션별 핵심 질문</h3>
+    <table>
+      <tr><th style="text-align:left">섹션</th><th style="text-align:left">질문</th></tr>
+      <tr><td style="font-family:'Noto Sans KR'">KPI Overview</td><td style="font-family:'Noto Sans KR'">현금 상태가 한눈에 어떤가?</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">당월 일별 CF</td><td style="font-family:'Noto Sans KR'">이번 달 돈이 얼마나 들어오고 나가는가?</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">월별 요약</td><td style="font-family:'Noto Sans KR'">월별 추이가 좋아지고 있나?</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">재고 상세</td><td style="font-family:'Noto Sans KR'">재고가 얼마나 쌓여 있나?</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">부채 상세</td><td style="font-family:'Noto Sans KR'">부채 구성과 추이는?</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">자금 스케줄</td><td style="font-family:'Noto Sans KR'">앞으로 언제 얼마가 나가나?</td></tr>
+    </table>
+
+    <h3>데이터 소스</h3>
+    <table>
+      <tr><th style="text-align:left">소스</th><th style="text-align:left">내용</th><th style="text-align:left">업데이트</th></tr>
+      <tr><td colspan="3" style="font-family:'Noto Sans KR';font-weight:700;background:var(--bg-alt);padding:4px 8px">RESET 대시보드</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1YkK5US7AQNjCC-IMlxTMy3DJrhAEyOEI7mUdDFdNP8o/" target="_blank">3월 RESET</a></td><td style="font-family:'Noto Sans KR'">합산관리, 일별실적, 재고입출하, 부채현황</td><td>수기 (영업일)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1Dcq0EQdDTasi_ZahF0pDnd5zE3OgdXglXPrEQzXNVts/" target="_blank">2월 RESET</a></td><td style="font-family:'Noto Sans KR'">합산관리, 부채현황</td><td>마감</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/19Y6bnLPmHUlKUTHzmJfhTgHRtDgt7UnHr5assPJNHC0/" target="_blank">1월 RESET</a></td><td style="font-family:'Noto Sans KR'">합산관리, 부채현황</td><td>마감</td></tr>
+      <tr><td colspan="3" style="font-family:'Noto Sans KR';font-weight:700;background:var(--bg-alt);padding:4px 8px">매출데이터 (월별)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1FfOTrQFu_njmWH5mm5y-sHSKs7kcDAEt_lw-BRx_1eo/" target="_blank">202603_매출 데이터_03</a></td><td style="font-family:'Noto Sans KR'">3월 거래액, 환불 집행, 정산, MUR, foret, 이니시스 환불승인리스트</td><td>수기 (영업일)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1JnV7qOGPrUFZyfwClEquKWz9kNbmeYHOi-KBXmsA6Gc/" target="_blank">202602_매출 데이터_02</a></td><td style="font-family:'Noto Sans KR'">2월 거래액, 환불 집행, 정산, MUR, foret, 이니시스 환불승인리스트</td><td>마감</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1RA_Y8zg7oH3ywzRqkLWIJCfKeCcSW8X0ggbNA05F1Zg/" target="_blank">202601_매출 데이터_01</a></td><td style="font-family:'Noto Sans KR'">1월 거래액, 환불 집행, 정산</td><td>마감</td></tr>
+      <tr><td colspan="3" style="font-family:'Noto Sans KR';font-weight:700;background:var(--bg-alt);padding:4px 8px">환불 &middot; 원가</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1hvcwMweiBFiTB1ybS8uv61_8zeDlHzMvvyPexKhLEqY/" target="_blank">환불리뷰</a></td><td style="font-family:'Noto Sans KR'">옵션별 환불 건수/금액, 환불율 산정</td><td>수기 (영업일)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1-Rhv7EKfMLcsn4O__lYAAeMm1sdUolcDAylxR51JYRM/" target="_blank">반품환불 미지급</a></td><td style="font-family:'Noto Sans KR'">반품 환불 미처리 현황, 월별 부채 잔액</td><td>수기 (영업일)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1AG5ujmf8kfahbFbk50J7mtAb_mSitg9WfJCessay7Ak/" target="_blank">반품 매출원가</a></td><td style="font-family:'Noto Sans KR'">월별 반품 주문, 반품재고 원가</td><td>월말</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1Hi_Ceaj8XfFR8c3h3rZweCdaKLQUmQvx8rkpJruzwiI/" target="_blank">API 매출원가</a></td><td style="font-family:'Noto Sans KR'">월별 발주원가, 부대비용, 부티크별 MUR</td><td>월말</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1cMxKNV_vixIdTNMH1HdWZ-0mczSlLwEAxqYzTHdAJ5w/" target="_blank">물류비용 (2026)</a></td><td style="font-family:'Noto Sans KR'">운임/관부가세</td><td>월말</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1FAUmTA3zDKnUSxsav5I3M5lCgktRNQgzUYJe2kHRxGg/" target="_blank">비원가성 재고</a></td><td style="font-family:'Noto Sans KR'">마감재고, 반품/매입 피봇</td><td>월말</td></tr>
+      <tr><td colspan="3" style="font-family:'Noto Sans KR';font-weight:700;background:var(--bg-alt);padding:4px 8px">자동 연동</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">고위드 DW (BigQuery)</td><td style="font-family:'Noto Sans KR'">은행 잔고 (corp_id:5658801620)</td><td>자동 (일 1회)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- Target Modal -->
+<div class="modal-overlay" id="target-modal" style="align-items:flex-start;padding-top:2vh" onclick="if(event.target===this)closeTarget()">
+  <div class="modal" style="max-width:96vw;width:1400px;max-height:96vh;display:flex;flex-direction:column">
+    <button class="modal-close" onclick="closeTarget()">&times;</button>
+    <h2 style="margin-bottom:4px">월별 Target vs 실적</h2>
+    <div class="target-toolbar">
+      <span class="desc">거래액·MUR·환불 목표를 월별로 관리합니다. 환불 목표는 거래액 대비 %로 입력합니다.</span>
+      <span>
+        <button id="target-edit-btn" onclick="toggleTargetEdit()">수정</button>
+        <button id="target-save-btn" class="primary" onclick="saveTargets()" style="display:none">저장</button>
+        <button id="target-cancel-btn" onclick="cancelTargetEdit()" style="display:none">취소</button>
+      </span>
+    </div>
+    <div class="tbl-wrap" style="flex:1;overflow:auto">
+      <table id="target-table"></table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════
+// CASH_DATA
+// ═══════════════════════════════════════════════════
+// AUTO_UPDATE_BEGIN
+const CASH_DATA = {
+  daily: {
+    month:'2026-03', days:31, business_days:22, elapsed_bdays:5,
+    gmv:             [115445540,127865957,85169431,90520593,102242323,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_current:  [8927542,12939294,10043820,9657790,8668453,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_prev:     [0,0,30909242,26374281,19097103,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    revenue:         [106517998,114926663,44216369,54488522,74476767,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs:            [85043649,88824745,49316763,54286584,60279265,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    gp:              [21474349,26101918,-5100394,201938,14197502,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    sga:             [4373365,1561290,1561290,1561290,2639290,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    debt_repay:      [0,1000000,1000000,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    musinsa_repay:   [0,1000000,1000000,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    card_repay:      [0,0,0,0,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    settlement:      [105345558,114813429,48222621,48774789,66853994,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_boutique:   [78381243,81866124,45453238,50033718,55556926,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_import:     [6662406,6958621,3863525,4252866,4722339,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cash_margin:     [20301909,25988684,-1094142,-5511795,6574729,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    api_sales:       [112871943,122683902,69806432,74241454,83470526,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    inventory_sales: [2573597,5182055,15362999,16279139,18771797,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    // MUR: [일별실적_API] 탭 58행 참조. 일별 마크업률(%)
+    mur:            [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+  },
+  monthly: {
+    '2026-01': { gmv:3320000000, refund:914000000, refund_rate:0.275, revenue:2406000000, cogs_cash:1912000000, gp:494000000, gp_rate:0.205, refund_prev:795000000, remaining:254000000, sga:119000000, op_cf:135000000, fin_debt_repay:113000000, fin_musinsa:0, fin_card:1818000000, fin_cf:-1931000000, net_cash_real:22000000, net_cash_total:-1796000000, inv_qty:1652, inv_val:717000000, total_debt:45753000000, cogs_accrual:2426000000, cogs_gap:514000000, dscr:1.19 },
+    '2026-02': { gmv:2971000000, refund:438000000, refund_rate:0.147, revenue:2211000000, cogs_cash:1392000000, gp:312000000, gp_rate:0.141, refund_prev:314000000, remaining:465000000, sga:108000000, op_cf:347000000, fin_debt_repay:161000000, fin_musinsa:0, fin_card:318000000, fin_cf:-479000000, net_cash_real:186000000, net_cash_total:-132000000, inv_qty:1732, inv_val:790000000, total_debt:45742000000, cogs_accrual:2275000000, cogs_gap:883000000, dscr:2.15 },
+    '2026-03': { gmv:521243844, refund:50236899, refund_rate:0.096, revenue:394626319, cogs_cash:337751006, gp:56875313, gp_rate:0.144, refund_prev:76380626, remaining:72000000, sga:11696525, op_cf:45178788, fin_debt_repay:4000000, fin_musinsa:4000000, fin_card:0, fin_cf:-8000000, net_cash_real:37178788, net_cash_total:77000000, inv_qty:1610, inv_val:747000000, total_debt:45752000000, cogs_accrual:315000000, cogs_gap:35000000, dscr:null, settlement:384010391, cogs_boutique:311291249, cogs_import:26459757, cash_margin:46259385, cash_margin_rate:0.12, api_sales:463074257, inventory_sales:58169587, mtd:true },
+  },
+  inventory: {
+      months:['2025-12','2026-01','2026-02','2026-03'],
+      opening:[2383,1891,1652,1732],
+      api_in:[3334,3347,3878,572],
+      pre_in:[77,22,72,0],
+      return_in:[597,426,367,72],
+      out:[4500,4035,4238,751],
+      closing:[1891,1652,1732,1625],
+      closing_val:[712000000,717000000,790000000,618000000],
+      closing_val_real:[712000000,717000000,790000000,747000000],
+      composition:{
+        months:['2026-01','2026-02','2026-03'],
+        return_qty:[null,670,null],
+        return_val:[null,519000000,null],
+        purchase_qty:[null,1062,null],
+        purchase_val:[null,271000000,null]
+      }
+    },
+  returns: {
+      months:['2026-01','2026-02','2026-03'],
+      foret_count:[531,307,28],
+      foret_amount:[419000000,250000000,32000000],
+      warehouse_qty:[426,367,72],
+      warehouse_val:[381000000,304000000,55000000],
+      intake_rate:[0.802,1.195,2.57]
+    },
+  debt: {
+      months:['2025-12','2026-01','2026-02','2026-03'],
+      categories:{
+        '고위드':[20611000000,22500000000,22500000000,22813000000],
+        '무신사':[9076000000,9076000000,8995000000,5941000000],
+        '금융부채':[5100000000,5100000000,5170000000,18407000000],
+        '법인카드':[1741000000,1475000000,1422000000,1475000000],
+        '고객환불':[1120000000,1151000000,1233000000,1151000000],
+        '기타':[6450000000,6450000000,6422000000,null]
+      },
+      total:[44098000000,45752000000,45742000000,45752000000]
+    },
+  working_capital: {
+      months:['2026-01','2026-02','2026-03'],
+      cash_cogs:[1912000000,1392000000,280000000],
+      accrual_cogs:[2426000000,2275000000,315000000],
+      gap:[514000000,883000000,35000000]
+    },
+  schedule_annual: {
+    items: [
+      {cat:'정기 상환',label:'금융부채 이자',tip:'RESET 대시보드 [부채현황] 탭. 매월 10일 전후 자동이체',vals:[15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000]},
+      {cat:'정기 상환',label:'금융부채 원금',tip:'RESET 대시보드 [부채현황] 탭. 매월 말일 상환. 1월 0.98억 → 2월부터 1.48억/월',vals:[98000000,146000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000]},
+      {cat:'정기 상환',label:'무신사 상환',tip:'RESET [부채현황]. 3월부터 월 1,900만 정기 상환 시작. 잔액 59.41억',vals:[0,0,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000]},
+      {cat:'정기 상환',label:'법인카드',tip:'RESET [부채현황]. 매월 20일 결제. 1~3월 실적, 4월~ 미정',vals:[1818000000,318000000,147505310,null,null,null,null,null,null,null,null,null]},
+      {cat:'고정 지출',label:'급여+4대보험',tip:'운영시트 [판관비]. 매월 25일 지급. 1~2월 1.17억, 3월~ 인원 증가로 1.42억',vals:[117000000,117000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000]},
+      {cat:'고정 지출',label:'SW 구독',tip:'운영시트 [판관비]. Shopify·GA·Slack 등 월 1,300만. 매월 15일 전후 결제',vals:[13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000]},
+      {cat:'고정 지출',label:'사무실',tip:'운영시트 [판관비]. 임차료+관리비. 매월 28일 이체',vals:[8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000]},
+      {cat:'가변 지출',label:'마케팅/광고',tip:'운영시트 [판관비]. 인스타/구글 광고비. 1~3월 실적, 4월~ 미정',vals:[5600000,5600000,5600000,null,null,null,null,null,null,null,null,null]},
+      {cat:'가변 지출',label:'물류비(추정)',tip:'[합산관리] 시트 물류비 열. 월 3.5억 전후. CJ대한통운+반품물류 포함',vals:[347000000,363000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000]},
+    ],
+    op_cf_est:[135000000,347000000,390000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000]
+  },
+  schedule_monthly: {
+    10:[{label:'금융이자',amount:15000000,tip:'매월 10일 자동이체. RESET [부채현황]'}],
+    15:[{label:'SW구독',amount:13000000,tip:'Shopify·GA 등. 운영시트 [판관비]'}],
+    20:[{label:'법인카드',amount:147505310,tip:'매월 20일 결제. RESET [부채현황]'},{label:'무신사',amount:19000000,tip:'3월부터 정기상환. RESET [부채현황]'}],
+    25:[{label:'급여+4대보험',amount:142000000,tip:'매월 25일 지급. 운영시트 [판관비]'}],
+    28:[{label:'사무실',amount:8000000,tip:'임차료+관리비. 운영시트 [판관비]'}],
+    31:[{label:'금융원금',amount:148000000,tip:'매월 말일 상환. RESET [부채현황]'}],
+  },
+  // DW 은행잔고 (고위드 연동 계좌, corp_id:5658801620)
+  bank: {
+    daily: [
+      {date:'2026-03-06', balance:2488114},
+      {date:'2026-03-05', balance:2488114},
+      {date:'2026-03-04', balance:4059741},
+      {date:'2026-03-03', balance:3340709},
+      {date:'2026-03-02', balance:7042993},
+      {date:'2026-03-01', balance:7042993},
+      {date:'2026-02-28', balance:12042993},
+    ],
+    monthly: [
+      {month:'2026-03', balance:2488114},
+      {month:'2026-02', balance:12042993},
+      {month:'2026-01', balance:81627},
+      {month:'2025-12', balance:491963324},
+    ],
+    source: 'gowid-prd DW (corp_id:5658801620)'
+  },
+  // RESET 시트 목표값 (월별 1~12월, 원 단위)
+  targets: {
+    gmv: [null,null,3200000000,null,null,null,null,null,null,null,null,null],
+    revenue: [null,null,2788800000,null,null,null,null,null,null,null,null,null],
+    cogs: [null,null,1992861538,null,null,null,null,null,null,null,null,null],
+    gp: [null,null,776835938,null,null,null,null,null,null,null,null,null],
+    refund_prev_limit: [null,null,383509858,null,null,null,null,null,null,null,null,null],
+    deposit: [null,null,2152363178,null,null,null,null,null,null,null,null,null],
+    sga: [null,null,161031257,null,null,null,null,null,null,null,null,null],
+  },
+  meta: { updated:'2026-03-06', updated_time:'13:52', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:6 }
+};
+// AUTO_UPDATE_END
+
+// ═══ Helpers ═══
+const PIN = '2026';
+const eok = v => v == null ? null : v / 1e8;
+const fE = v => v == null ? '—' : (v/1e8).toFixed(2) + '억';
+const fE1 = v => v == null ? '—' : (v/1e8).toFixed(1) + '억';
+const fN = v => v == null ? '—' : Math.round(v).toLocaleString();
+const fP = v => v == null ? '—' : (v*100).toFixed(1)+'%';
+const sum = a => a.reduce((s,v)=>s+(v||0),0);
+const vc = v => v==null?'':v<0?' class="neg"':v>0?' class="pos"':'';
+const sc = (v,g,y) => v==null?'':v>=g?'g':v>=y?'y':'r';
+const sigHtml = c => c?`<span class="sig sig-${c}"></span>`:'';
+const sigEmoji = c => c==='g'?'&#x1F7E2;':c==='y'?'&#x1F7E1;':c==='r'?'&#x1F534;':'';
+
+// ═══ PIN ═══
+document.getElementById('pin-input').addEventListener('input',function(){
+  if(this.value.length===4){
+    if(this.value===PIN){ document.getElementById('pin-overlay').style.display='none'; document.getElementById('app').style.display='block'; init(); }
+    else{ document.getElementById('pin-error').textContent='Invalid PIN'; this.value=''; }
+  }
+});
+
+// ═══ Target Management ═══
+const TARGET_KEY = 'jente_cash_targets';
+const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+let targetEditing = false;
+
+// Target rows: 거래액, MUR, 환불(상위) → 당월/전월(하위, % of GMV)
+const TARGET_ROWS = [
+  {key:'gmv',            label:'거래액',                    unit:'억', parent:true, group:true},
+  {key:'gmv_api',        label:'API 판매',                  unit:'억', parent:false},
+  {key:'gmv_inventory',  label:'재고 판매',                 unit:'억', parent:false},
+  {key:'mur',            label:'MUR',                       unit:'%',  parent:true, group:true},
+  {key:'refund_total',   label:'누적환불',                  unit:'%',  parent:true, group:true},
+  {key:'refund_current', label:'당월 거래 환불',            unit:'%',  parent:false},
+  {key:'refund_prev',    label:'전월 거래 환불',            unit:'%',  parent:false},
+  {key:'buyback_total',  label:'재고 구매(반품)',           unit:'억', parent:true, group:true},
+  {key:'buyback_current',label:'당월 거래 재고 구매(반품)', unit:'억', parent:false},
+  {key:'buyback_prev',   label:'전월 거래 재고 구매(반품)', unit:'억', parent:false},
+];
+
+// Get actual data for a month index (0-based), returns null if no data
+function getActual(monthIdx){
+  const key = `2026-${String(monthIdx+1).padStart(2,'0')}`;
+  const m = CASH_DATA.monthly[key];
+  if(!m) return null;
+  const isMtd = !!m.mtd;
+  const refCur = m.gmv>0 ? (m.refund||0)/m.gmv*100 : null;
+  const refPrev = m.gmv>0 ? (m.refund_prev||0)/m.gmv*100 : null;
+  return {
+    gmv: eok(m.gmv),
+    gmv_api: m.gmv_api!=null ? eok(m.gmv_api) : null,
+    gmv_inventory: m.gmv_inventory!=null ? eok(m.gmv_inventory) : null,
+    mur: null, // MUR monthly not yet available
+    refund_total: (refCur!=null && refPrev!=null) ? refCur+refPrev : null,
+    refund_current: refCur,
+    refund_prev: refPrev,
+    buyback_total: m.buyback_total!=null ? eok(m.buyback_total) : null,
+    buyback_current: m.buyback_current!=null ? eok(m.buyback_current) : null,
+    buyback_prev: m.buyback_prev!=null ? eok(m.buyback_prev) : null,
+    mtd: isMtd
+  };
+}
+// Current month index (0-based): March = 2
+function currentMonthIdx(){ return parseInt(CASH_DATA.meta.current_month.split('-')[1])-1; }
+
+function loadTargets(){
+  // localStorage 우선, 없으면 CASH_DATA.targets 기본값 사용
+  try{
+    const stored = JSON.parse(localStorage.getItem(TARGET_KEY));
+    if(stored && Object.keys(stored).length > 0) return stored;
+  }catch(e){}
+  // CASH_DATA에 내장된 기본 목표 (RESET 시트 파싱)
+  if(CASH_DATA.targets && Object.keys(CASH_DATA.targets).length > 0){
+    // RESET 목표 → Target 포맷 변환: 원 → 억 단위
+    const t = {};
+    for(const [k,arr] of Object.entries(CASH_DATA.targets)){
+      t[k] = arr.map(v => v != null ? v / 1e8 : null);
+    }
+    return t;
+  }
+  return {};
+}
+function openTarget(){
+  targetEditing = false;
+  document.getElementById('target-modal').classList.add('open');
+  renderTargetTable();
+  updateTargetButtons();
+}
+function closeTarget(){ document.getElementById('target-modal').classList.remove('open'); }
+
+function toggleTargetEdit(){
+  targetEditing = true;
+  updateTargetButtons();
+  document.querySelectorAll('#target-table input').forEach(inp=>{ inp.disabled=false; });
+}
+function cancelTargetEdit(){
+  targetEditing = false;
+  renderTargetTable();
+  updateTargetButtons();
+}
+function updateTargetButtons(){
+  document.getElementById('target-edit-btn').style.display = targetEditing ? 'none' : '';
+  document.getElementById('target-save-btn').style.display = targetEditing ? '' : 'none';
+  document.getElementById('target-cancel-btn').style.display = targetEditing ? '' : 'none';
+}
+
+function renderTargetTable(){
+  const tgt = loadTargets();
+  const curMi = currentMonthIdx();
+
+  // Header row 1: month groups (colspan=2 for months with actuals, 1 for future)
+  let h1='<tr><th style="text-align:left" rowspan="2">항목</th>';
+  for(let i=0;i<12;i++){
+    const hasActual = !!getActual(i);
+    const cls = i>curMi ? ' class="future-month"':'';
+    if(hasActual){
+      h1+=`<th class="month-group"${cls} colspan="2">${MONTHS[i]}</th>`;
+    } else {
+      h1+=`<th class="month-group"${cls}>${MONTHS[i]}</th>`;
+    }
+  }
+  h1+='</tr>';
+
+  // Header row 2: sub-columns (목표 / 실적)
+  let h2='<tr>';
+  for(let i=0;i<12;i++){
+    const hasActual = !!getActual(i);
+    const cls = i>curMi ? ' future-month':'';
+    h2+=`<th class="sub-col ${cls}">목표</th>`;
+    if(hasActual) h2+=`<th class="sub-col actual ${cls}">실적</th>`;
+  }
+  h2+='</tr>';
+
+  // Data rows
+  let body='';
+  for(const row of TARGET_ROWS){
+    const isChild = !row.parent;
+    const unitStr = row.unit ? ` <span style="color:var(--text3);font-weight:400">(${row.unit})</span>` : '';
+    const trStyle = row.group ? ' style="border-top:2px solid var(--border)"' : '';
+    body+=`<tr${trStyle}><td class="${isChild?'metric-child':'metric-label'}">${row.label}${unitStr}</td>`;
+
+    for(let i=0;i<12;i++){
+      const hasActual = getActual(i);
+      const isFuture = i>curMi;
+      const cls = isFuture ? ' class="future-month"':'';
+      const val = tgt[row.key]?.[i];
+
+      // Target cell
+      body+=`<td${cls}><input data-metric="${row.key}" data-month="${i}" value="${val!=null?val:''}" disabled></td>`;
+
+      // Actual cell (if month has data)
+      if(hasActual){
+        const av = hasActual[row.key];
+        const mtdTag = hasActual.mtd && i===curMi ? ' <span style="font-size:8px;opacity:0.7">MTD</span>':'';
+        if(av!=null){
+          let disp = row.unit==='%' ? av.toFixed(1)+'%' : av.toFixed(1);
+          // Gap indicator
+          let gapHtml='';
+          if(val!=null && av!=null){
+            const isGmvType = row.key.startsWith('gmv');
+            const isRefundPct = row.unit==='%'; // refund %: lower is better
+            const isBuyback = row.key.startsWith('buyback'); // buyback 억: compare to budget
+            if(isGmvType){
+              const pct = (av/val*100).toFixed(0);
+              gapHtml = av>=val
+                ? `<div class="gap-pos">${pct}%</div>`
+                : `<div class="gap-neg">${pct}%</div>`;
+            } else if(isRefundPct){
+              gapHtml = av<=val
+                ? `<div class="gap-pos">OK</div>`
+                : `<div class="gap-neg">+${(av-val).toFixed(1)}p</div>`;
+            } else if(isBuyback){
+              const pct = (av/val*100).toFixed(0);
+              gapHtml = av<=val
+                ? `<div class="gap-pos">${pct}%</div>`
+                : `<div class="gap-neg">${pct}%</div>`;
+            }
+          }
+          body+=`<td class="actual-val"${cls}>${disp}${mtdTag}${gapHtml}</td>`;
+        } else {
+          body+=`<td class="actual-val"${cls}>—${mtdTag}</td>`;
+        }
+      }
+    }
+    body+='</tr>';
+  }
+
+  document.getElementById('target-table').innerHTML = h1+h2+body;
+}
+
+function saveTargets(){
+  const tgt = loadTargets();
+  document.querySelectorAll('#target-table input').forEach(inp=>{
+    const mk=inp.dataset.metric, mi=parseInt(inp.dataset.month);
+    if(!tgt[mk]) tgt[mk]=new Array(12).fill(null);
+    const v=inp.value.trim();
+    tgt[mk][mi] = v==='' ? null : parseFloat(v);
+  });
+  localStorage.setItem(TARGET_KEY, JSON.stringify(tgt));
+  targetEditing = false;
+  renderTargetTable();
+  updateTargetButtons();
+  renderS0(); // refresh KPI insight
+}
+function getTarget(metric, monthIdx){ const t=loadTargets(); return t[metric]?.[monthIdx] ?? null; }
+
+// ═══ Info Modal ═══
+let mermaidLoaded = false;
+function openInfo(){
+  document.getElementById('info-modal').classList.add('open');
+  if(!mermaidLoaded){
+    mermaidLoaded = true;
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js';
+    s.onload = () => { mermaid.initialize({startOnLoad:false, theme:'neutral'}); mermaid.run({querySelector:'.mermaid'}); };
+    document.head.appendChild(s);
+  }
+}
+function closeInfo(){ document.getElementById('info-modal').classList.remove('open'); }
+
+// ═══ Theme ═══
+function toggleTheme(){
+  document.documentElement.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent = document.documentElement.classList.contains('dark') ? 'Light' : 'Dark';
+}
+
+// ═══ Panel ═══
+function togglePanel(id){
+  const p=document.getElementById(id);
+  p.classList.toggle('collapsed');
+  p.querySelector('.panel-chev').classList.toggle('open');
+}
+
+// ═══ S0: KPI ═══
+function renderS0(){
+  const D=CASH_DATA, m3=D.monthly['2026-03'], m2=D.monthly['2026-02'];
+  const bankToday = D.bank.daily[0].balance;
+  // 현금마진 기반 월환산
+  const cmMtd = m3.cash_margin || m3.op_cf || 0;
+  const cmEst = eok(cmMtd)*(D.meta.business_days/D.meta.elapsed_bdays);
+  const opMtd = m3.op_cf || 0;
+  const opEst = eok(opMtd)*(D.meta.business_days/D.meta.elapsed_bdays);
+  const opSig = sc(opEst,3,2);
+
+  let h='';
+  h+=`<div class="kpi-card info"><div class="kpi-label">은행잔고 (DW)</div>
+    <div class="kpi-value">${fE(bankToday)}</div>
+    <div class="kpi-sub">${D.bank.source} | ${D.bank.daily[0].date}</div></div>`;
+  h+=`<div class="kpi-card ${opSig==='g'?'success':opSig==='y'?'highlight':'danger'}">
+    <div class="kpi-label">${sigHtml(opSig)}현금마진 (MTD)</div>
+    <div class="kpi-value">${fE1(cmMtd)}</div>
+    <div class="kpi-sub">영업CF ${fE1(opMtd)} | 월환산 ~${opEst.toFixed(1)}억</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-label">재무CF (MTD)</div>
+    <div class="kpi-value">${fE1(m3.fin_cf)}</div>
+    <div class="kpi-sub">금융${fE1(m3.fin_debt_repay)} + 무신사${fE1(m3.fin_musinsa)}</div></div>`;
+  const dm=D.debt.total[3]-D.debt.total[2];
+  h+=`<div class="kpi-card"><div class="kpi-label">총부채</div>
+    <div class="kpi-value">${fE1(m3.total_debt)}</div>
+    <div class="kpi-sub">MoM ${dm>=0?'+':''}${fE1(dm)}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-label">환불율</div>
+    <div class="kpi-value ${m3.refund_rate<0.15?'pos':'warn'}">${fP(m3.refund_rate)}</div>
+    <div class="kpi-sub">전월 ${fP(m2.refund_rate)}</div></div>`;
+  h+=`<div class="kpi-card"><div class="kpi-label">DSCR (2월)</div>
+    <div class="kpi-value ${m2.dscr>=2?'pos':m2.dscr>=1?'warn':'neg'}">${m2.dscr?m2.dscr.toFixed(2)+'x':'—'}</div>
+    <div class="kpi-sub">영업CF ÷ 실질상환</div></div>`;
+
+  document.getElementById('kpi-row').innerHTML=h;
+  document.getElementById('meta-date').textContent=D.meta.updated;
+  document.getElementById('meta-time').textContent=D.meta.updated_time?`${D.meta.updated_time} (매일 06:05 자동 업데이트)`:'';
+
+  // MTD 기준 insight + Target 대비
+  const ins=[], mi=currentMonthIdx();
+  const tgtGmv=getTarget('gmv',mi);
+  const tgtRefCur=getTarget('refund_current',mi), tgtRefPrev=getTarget('refund_prev',mi);
+  const gmvEst=eok(m3.gmv)*(D.meta.business_days/D.meta.elapsed_bdays);
+
+  // 거래액 MTD vs Target + API/재고 분해
+  const apiMtd=m3.api_sales||0, invMtd=m3.inventory_sales||0;
+  const apiPct=m3.gmv>0?((apiMtd/m3.gmv)*100).toFixed(0):'—';
+  const invPct=m3.gmv>0?((invMtd/m3.gmv)*100).toFixed(0):'—';
+  if(tgtGmv!=null){
+    const pct=(gmvEst/tgtGmv*100).toFixed(0);
+    const s=pct>=100?'g':pct>=80?'y':'r';
+    ins.push(`거래액 MTD ${fE1(m3.gmv)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 / 목표 ${tgtGmv}억 (${pct}%) <span class="tag tag-${s}">${pct>=100?'ON TRACK':'BEHIND'}</span>`);
+  } else {
+    ins.push(`거래액 MTD ${fE1(m3.gmv)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 [Target 미설정]`);
+  }
+
+  // 정산예정액 → 현금마진 → 영업CF 워터폴
+  const settMtd = m3.settlement || 0;
+  ins.push(`정산예정액 MTD ${fE1(settMtd)} → 현금마진 ${fE1(cmMtd)} → 영업CF ${fE1(opMtd)} (월환산 ~${opEst.toFixed(1)}억)`);
+
+  // 환불 MTD — 모니터링 KPI
+  const refCurPct = m3.gmv>0 ? ((m3.refund||0)/m3.gmv*100) : 0;
+  const refPrevPct = m3.gmv>0 ? ((m3.refund_prev||0)/m3.gmv*100) : 0;
+  let refLine = `환불율 MTD: 당월 ${refCurPct.toFixed(1)}%`;
+  if(tgtRefCur!=null){
+    const s = refCurPct<=tgtRefCur ? 'g' : 'r';
+    refLine += ` / 목표 ${tgtRefCur}% <span class="tag tag-${s}">${refCurPct<=tgtRefCur?'OK':'OVER'}</span>`;
+  }
+  refLine += ` · 전월 ${refPrevPct.toFixed(1)}%`;
+  if(tgtRefPrev!=null){
+    const s = refPrevPct<=tgtRefPrev ? 'g' : 'r';
+    refLine += ` / 목표 ${tgtRefPrev}% <span class="tag tag-${s}">${refPrevPct<=tgtRefPrev?'OK':'OVER'}</span>`;
+  }
+  refLine += ` (정산예정액에 반영 완료)`;
+  ins.push(refLine);
+
+  document.getElementById('s0-insight').innerHTML=ins.join('<br>');
+}
+
+// ═══ S1: Daily CF ═══
+function renderS1(){
+  const d=CASH_DATA.daily, today=CASH_DATA.meta.today;
+  document.getElementById('s1-month').textContent=d.month;
+  const rows=[
+    {cat:'영업 현금흐름'},
+    {key:'gmv',label:'거래액 (GMV)',tip:'[매출_jentestore] 합산 실제 거래액 = API판매 + 재고판매'},
+    {key:'api_sales',label:'  ㄴ API판매',indent:1,tip:'[매출_jentestore] API 발주 판매액. 부티크에서 직배송되는 상품'},
+    {key:'inventory_sales',label:'  ㄴ 재고판매',indent:1,tip:'[매출_jentestore] 매입+반품 재판매. 자체 보유 재고에서 출고'},
+    {key:'settlement',label:'정산예정액',sub:1,tip:'[합산관리] R52. PG(이니시스)가 환불·수수료 차감 후 실제 입금하는 금액. 진정한 현금 유입'},
+    {key:'cogs_boutique',label:'(-) 부티크 송금',tip:'[합산관리] R30. 부티크(브랜드)에 지급하는 상품 대금'},
+    {key:'cogs_import',label:'(-) 매입부대비용',tip:'= 원가 - 부티크 송금. 물류비·관세·검수비 등 부대비용'},
+    {key:'cash_margin',label:'▶ 현금마진',sub:1,calc:i=>{const s=d.settlement?.[i],cb=d.cogs_boutique?.[i],ci=d.cogs_import?.[i];return s==null?null:s-(cb||0)-(ci||0);},tip:'= 정산예정액 - 부티크 송금 - 매입부대비용. 상품 거래에서 남는 순현금'},
+    {key:'sga',label:'(-) 판관비',tip:'급여+4대보험+SW구독+사무실+기타. 월 고정비를 영업일수로 일할 배분'},
+    {key:'op_cf',label:'▶ 영업CF',sub:1,calc:i=>{const cm=d.cash_margin?.[i]!=null?d.cash_margin[i]:(d.settlement?.[i]!=null?d.settlement[i]-(d.cogs_boutique?.[i]||0)-(d.cogs_import?.[i]||0):null);return cm==null?null:cm-(d.sga[i]||0);},tip:'= 현금마진 - 판관비. 월 3억 이상 GREEN 목표'},
+    {key:'refund_monitor',label:'환불 합계 (참고)',calc:i=>{const rc=d.refund_current?.[i]||0,rp=d.refund_prev?.[i]||0;return(rc||rp)?rc+rp:null;},tip:'당월환불+전월환불. 정산예정액에 이미 반영됨. 모니터링용'},
+    {key:'mur',label:'MUR (%)',pct:1,tip:'[일별실적_API] 탭 58행. Markup Rate = (판매가-원가)/원가'},
+    {key:'target_pct',label:'목표달성률',target:1,tip:'거래액/영업CF Target 대비 MTD 달성률. Target 모달에서 설정'},
+    {cat:'재무 현금흐름'},
+    {key:'debt_repay',label:'(-) 금융부채 상환',tip:'금융기관 대출 원금+이자 상환. 월말 원금, 10일 이자'},
+    {key:'musinsa_repay',label:'(-) 무신사 상환',tip:'무신사 차입금 상환. 20일 정기 상환'},
+    {key:'card_repay',label:'(-) 법인카드 결제',tip:'법인카드 사용분 결제. 20일 자동 결제'},
+    {key:'fin_cf',label:'▶ 재무CF',sub:1,calc:i=>d.debt_repay[i]==null?null:-((d.debt_repay[i]||0)+(d.musinsa_repay[i]||0)+(d.card_repay[i]||0)),tip:'재무CF = -(금융상환+무신사+법인카드). 부(-)가 정상'},
+    {cat:'신호'},
+    {key:'signal',label:'영업CF 신호등',signal:1,tip:'누적 영업CF를 영업일수 비례 월환산하여 3억↑GREEN, 2억↑YELLOW, 미만 RED'},
+  ];
+  let head='<tr><th>항목</th><th>합계</th><th>월말추정</th>';
+  for(let i=1;i<=d.days;i++){head+=`<th${i===today?' class="today"':''}>${i}일</th>`;}
+  head+='</tr>';
+  let body='';
+  for(const row of rows){
+    if(row.cat){body+=`<tr class="cat"><td colspan="${d.days+3}">${row.cat}</td></tr>`;continue;}
+    if(row.target){
+      // Target comparison row: 거래액 MTD달성률 + 영업CF MTD달성률
+      const mi=currentMonthIdx(), tgG=getTarget('gmv',mi);
+      const cumGmv=sum(d.gmv.filter(v=>v!=null)), cumOp=sum(d.gp.filter((v,i)=>v!=null).map((v,i)=>(d.gp[i]||0)-(d.sga[i]||0)));
+      const gmvEst=eok(cumGmv)*(CASH_DATA.meta.business_days/CASH_DATA.meta.elapsed_bdays);
+      const gmvPct=tgG?((gmvEst/tgG)*100).toFixed(0):null;
+      body+=`<tr><td${row.tip?' data-tip="'+row.tip+'"':''}>${row.label}</td>`;
+      body+=`<td>${tgG?`<strong>거래액 ${gmvPct}%</strong>`:'<span style="color:var(--text3)">Target 미설정</span>'}</td><td></td>`;
+      for(let i=0;i<d.days;i++){body+=`<td class="future${(i+1)===today?' today':''}">—</td>`;}
+      body+='</tr>';continue;
+    }
+    if(row.signal){
+      body+=`<tr><td${row.tip?' data-tip="'+row.tip+'"':''}>${row.label}</td><td></td><td></td>`;
+      let cum=0;
+      for(let i=0;i<d.days;i++){
+        const isT=(i+1)===today;
+        if(d.gmv[i]!=null){
+          const cm=d.cash_margin?.[i]!=null?d.cash_margin[i]:(d.settlement?.[i]!=null?d.settlement[i]-(d.cogs_boutique?.[i]||0)-(d.cogs_import?.[i]||0):(d.gp[i]||0));
+          cum+=cm-(d.sga[i]||0);
+          const proj=cum*(CASH_DATA.meta.business_days/Math.max(1,i+1));
+          const s=sc(eok(proj),3,2);
+          body+=`<td${isT?' class="today"':''}>${sigEmoji(s)}</td>`;
+        }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
+      }
+      body+='</tr>';continue;
+    }
+    const trC=row.sub?' class="sub"':'';
+    const tipAttr=row.tip?` data-tip="${row.tip}"`:'';
+    body+=`<tr${trC}><td${tipAttr}>${row.label}</td>`;
+    let vals=[];
+    for(let i=0;i<d.days;i++){vals.push(row.calc?row.calc(i):(d[row.key]?d[row.key][i]:null));}
+    const filled=vals.filter(v=>v!==null);
+    if(row.pct){
+      // percentage row (MUR etc)
+      const avg=filled.length>0?(sum(filled)/filled.length):null;
+      body+=`<td><strong>${avg!=null?avg.toFixed(1)+'%':'—'}</strong></td>`;
+      body+=`<td style="color:var(--text3);font-style:italic">${avg!=null?avg.toFixed(1)+'%':'—'}</td>`;
+      for(let i=0;i<d.days;i++){
+        const isT=(i+1)===today;const v=vals[i];
+        if(v===null){body+=`<td class="future${isT?' today':''}">—</td>`;}
+        else{body+=`<td${isT?' class="today"':''}>${v.toFixed(1)}%</td>`;}
+      }
+    }else{
+      const total=sum(filled);
+      const est=filled.length>0?total/CASH_DATA.meta.elapsed_bdays*CASH_DATA.meta.business_days:null;
+      body+=`<td${vc(total)}><strong>${fE(total)}</strong></td>`;
+      body+=`<td style="color:var(--text3);font-style:italic">${est!=null?fE(est):'—'}</td>`;
+      for(let i=0;i<d.days;i++){
+        const isT=(i+1)===today;const v=vals[i];
+        if(v===null){body+=`<td class="future${isT?' today':''}">—</td>`;}
+        else{body+=`<td${vc(v)}${isT?' class="today'+(v<0?' neg':v>0?' pos':'')+'"':''}>${fE(v)}</td>`;}
+      }
+    }
+    body+='</tr>';
+  }
+  document.getElementById('s1-table').innerHTML=`<table>${head}${body}</table>`;
+  // S1 insight — 현금 기준
+  const cmArr=d.cash_margin||[],cmMtd=sum(cmArr.filter(v=>v!=null));
+  const settMtd=sum((d.settlement||[]).filter(v=>v!=null));
+  document.getElementById('s1-insight').innerHTML=
+    `정산예정액 MTD ${fE1(settMtd)} → 현금마진 MTD ${fE1(cmMtd)} | 환불은 정산예정액에 이미 반영 (모니터링 행 참조).`;
+}
+
+// ═══ S2: Monthly ═══
+function renderS2(){
+  const months=['01','02','03','04','05','06','07','08','09','10','11','12'];
+  const mData=CASH_DATA.monthly;
+  const secs=[
+    {cat:'A. 현금 성과'},
+    {label:'GMV',key:'gmv'},
+    {label:'  ㄴ API판매',key:'api_sales'},
+    {label:'  ㄴ 재고판매',key:'inventory_sales'},
+    {label:'정산예정액',key:'settlement'},
+    {label:'부티크 송금',key:'cogs_boutique'},
+    {label:'현금마진',key:'cash_margin'},
+    {label:'현금마진율',key:'cash_margin_rate',fmt:'pct'},
+    {label:'판관비',key:'sga'},
+    {label:'▶ 영업CF',key:'op_cf',sub:1},
+    {cat:'B. 재무CF'},{label:'금융부채 상환',key:'fin_debt_repay'},{label:'무신사',key:'fin_musinsa'},
+    {label:'법인카드',key:'fin_card'},{label:'▶ 재무CF',key:'fin_cf',sub:1},
+    {cat:'C. 순현금'},{label:'실질 순현금',key:'net_cash_real'},{label:'전체 순현금',key:'net_cash_total'},
+    {cat:'D. 재고/부채'},{label:'총재고 금액',key:'inv_val'},{label:'총재고 수량',key:'inv_qty',fmt:'num'},
+    {label:'총부채',key:'total_debt'},
+    {cat:'E. 핵심 KPI'},{label:'DSCR',key:'dscr',fmt:'x'},{label:'환불율',key:'refund_rate',fmt:'pct'},{label:'원가 Gap',key:'cogs_gap'},
+  ];
+  let head='<tr><th>항목</th><th style="background:var(--bg-alt)">연간</th>';
+  months.forEach(m=>{const k=`2026-${m}`;const a=mData[k]?'':' style="color:var(--text3);opacity:.3"';head+=`<th${a}>${parseInt(m)}월</th>`;});
+  head+='</tr>';
+  let body='';
+  for(const row of secs){
+    if(row.cat){body+=`<tr class="cat"><td colspan="14">${row.cat}</td></tr>`;continue;}
+    const trC=row.sub?' class="sub"':'';body+=`<tr${trC}><td>${row.label}</td>`;
+    // Compute annual first
+    let ann=0,cnt=0;
+    months.forEach(m=>{const k=`2026-${m}`;const md=mData[k];if(!md)return;
+      const v=md[row.key];
+      if(v!=null&&row.fmt!=='pct'&&row.fmt!=='x'){ann+=v;cnt++;}
+      if(row.fmt==='pct'&&v!=null){ann+=v;cnt++;}
+    });
+    // Annual column (leftmost)
+    if(row.fmt==='pct') body+=`<td style="background:var(--bg-alt)"><strong>${cnt?(ann/cnt*100).toFixed(1)+'%':'—'}</strong></td>`;
+    else if(row.fmt==='x'||row.fmt==='num') body+=`<td style="background:var(--bg-alt)">—</td>`;
+    else body+=`<td style="background:var(--bg-alt)"${vc(ann)}><strong>${fE1(ann)}</strong></td>`;
+    // Monthly columns
+    months.forEach(m=>{const k=`2026-${m}`;const md=mData[k];
+      if(!md){body+='<td class="future">—</td>';return;}
+      const v=md[row.key];
+      if(row.fmt==='pct') body+=`<td>${fP(v)}</td>`;
+      else if(row.fmt==='x') body+=`<td>${v!=null?v.toFixed(2)+'x':'—'}</td>`;
+      else if(row.fmt==='num') body+=`<td>${fN(v)}</td>`;
+      else body+=`<td${vc(v)}>${fE1(v)}</td>`;
+    });
+    body+='</tr>';
+  }
+  document.getElementById('s2-table').innerHTML=`<table>${head}${body}</table>`;
+  document.getElementById('s2-insight').innerHTML=
+    '영업CF: 1월 1.35억(RED) → 2월 3.47억(GREEN) → 3월 월환산 ~3.9억(GREEN). 3월부터 현금 기준(정산예정액·현금마진) 추적 시작.';
+}
+
+// ═══ S3-A: Inventory ═══
+function renderS3A(){
+  const inv=CASH_DATA.inventory;
+  let h='<tr><th style="text-align:left">구분</th>';inv.months.forEach(m=>h+=`<th>${m}</th>`);h+='</tr>';
+  const rws=[{l:'기초 재고',d:inv.opening},{l:'+ API입고',d:inv.api_in},{l:'+ 프리온라인',d:inv.pre_in},
+    {l:'+ 반품입고',d:inv.return_in},{l:'- 출고',d:inv.out},
+    {l:'기말 재고',d:inv.closing,b:1},{l:'기말 재고금액(전산)',d:inv.closing_val,f:'e'},{l:'기말 재고금액(실물)',d:inv.closing_val_real,f:'e'}];
+  let b='';rws.forEach(r=>{b+=`<tr${r.b?' class="sub"':''}><td style="text-align:left">${r.l}</td>`;
+    r.d.forEach(v=>{b+=r.f==='e'?`<td style="text-align:left">${fE1(v)}</td>`:`<td style="text-align:left">${fN(v)}</td>`;});b+='</tr>';});
+  document.getElementById('s3a-subul').innerHTML=`<table>${h}${b}</table>`;
+
+  // 재고 구성 — 월별 테이블
+  const comp=inv.composition;
+  let cH='<tr><th style="text-align:left">구분</th>';comp.months.forEach(m=>cH+=`<th>${m}</th>`);cH+='</tr>';
+  let cB='';
+  cB+='<tr><td style="text-align:left">반품재고 수량</td>'+comp.return_qty.map(v=>`<td style="text-align:left">${v!=null?fN(v):'—'}</td>`).join('')+'</tr>';
+  cB+='<tr><td style="text-align:left">반품재고 금액</td>'+comp.return_val.map(v=>`<td style="text-align:left">${v!=null?fE1(v):'—'}</td>`).join('')+'</tr>';
+  cB+='<tr><td style="text-align:left">매입재고 수량</td>'+comp.purchase_qty.map(v=>`<td style="text-align:left">${v!=null?fN(v):'—'}</td>`).join('')+'</tr>';
+  cB+='<tr><td style="text-align:left">매입재고 금액</td>'+comp.purchase_val.map(v=>`<td style="text-align:left">${v!=null?fE1(v):'—'}</td>`).join('')+'</tr>';
+  // Composition ratio
+  cB+='<tr class="sub"><td style="text-align:left">반품 비중</td>';
+  comp.months.forEach((_,i)=>{
+    const rv=comp.return_val[i], pv=comp.purchase_val[i];
+    if(rv!=null&&pv!=null){const t=rv+pv;cB+=`<td style="text-align:left">${(rv/t*100).toFixed(1)}%</td>`;}
+    else cB+='<td>—</td>';
+  });
+  cB+='</tr>';
+  document.getElementById('s3a-composition').innerHTML=`<table>${cH}${cB}</table>`;
+
+  const ret=CASH_DATA.returns;
+  let rH='<tr><th style="text-align:left">구분</th>';ret.months.forEach(m=>rH+=`<th>${m}</th>`);rH+='</tr>';
+  let rB='';
+  rB+='<tr><td style="text-align:left">foret 반품 건수</td>'+ret.foret_count.map(v=>`<td style="text-align:left">${fN(v)}</td>`).join('')+'</tr>';
+  rB+='<tr><td style="text-align:left">foret 반품 금액</td>'+ret.foret_amount.map(v=>`<td style="text-align:left">${fE1(v)}</td>`).join('')+'</tr>';
+  rB+='<tr><td style="text-align:left">창고 반품 입고 수량</td>'+ret.warehouse_qty.map(v=>`<td style="text-align:left">${fN(v)}</td>`).join('')+'</tr>';
+  rB+='<tr><td style="text-align:left">창고 반품 입고 금액</td>'+ret.warehouse_val.map(v=>`<td style="text-align:left">${fE1(v)}</td>`).join('')+'</tr>';
+  rB+='<tr class="sub"><td style="text-align:left">입고율</td>'+ret.intake_rate.map(v=>`<td style="text-align:left">${(v*100).toFixed(1)}%</td>`).join('')+'</tr>';
+  document.getElementById('s3a-return').innerHTML=`<table>${rH}${rB}</table>`;
+}
+
+// ═══ S3-B: Debt ═══
+function renderS3B(){
+  const debt=CASH_DATA.debt;
+  let h='<tr><th>카테고리</th>';debt.months.forEach(m=>h+=`<th>${m}</th>`);h+='<th>MoM</th></tr>';
+  let b='';
+  for(const[cat,vals]of Object.entries(debt.categories)){
+    b+=`<tr><td>${cat}</td>`;vals.forEach(v=>b+=`<td>${v!=null?fE1(v):'—'}</td>`);
+    const mom=(vals[3]!=null&&vals[2]!=null)?vals[3]-vals[2]:null;
+    b+=`<td${vc(mom)}>${mom!=null?(mom>=0?'+':'')+fE1(mom):'—'}</td></tr>`;
+  }
+  b+='<tr class="sub"><td>총부채</td>';debt.total.forEach(v=>b+=`<td><strong>${fE1(v)}</strong></td>`);
+  const tm=debt.total[3]-debt.total[2];b+=`<td${vc(tm)}><strong>${tm>=0?'+':''}${fE1(tm)}</strong></td></tr>`;
+  b+='<tr><td colspan="6" style="font-size:10px;color:var(--text3);padding-top:4px">* 3월 부채현황은 월초 잠정치. 일부 항목 전월 이월/연간 재분류 가능. 총부채 기준 457억대 유지.<br>* 출처: 각 월 RESET 대시보드 [부채현황] 탭</td></tr>';
+  document.getElementById('s3b-debt').innerHTML=`<table>${h}${b}</table>`;
+
+  const wc=CASH_DATA.working_capital;
+  let g='<strong>매입채무 Gap (현금-발생주의 차이)</strong>';
+  g+='<div style="font-size:11px;color:var(--text2);margin:6px 0 8px;line-height:1.6">';
+  g+='<strong>현금주의 원가</strong> = 실제 현금이 나간 매입비용 (공급업체에 송금 완료된 금액)<br>';
+  g+='<strong>발생주의 원가</strong> = 회계상 인식된 매출원가 (판매 시점에 매칭되는 원가)<br>';
+  g+='<strong>Gap = 발생주의 - 현금주의</strong> = 아직 현금으로 지급하지 않은 매입채무(미지급금) 누적분.<br>';
+  g+='Gap이 확대되면 → 부띠끄(공급처)에 대한 미지급금이 쌓이고 있다는 의미. 현금 유출 시점이 뒤로 밀리는 것.</div>';
+  g+='<table style="margin-top:6px"><tr><th>항목</th>';
+  wc.months.forEach(m=>g+=`<th>${m}</th>`);g+='</tr>';
+  g+='<tr><td>현금주의 원가</td>'+wc.cash_cogs.map(v=>`<td>${fE1(v)}</td>`).join('')+'</tr>';
+  g+='<tr><td>발생주의 원가</td>'+wc.accrual_cogs.map(v=>`<td>${fE1(v)}</td>`).join('')+'</tr>';
+  g+='<tr class="sub"><td>Gap (미지급)</td>'+wc.gap.map(v=>`<td class="neg">${fE1(v)}</td>`).join('')+'</tr></table>';
+  g+='<div style="font-size:11px;color:var(--text3);margin-top:6px">* 출처: [API 매출원가] 시트 (발생주의), [합산관리] 시트 원가 열 (현금주의). 1월 5.14억 → 2월 8.83억 확대 추세.</div>';
+  document.getElementById('s3b-gap').innerHTML=g;
+}
+
+// ═══ S4-A: Annual ═══
+function renderS4A(){
+  const s=CASH_DATA.schedule_annual, ms=['1','2','3','4','5','6','7','8','9','10','11','12'];
+  let h='<tr><th>항목</th>';ms.forEach((m,i)=>{h+=`<th${i>=3?' style="color:var(--text3)"':''}>${m}월</th>`;});h+='<th>연간</th></tr>';
+  let b='',curCat='',catT=new Array(12).fill(0),grandT=new Array(12).fill(0);
+  s.items.forEach(item=>{
+    if(item.cat!==curCat){
+      if(curCat){b+=`<tr class="sub"><td>▶ ${curCat} 소계</td>`;catT.forEach((v,i)=>b+=`<td${i>=3?' style="font-style:italic"':''}>${fE(v)}</td>`);
+        b+=`<td><strong>${fE(sum(catT))}</strong></td></tr>`;catT=new Array(12).fill(0);}
+      curCat=item.cat;b+=`<tr class="cat"><td colspan="14">${item.cat}</td></tr>`;
+    }
+    b+=`<tr><td${item.tip?' data-tip="'+item.tip+'"':''}>${item.label}</td>`;
+    item.vals.forEach((v,i)=>{if(v!=null){catT[i]+=v;grandT[i]+=v;}
+      b+=`<td${i>=3&&v!=null?' style="font-style:italic;opacity:.6"':i>=3?' class="future"':''}>${v!=null?fE(v):'—'}</td>`;});
+    b+=`<td>${fE(sum(item.vals.filter(v=>v!=null)))}</td></tr>`;
+  });
+  b+=`<tr class="sub"><td>▶ ${curCat} 소계</td>`;catT.forEach((v,i)=>b+=`<td${i>=3?' style="font-style:italic"':''}>${fE(v)}</td>`);
+  b+=`<td><strong>${fE(sum(catT))}</strong></td></tr>`;
+  b+='<tr class="sub" style="background:var(--bg-alt)"><td><strong>총 자금소요</strong></td>';
+  grandT.forEach(v=>b+=`<td><strong>${fE(v)}</strong></td>`);b+=`<td><strong>${fE(sum(grandT))}</strong></td></tr>`;
+  b+='<tr style="color:var(--positive)"><td>추정 영업CF</td>';
+  s.op_cf_est.forEach((v,i)=>b+=`<td${i>=3?' style="font-style:italic"':''}>${fE(v)}</td>`);
+  b+=`<td><strong>${fE(sum(s.op_cf_est))}</strong></td></tr>`;
+  b+='<tr class="sub"><td><strong>순현금흐름</strong></td>';
+  const net=s.op_cf_est.map((v,i)=>v-grandT[i]);
+  net.forEach((v,i)=>b+=`<td${vc(v)}${i>=3?' style="font-style:italic"':''}><strong>${fE(v)}</strong></td>`);
+  b+=`<td${vc(sum(net))}><strong>${fE(sum(net))}</strong></td></tr>`;
+  b+='<tr><td>신호등</td>';net.forEach(v=>{const s2=sc(eok(v),0.5,0);b+=`<td>${sigEmoji(s2)}</td>`;});b+='<td></td></tr>';
+  b+='<tr><td colspan="14" style="font-size:10px;color:var(--text3);padding-top:6px">* 1~3월: 실적 (RESET 대시보드 + 운영시트), 4~12월: 추정 (이탤릭). 항목에 마우스를 올리면 출처 확인 가능.</td></tr>';
+  document.getElementById('s4a-table').innerHTML=`<table>${h}${b}</table>`;
+}
+
+// ═══ S4-B: Monthly ═══
+function renderS4B(){
+  const sched=CASH_DATA.schedule_monthly,d=CASH_DATA.daily,today=CASH_DATA.meta.today,days=d.days;
+  const allItems=new Map();for(const items of Object.values(sched)){items.forEach(i=>{if(!allItems.has(i.label))allItems.set(i.label,i.tip||'');});}
+  let h='<tr><th>항목</th>';for(let i=1;i<=days;i++){h+=`<th${i===today?' class="today"':''}>${i}</th>`;}h+='<th>합계</th></tr>';
+  let b='';
+  allItems.forEach((tip,label)=>{
+    b+=`<tr><td${tip?' data-tip="'+tip+'"':''}>${label}</td>`;let rs=0;
+    for(let i=1;i<=days;i++){const isT=i===today;const di=sched[i]||[];const it=di.find(x=>x.label===label);
+      if(it){rs+=it.amount;b+=`<td${isT?' class="today"':''} style="color:var(--negative)">${fE(it.amount)}</td>`;}
+      else{b+=`<td class="future${isT?' today':''}">—</td>`;}}
+    b+=`<td class="neg"><strong>${fE(rs)}</strong></td></tr>`;});
+  b+='<tr class="sub"><td>일별 유출 합계</td>';
+  for(let i=1;i<=days;i++){const isT=i===today;const di=sched[i]||[];const dt=sum(di.map(x=>x.amount));
+    b+=`<td${isT?' class="today"':''}${dt>0?' class="neg"':''}>${dt>0?fE(dt):'—'}</td>`;}
+  b+=`<td class="neg"><strong>${fE(sum(Object.values(sched).flat().map(x=>x.amount)))}</strong></td></tr>`;
+  b+='<tr><td>누적 유출</td>';let cum=0;
+  for(let i=1;i<=days;i++){const isT=i===today;const di=sched[i]||[];cum+=sum(di.map(x=>x.amount));
+    b+=`<td${isT?' class="today"':''} style="color:var(--text3)">${cum>0?fE(cum):'—'}</td>`;}
+  b+=`<td>${fE(cum)}</td></tr>`;
+  b+='<tr style="color:var(--positive)"><td>영업CF 누적</td>';let cumOp=0;
+  for(let i=0;i<days;i++){const isT=(i+1)===today;
+    if(d.gmv[i]!=null){
+      const cm=d.cash_margin?.[i]!=null?d.cash_margin[i]:(d.gp[i]||0);
+      cumOp+=cm-(d.sga[i]||0);b+=`<td${isT?' class="today"':''}>${fE(cumOp)}</td>`;}
+    else{b+=`<td class="future${isT?' today':''}">—</td>`;}}
+  b+=`<td><strong>${fE(cumOp)}</strong></td></tr>`;
+  document.getElementById('s4b-table').innerHTML=`<table>${h}${b}</table>`;
+}
+
+// ═══ Tooltip ═══
+(function(){
+  const tip=document.getElementById('cc-tooltip');
+  document.addEventListener('mouseover',e=>{
+    const td=e.target.closest('td[data-tip]');
+    if(!td){tip.style.display='none';return;}
+    tip.textContent=td.getAttribute('data-tip');
+    tip.style.display='block';
+    const r=td.getBoundingClientRect();
+    let top=r.bottom+6, left=r.left;
+    if(top+tip.offsetHeight>window.innerHeight) top=r.top-tip.offsetHeight-6;
+    if(left+tip.offsetWidth>window.innerWidth) left=window.innerWidth-tip.offsetWidth-8;
+    tip.style.top=top+'px'; tip.style.left=Math.max(4,left)+'px';
+  });
+  document.addEventListener('mouseout',e=>{
+    if(e.target.closest('td[data-tip]'))tip.style.display='none';
+  });
+})();
+
+// ═══ Init ═══
+function init(){
+  renderS0();renderS1();renderS2();renderS3A();renderS3B();renderS4A();renderS4B();
+}
+</script>
+</body>
+</html>

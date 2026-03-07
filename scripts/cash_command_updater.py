@@ -102,55 +102,90 @@ BQ_CORP_ID = 5658801620
 # A. 인증
 # ═══════════════════════════════════════════════
 def get_credentials():
-    """SA key JSON 또는 ADC에서 credentials 획득."""
+    """Sheets용 + BQ용 credentials를 각각 반환. returns (sheets_creds, bq_creds)."""
+    sheets_creds = _get_sheets_credentials()
+    bq_creds = _get_bq_credentials()
+    return sheets_creds, bq_creds
+
+
+def _get_sheets_credentials():
+    """Sheets API용: GOWID_ADC_JSON(SA) → 로컬 ADC(OAuth) 순서."""
     SCOPES = [
         'https://www.googleapis.com/auth/spreadsheets.readonly',
         'https://www.googleapis.com/auth/drive.readonly',
-        'https://www.googleapis.com/auth/bigquery',
     ]
 
-    # 1) GOWID_ADC_JSON 환경변수 (GitHub Actions용)
+    # 1) GOWID_ADC_JSON 환경변수 (GitHub Actions — SA key)
     adc_json = os.environ.get('GOWID_ADC_JSON')
     if adc_json:
-        log.info("인증: GOWID_ADC_JSON 환경변수 사용")
         adc_data = json.loads(adc_json)
         if adc_data.get('type') == 'service_account':
+            log.info("Sheets 인증: GOWID_ADC_JSON (SA)")
             return _creds_from_sa_dict(adc_data, SCOPES)
-        return _creds_from_adc_dict(adc_data)
 
-    # 2) GOOGLE_APPLICATION_CREDENTIALS 환경변수
-    adc_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-    if adc_path and os.path.exists(adc_path):
-        log.info(f"인증: GOOGLE_APPLICATION_CREDENTIALS ({adc_path})")
-        with open(adc_path) as f:
-            adc_data = json.load(f)
+    # 2) 로컬 ADC (OAuth — kwon@gowidnexus.com + pitstop quota)
+    adc_paths = [
+        os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''),
+        str(Path.home() / '.config' / 'gcloud' / 'application_default_credentials.json'),
+        str(Path(os.environ.get('APPDATA', '')) / 'gcloud' / 'application_default_credentials.json'),
+    ]
+    # Windows Microsoft Store Python 경로
+    local_app = os.environ.get('LOCALAPPDATA', '')
+    if local_app:
+        import glob
+        ms_paths = glob.glob(os.path.join(local_app, 'packages', 'PythonSoftwareFoundation*', 'LocalCache', 'Roaming', 'gcloud', 'application_default_credentials.json'))
+        adc_paths.extend(ms_paths)
+
+    for p in adc_paths:
+        if p and os.path.exists(p):
+            with open(p) as f:
+                adc_data = json.load(f)
+            if adc_data.get('type') == 'service_account':
+                log.info(f"Sheets 인증: SA ({p})")
+                return _creds_from_sa_dict(adc_data, SCOPES)
+            log.info(f"Sheets 인증: OAuth ADC ({p})")
+            return _creds_from_adc_dict(adc_data)
+
+    log.warning("Sheets 인증 없음 — Sheets 데이터 수집 건너뜀")
+    return None
+
+
+def _get_bq_credentials():
+    """BigQuery용: SA key 우선."""
+    SCOPES = ['https://www.googleapis.com/auth/bigquery']
+
+    # 1) GOWID_ADC_JSON 환경변수
+    adc_json = os.environ.get('GOWID_ADC_JSON')
+    if adc_json:
+        adc_data = json.loads(adc_json)
         if adc_data.get('type') == 'service_account':
+            log.info("BQ 인증: GOWID_ADC_JSON (SA)")
             return _creds_from_sa_dict(adc_data, SCOPES)
-        return _creds_from_adc_dict(adc_data)
 
-    # 3) 스크립트 옆 SA 키 파일
+    # 2) 스크립트 옆 SA 키 파일
     sa_key_path = SCRIPT_DIR / 'gowid-prd-sa-key.json'
     if sa_key_path.exists():
-        log.info(f"인증: SA 키 파일 ({sa_key_path})")
+        log.info(f"BQ 인증: SA 키 파일 ({sa_key_path})")
         with open(sa_key_path) as f:
             sa_data = json.load(f)
         return _creds_from_sa_dict(sa_data, SCOPES)
 
-    # 4) gcloud 기본 경로
-    default_paths = [
-        Path.home() / '.config' / 'gcloud' / 'application_default_credentials.json',
-        Path(os.environ.get('APPDATA', '')) / 'gcloud' / 'application_default_credentials.json',
+    # 3) 로컬 ADC 폴백
+    adc_paths = [
+        os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', ''),
+        str(Path.home() / '.config' / 'gcloud' / 'application_default_credentials.json'),
+        str(Path(os.environ.get('APPDATA', '')) / 'gcloud' / 'application_default_credentials.json'),
     ]
-    for p in default_paths:
-        if p.exists():
-            log.info(f"인증: 로컬 ADC ({p})")
+    for p in adc_paths:
+        if p and os.path.exists(p):
             with open(p) as f:
                 adc_data = json.load(f)
             if adc_data.get('type') == 'service_account':
+                log.info(f"BQ 인증: SA ({p})")
                 return _creds_from_sa_dict(adc_data, SCOPES)
-            return _creds_from_adc_dict(adc_data)
 
-    raise RuntimeError("인증 실패: GOWID_ADC_JSON 환경변수, SA 키 파일, 또는 로컬 ADC 없음")
+    log.warning("BQ 인증 없음 — BigQuery 데이터 수집 건너뜀")
+    return None
 
 
 def _creds_from_sa_dict(sa_data, scopes):
@@ -172,6 +207,7 @@ def _creds_from_adc_dict(adc_data):
         token_uri=adc_data.get('token_uri', 'https://oauth2.googleapis.com/token'),
         client_id=adc_data.get('client_id'),
         client_secret=adc_data.get('client_secret'),
+        quota_project_id=adc_data.get('quota_project_id'),
     )
 
     if not creds.valid:
@@ -1113,9 +1149,9 @@ def main():
         log.error(f"CASH_DATA 파싱 실패: {e}")
         sys.exit(1)
 
-    # 인증
+    # 인증 (Sheets용 + BQ용 분리)
     try:
-        creds = get_credentials()
+        sheets_creds, bq_creds = get_credentials()
     except Exception as e:
         log.error(f"인증 실패: {e}")
         sys.exit(1)
@@ -1123,35 +1159,39 @@ def main():
     # Sheets 데이터 수집
     sheets_daily = None
     sheets_targets = None
-    try:
-        result = fetch_sheets_data(creds, month_key)
-        if result:
-            sheets_daily, sheets_targets = result
-            filled = sum(1 for v in sheets_daily.get('gmv', []) if v is not None)
-            log.info(f"Sheets: {filled}일 데이터 + {len(sheets_targets)}개 목표 수집 완료")
-    except Exception as e:
-        log.warning(f"Sheets 실패 (partial update 계속): {e}")
+    if sheets_creds:
+        try:
+            result = fetch_sheets_data(sheets_creds, month_key)
+            if result:
+                sheets_daily, sheets_targets = result
+                filled = sum(1 for v in sheets_daily.get('gmv', []) if v is not None)
+                log.info(f"Sheets: {filled}일 데이터 + {len(sheets_targets)}개 목표 수집 완료")
+        except Exception as e:
+            log.warning(f"Sheets 실패 (partial update 계속): {e}")
 
     # GMV 분해 (매출_jentestore: API판매 + 재고판매)
     gmv_breakdown = None
-    try:
-        gmv_breakdown = fetch_gmv_breakdown(creds, month_key)
-    except Exception as e:
-        log.warning(f"GMV 분해 실패 (기존 데이터 유지): {e}")
+    if sheets_creds:
+        try:
+            gmv_breakdown = fetch_gmv_breakdown(sheets_creds, month_key)
+        except Exception as e:
+            log.warning(f"GMV 분해 실패 (기존 데이터 유지): {e}")
 
     # PG 정산 (주문별 합산 → 일별 settlement_pg)
     pg_settlement = None
-    try:
-        pg_settlement = fetch_pg_settlement(creds, month_key)
-    except Exception as e:
-        log.warning(f"PG 정산 실패 (기존 데이터 유지): {e}")
+    if sheets_creds:
+        try:
+            pg_settlement = fetch_pg_settlement(sheets_creds, month_key)
+        except Exception as e:
+            log.warning(f"PG 정산 실패 (기존 데이터 유지): {e}")
 
     # BigQuery 은행잔고
     bank_data = None
-    try:
-        bank_data = fetch_bank_data(creds)
-    except Exception as e:
-        log.warning(f"BigQuery 실패 (기존 bank 데이터 유지): {e}")
+    if bq_creds:
+        try:
+            bank_data = fetch_bank_data(bq_creds)
+        except Exception as e:
+            log.warning(f"BigQuery 실패 (기존 bank 데이터 유지): {e}")
 
     # 데이터 병합
     if not sheets_daily and not bank_data:

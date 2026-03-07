@@ -118,7 +118,7 @@ a { color: var(--accent); text-decoration: none; }
 .section h4 { font-size:11px; font-weight:600; margin:14px 0 6px; color:var(--text2); }
 
 /* ═══ KPI Grid ═══ */
-.kpi-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:1px; margin-bottom:16px; background:var(--border); border:1px solid var(--border); }
+.kpi-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:1px; margin-bottom:16px; background:var(--border); border:1px solid var(--border); }
 .kpi-card {
   background:var(--bg-card); padding:14px 16px;
   border-left:none; position:relative; transition:background .15s;
@@ -1004,9 +1004,6 @@ function renderS0(){
   h+=`<div class="kpi-card"><div class="kpi-label">환불율</div>
     <div class="kpi-value ${m3.refund_rate<0.15?'pos':'warn'}">${fP(m3.refund_rate)}</div>
     <div class="kpi-sub">전월 ${fP(m2.refund_rate)}</div></div>`;
-  h+=`<div class="kpi-card"><div class="kpi-label">DSCR (2월)</div>
-    <div class="kpi-value ${m2.dscr>=2?'pos':m2.dscr>=1?'warn':'neg'}">${m2.dscr?m2.dscr.toFixed(2)+'x':'—'}</div>
-    <div class="kpi-sub">영업CF ÷ 실질상환</div></div>`;
 
   document.getElementById('kpi-row').innerHTML=h;
   document.getElementById('meta-date').textContent=D.meta.updated;

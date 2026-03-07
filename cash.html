@@ -586,30 +586,30 @@ graph LR
 const CASH_DATA = {
   daily: {
     month:'2026-03', days:31, business_days:22, elapsed_bdays:5,
-    gmv:             [115445540,127865957,85169431,90520593,102242323,70731883,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    refund_current:  [9472842,13266094,11269524,10293340,12954783,6670056,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    refund_prev:     [0,0,30909242,26374281,19097103,24410996,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    revenue:         [105972698,114599863,42990665,53852972,70190437,39650831,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs:            [84616699,88554839,48772240,54286584,60279265,42338814,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    gp:              [21355999,26045024,-5781575,-433612,9911172,-2687983,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    sga:             [4358970,1561290,1561290,1561290,13088965,1561290,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    debt_repay:      [0,1000000,1000000,1000000,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    gmv:             [115445540,127865957,85169431,90520593,102242323,70731883,137024834,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_current:  [9472842,13266094,11269524,10293340,13335210,6670056,9384319,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_prev:     [0,0,30909242,26374281,19097103,24410996,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    revenue:         [105972698,114599863,42990665,53852972,69810010,39650831,127640515,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs:            [84616699,88554839,48772240,54286584,59950703,42338814,88424472,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    gp:              [21355999,26045024,-5781575,-433612,9859307,-2687983,39216043,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    sga:             [4358970,1561290,1561290,1561290,13088965,1561290,1561290,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    debt_repay:      [0,1000000,1000000,1000000,1000000,1000000,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     musinsa_repay:   [0,1000000,1000000,1000000,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     card_repay:      [0,0,0,0,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    settlement:      [105345558,114813429,48222621,48774789,66853994,30654672,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    settlement_pg:   [103154946,111527652,71921971,78148562,86579520,61692704,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs_boutique:   [77987741,81617363,44951373,50033718,55556926,39021948,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs_import:     [6628958,6937476,3820867,4252866,4722339,3316866,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cash_margin:     [20728859,26258590,-549619,-5511795,6574729,-11684142,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    api_sales:       [112871943,122683902,69806432,74241454,83470526,59669831,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    inventory_sales: [2573597,5182055,15362999,16279139,18771797,11062052,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    settlement:      [105345558,114813429,48222621,48774789,66853994,30654672,124269491,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    settlement_pg:   [103154946,111527652,71921971,78148562,86579520,61692704,124269491,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_boutique:   [77987741,81617363,44951373,50033718,55254104,39021948,81497209,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_import:     [6628958,6937476,3820867,4252866,4696599,3316866,6927263,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cash_margin:     [20728859,26258590,-549619,-5511795,6903291,-11684142,35845019,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    api_sales:       [112871943,122683902,69806432,74241454,83470526,59669831,118041929,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    inventory_sales: [2573597,5182055,15362999,16279139,18771797,11062052,18982905,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     // MUR: [일별실적_API] 탭 58행 참조. 일별 마크업률(%)
     mur:            [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
   },
   monthly: {
     '2026-01': { gmv:3320000000, refund:914000000, refund_rate:0.275, revenue:2406000000, cogs_cash:1912000000, gp:494000000, gp_rate:0.205, refund_prev:795000000, remaining:254000000, sga:119000000, op_cf:135000000, fin_debt_repay:113000000, fin_musinsa:0, fin_card:1818000000, fin_cf:-1931000000, net_cash_real:22000000, net_cash_total:-1796000000, inv_qty:1652, inv_val:717000000, total_debt:45753000000, cogs_accrual:2426000000, cogs_gap:514000000, dscr:1.19 },
     '2026-02': { gmv:2971000000, refund:438000000, refund_rate:0.147, revenue:2211000000, cogs_cash:1392000000, gp:312000000, gp_rate:0.141, refund_prev:314000000, remaining:465000000, sga:108000000, op_cf:347000000, fin_debt_repay:161000000, fin_musinsa:0, fin_card:318000000, fin_cf:-479000000, net_cash_real:186000000, net_cash_total:-132000000, inv_qty:1732, inv_val:790000000, total_debt:45742000000, cogs_accrual:2275000000, cogs_gap:883000000, dscr:2.15 },
-    '2026-03': { gmv:591975727, refund:63926639, refund_rate:0.108, revenue:427257466, cogs_cash:378848441, gp:48409025, gp_rate:0.113, refund_prev:100791622, remaining:72000000, sga:23693095, op_cf:24715930, fin_debt_repay:5000000, fin_musinsa:5000000, fin_card:0, fin_cf:-10000000, net_cash_real:14715930, net_cash_total:77000000, inv_qty:1610, inv_val:747000000, total_debt:45752000000, cogs_accrual:315000000, cogs_gap:35000000, dscr:null, settlement:414665063, settlement_pg:513025355, cogs_boutique:349169069, cogs_import:29679372, cash_margin:35816622, cash_margin_rate:0.086, api_sales:522744088, inventory_sales:69231639, mtd:true },
+    '2026-03': { gmv:729000561, refund:73691385, refund_rate:0.101, revenue:554517554, cogs_cash:466944351, gp:87573203, gp_rate:0.158, refund_prev:100791622, remaining:72000000, sga:25254385, op_cf:62318818, fin_debt_repay:5000000, fin_musinsa:5000000, fin_card:0, fin_cf:-10000000, net_cash_real:52318818, net_cash_total:77000000, inv_qty:1610, inv_val:747000000, total_debt:45752000000, cogs_accrual:315000000, cogs_gap:35000000, dscr:null, settlement:538934554, settlement_pg:637294846, cogs_boutique:430363456, cogs_import:36580895, cash_margin:71990203, cash_margin_rate:0.134, api_sales:640786017, inventory_sales:88214544, mtd:true },
   },
   inventory: {
       months:['2025-12','2026-01','2026-02','2026-03'],
@@ -680,6 +680,7 @@ const CASH_DATA = {
   // DW 은행잔고 (고위드 연동 계좌, corp_id:5658801620)
   bank: {
     daily: [
+      {date:'2026-03-08', balance:4713316},
       {date:'2026-03-07', balance:4713316},
       {date:'2026-03-06', balance:4713316},
       {date:'2026-03-05', balance:2489579},
@@ -694,7 +695,6 @@ const CASH_DATA = {
       {date:'2026-02-24', balance:8345055},
       {date:'2026-02-23', balance:161591},
       {date:'2026-02-22', balance:262025},
-      {date:'2026-02-21', balance:262025},
     ],
     monthly: [
       {month:'2026-03', balance:4713316},
@@ -709,15 +709,15 @@ const CASH_DATA = {
   },
   // RESET 시트 목표값 (월별 1~12월, 원 단위)
   targets: {
-    gmv: [null,null,3500000000,null,null,null,null,null,null,null,null,null],
-    revenue: [null,null,3052800000,null,null,null,null,null,null,null,null,null],
-    cogs: [null,null,2179692308,null,null,null,null,null,null,null,null,null],
-    gp: [null,null,852153108,null,null,null,null,null,null,null,null,null],
-    refund_prev_limit: [null,null,438213908,null,null,null,null,null,null,null,null,null],
-    deposit: [null,null,2356636026,null,null,null,null,null,null,null,null,null],
+    gmv: [null,null,3500400000,null,null,null,null,null,null,null,null,null],
+    revenue: [null,null,3053155108,null,null,null,null,null,null,null,null,null],
+    cogs: [null,null,2179963077,null,null,null,null,null,null,null,null,null],
+    gp: [null,null,852235423,null,null,null,null,null,null,null,null,null],
+    refund_prev_limit: [null,null,438293189,null,null,null,null,null,null,null,null,null],
+    deposit: [null,null,2356905233,null,null,null,null,null,null,null,null,null],
     sga: [null,null,102668907,null,null,null,null,null,null,null,null,null],
   },
-  meta: { updated:'2026-03-07', updated_time:'21:07', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:7 }
+  meta: { updated:'2026-03-08', updated_time:'06:31', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:8 }
 };
 // AUTO_UPDATE_END
 

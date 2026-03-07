@@ -1075,6 +1075,7 @@ function renderS1(){
   const rows=[
     {cat:'영업 현금흐름'},
     {key:'gmv',label:'거래액 (GMV)',tip:'[매출_jentestore] 합산 실제 거래액 = API판매 + 재고판매'},
+    {key:'target_gmv',label:'  ↳ 달성률',targetType:'gmv',tip:'누적 거래액 / 비례목표(경과영업일 기준). 월말추정 달성률'},
     {key:'api_sales',label:'  ㄴ API판매',indent:1,tip:'[매출_jentestore] API 발주 판매액. 부티크에서 직배송되는 상품'},
     {key:'inventory_sales',label:'  ㄴ 재고판매',indent:1,tip:'[매출_jentestore] 매입+반품 재판매. 자체 보유 재고에서 출고'},
     {key:'settlement',label:'정산예정액 (입금일)',sub:1,tip:'[합산관리] R52. PG가 실제 통장에 입금한 금액 (입금일 기준). D+2~3 정산 주기'},
@@ -1086,7 +1087,7 @@ function renderS1(){
     {key:'op_cf',label:'▶ 영업CF',sub:1,calc:i=>{const cm=d.cash_margin?.[i]!=null?d.cash_margin[i]:(d.settlement?.[i]!=null?d.settlement[i]-(d.cogs_boutique?.[i]||0)-(d.cogs_import?.[i]||0):null);return cm==null?null:cm-(d.sga[i]||0);},tip:'= 현금마진 - 판관비. 월 3억 이상 GREEN 목표'},
     {key:'refund_monitor',label:'환불 합계 (참고)',calc:i=>{const rc=d.refund_current?.[i]||0,rp=d.refund_prev?.[i]||0;return(rc||rp)?rc+rp:null;},tip:'당월환불+전월환불. 정산예정액에 이미 반영됨. 모니터링용'},
     {key:'mur',label:'MUR (%)',pct:1,tip:'[일별실적_API] 탭 58행. Markup Rate = (판매가-원가)/원가'},
-    {key:'target_pct',label:'목표달성률',target:1,tip:'거래액/영업CF Target 대비 MTD 달성률. Target 모달에서 설정'},
+    {key:'target_mur',label:'  ↳ 달성률',targetType:'mur',tip:'누적 MUR / 목표 MUR. 100% 이상이면 목표 달성'},
     {cat:'재무 현금흐름'},
     {key:'debt_repay',label:'(-) 금융부채 상환',tip:'금융기관 대출 원금+이자 상환. 월말 원금, 10일 이자'},
     {key:'musinsa_repay',label:'(-) 무신사 상환',tip:'무신사 차입금 상환. 20일 정기 상환'},
@@ -1101,34 +1102,39 @@ function renderS1(){
   let body='';
   for(const row of rows){
     if(row.cat){body+=`<tr class="cat"><td colspan="${d.days+3}">${row.cat}</td></tr>`;continue;}
-    if(row.target){
-      // Target comparison row: 합계=월말추정 달성률, 일자=누적 달성률
-      const mi=currentMonthIdx(), tgG=getTarget('gmv',mi), tgMur=getTarget('mur',mi);
-      const bd=CASH_DATA.meta.business_days, ebd=CASH_DATA.meta.elapsed_bdays;
-      let cumGmv=0;
-      body+=`<tr><td${row.tip?' data-tip="'+row.tip+'"':''}>${row.label}</td>`;
-      // 합계: 월말추정 기준 달성률
-      const totalGmv=sum(d.gmv.filter(v=>v!=null));
-      const gmvEst=eok(totalGmv)*(bd/ebd);
-      const gmvPct=tgG?((gmvEst/tgG)*100).toFixed(0):null;
-      const murLast=d.mur?d.mur.filter(v=>v!=null).pop():null;
-      const murPct=tgMur&&murLast?((murLast/tgMur)*100).toFixed(0):null;
-      let sumLabel='';
-      if(gmvPct) sumLabel+=`거래액 ${gmvPct}%`;
-      if(murPct) sumLabel+=(sumLabel?' · ':'')+'MUR '+murPct+'%';
-      body+=`<td>${sumLabel?`<strong>${sumLabel}</strong>`:'<span style="color:var(--text3)">Target 미설정</span>'}</td><td></td>`;
-      // 일자: 누적 거래액 / 비례목표
-      for(let i=0;i<d.days;i++){
-        const isT=(i+1)===today;
-        if(d.gmv[i]!=null && tgG){
-          cumGmv+=d.gmv[i];
-          // 경과 영업일수 (일요일 제외) up to day i+1
-          let eBd=0; for(let dd=1;dd<=i+1;dd++){const wd=new Date(2026,2,dd).getDay(); if(wd!==0) eBd++;}
-          const proRata=tgG*1e8*(eBd/bd);
-          const pct=proRata>0?((cumGmv/proRata)*100).toFixed(0)+'%':'—';
-          const cls=isT?' class="today"':'';
-          body+=`<td${cls}>${pct}</td>`;
-        }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
+    if(row.targetType){
+      const mi=currentMonthIdx(), bd=CASH_DATA.meta.business_days, ebd=CASH_DATA.meta.elapsed_bdays;
+      const tipAttr=row.tip?` data-tip="${row.tip}"`:'';
+      body+=`<tr style="font-size:9px;color:var(--text3)"><td${tipAttr}>${row.label}</td>`;
+      if(row.targetType==='gmv'){
+        const tg=getTarget('gmv',mi);
+        const totalGmv=sum(d.gmv.filter(v=>v!=null));
+        const gmvEst=eok(totalGmv)*(bd/ebd);
+        const estPct=tg?((gmvEst/tg)*100).toFixed(0)+'%':'—';
+        body+=`<td><strong>${estPct}</strong></td><td></td>`;
+        let cum=0;
+        for(let i=0;i<d.days;i++){
+          const isT=(i+1)===today;
+          if(d.gmv[i]!=null && tg){
+            cum+=d.gmv[i];
+            let eBd=0; for(let dd=1;dd<=i+1;dd++){if(new Date(2026,2,dd).getDay()!==0) eBd++;}
+            const pr=tg*1e8*(eBd/bd);
+            body+=`<td${isT?' class="today"':''}>${pr>0?((cum/pr)*100).toFixed(0)+'%':'—'}</td>`;
+          }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
+        }
+      } else if(row.targetType==='mur'){
+        const tg=getTarget('mur',mi);
+        const murArr=d.mur||[];
+        const lastMur=murArr.filter(v=>v!=null).pop();
+        const estPct=tg&&lastMur?((lastMur/tg)*100).toFixed(0)+'%':'—';
+        body+=`<td><strong>${estPct}</strong></td><td></td>`;
+        for(let i=0;i<d.days;i++){
+          const isT=(i+1)===today;
+          const v=murArr[i];
+          if(v!=null && tg){
+            body+=`<td${isT?' class="today"':''}>${((v/tg)*100).toFixed(0)}%</td>`;
+          }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
+        }
       }
       body+='</tr>';continue;
     }

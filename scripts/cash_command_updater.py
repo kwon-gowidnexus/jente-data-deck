@@ -887,28 +887,17 @@ def _sum_arr(arr):
 
 
 def _count_business_days(year, month):
-    """월간 영업일 수 (일요일만 제외 — 이커머스 토요일 매출 포함)."""
+    """월간 영업일 수 (역일 = 전체 일수. 이커머스: 일요일 포함 매일 매출 발생)."""
     import calendar
-    days = calendar.monthrange(year, month)[1]
-    count = 0
-    for d in range(1, days + 1):
-        wd = datetime(year, month, d).weekday()
-        if wd < 6:  # 월~토 (일요일=6만 제외)
-            count += 1
-    return count
+    return calendar.monthrange(year, month)[1]
 
 
 def _count_elapsed_bdays(year, month, today):
-    """현재까지 경과 영업일 (일요일만 제외)."""
-    count = 0
-    end_day = min(today.day, 31)
+    """현재까지 경과 영업일 (역일 기준)."""
+    import calendar
     if today.year != year or today.month != month:
-        return _count_business_days(year, month)
-    for d in range(1, end_day + 1):
-        wd = datetime(year, month, d).weekday()
-        if wd < 6:  # 월~토
-            count += 1
-    return count
+        return calendar.monthrange(year, month)[1]
+    return min(today.day, calendar.monthrange(year, month)[1])
 
 
 # ═══════════════════════════════════════════════

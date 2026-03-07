@@ -588,7 +588,7 @@ graph LR
 // AUTO_UPDATE_BEGIN
 const CASH_DATA = {
   daily: {
-    month:'2026-03', days:31, business_days:26, elapsed_bdays:6,
+    month:'2026-03', days:31, business_days:31, elapsed_bdays:8,
     gmv:             [115445540,127865957,85169431,90520593,102242323,70731883,137024834,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     refund_current:  [9472842,13266094,11269524,10293340,13335210,6670056,9384319,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     refund_prev:     [0,0,30909242,26374281,19097103,24410996,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
@@ -721,7 +721,7 @@ const CASH_DATA = {
     sga: [123482799,117793907,102668907,null,null,null,null,null,null,null,null,null],
     mur: [30,30,30,null,null,null,null,null,null,null,null,null],
   },
-  meta: { updated:'2026-03-08', updated_time:'07:24', current_month:'2026-03', business_days:26, elapsed_bdays:6, today:8 }
+  meta: { updated:'2026-03-08', updated_time:'07:24', current_month:'2026-03', business_days:31, elapsed_bdays:8, today:8 }
 };
 // AUTO_UPDATE_END
 
@@ -1075,7 +1075,7 @@ function renderS1(){
   const rows=[
     {cat:'영업 현금흐름'},
     {key:'gmv',label:'거래액 (GMV)',tip:'[매출_jentestore] 합산 실제 거래액 = API판매 + 재고판매'},
-    {key:'target_gmv',label:'  ↳ 달성률',targetType:'gmv',tip:'누적 거래액 / 비례목표(경과영업일 기준). 월말추정 달성률'},
+    {key:'target_gmv',label:'  ↳ 달성률',targetType:'gmv',tip:'누적 거래액 / 비례목표(경과일수 기준). 월말추정 달성률'},
     {key:'api_sales',label:'  ㄴ API판매',indent:1,tip:'[매출_jentestore] API 발주 판매액. 부티크에서 직배송되는 상품'},
     {key:'inventory_sales',label:'  ㄴ 재고판매',indent:1,tip:'[매출_jentestore] 매입+반품 재판매. 자체 보유 재고에서 출고'},
     {key:'settlement',label:'정산예정액 (입금일)',sub:1,tip:'[합산관리] R52. PG가 실제 통장에 입금한 금액 (입금일 기준). D+2~3 정산 주기'},
@@ -1094,7 +1094,7 @@ function renderS1(){
     {key:'card_repay',label:'(-) 법인카드 결제',tip:'법인카드 사용분 결제. 20일 자동 결제'},
     {key:'fin_cf',label:'▶ 재무CF',sub:1,calc:i=>d.debt_repay[i]==null?null:-((d.debt_repay[i]||0)+(d.musinsa_repay[i]||0)+(d.card_repay[i]||0)),tip:'재무CF = -(금융상환+무신사+법인카드). 부(-)가 정상'},
     {cat:'신호'},
-    {key:'signal',label:'영업CF 신호등',signal:1,tip:'누적 영업CF를 영업일수 비례 월환산하여 3억↑GREEN, 2억↑YELLOW, 미만 RED'},
+    {key:'signal',label:'영업CF 신호등',signal:1,tip:'누적 영업CF를 경과일수 비례 월환산하여 3억↑GREEN, 2억↑YELLOW, 미만 RED'},
   ];
   let head='<tr><th>항목</th><th>합계</th><th>월말추정</th>';
   for(let i=1;i<=d.days;i++){head+=`<th${i===today?' class="today"':''}>${i}일</th>`;}
@@ -1117,7 +1117,7 @@ function renderS1(){
           const isT=(i+1)===today;
           if(d.gmv[i]!=null && tg){
             cum+=d.gmv[i];
-            let eBd=0; for(let dd=1;dd<=i+1;dd++){if(new Date(2026,2,dd).getDay()!==0) eBd++;}
+            const eBd=i+1; // 역일 기준 (이커머스: 일요일 포함 매일 매출)
             const pr=tg*1e8*(eBd/bd);
             body+=`<td${isT?' class="today"':''}>${pr>0?((cum/pr)*100).toFixed(0)+'%':'—'}</td>`;
           }else{body+=`<td class="future${isT?' today':''}">—</td>`;}

@@ -1037,17 +1037,17 @@ function renderS0(){
   // 환불 MTD — 모니터링 KPI
   const refCurPct = m3.gmv>0 ? ((m3.refund||0)/m3.gmv*100) : 0;
   const refPrevPct = m3.gmv>0 ? ((m3.refund_prev||0)/m3.gmv*100) : 0;
-  let refLine = `환불율 MTD: 당월 ${refCurPct.toFixed(1)}%`;
+  let refLine = `환불: 당월거래 환불 ${refCurPct.toFixed(1)}%`;
   if(tgtRefCur!=null){
     const s = refCurPct<=tgtRefCur ? 'g' : 'r';
     refLine += ` / 목표 ${tgtRefCur}% <span class="tag tag-${s}">${refCurPct<=tgtRefCur?'OK':'OVER'}</span>`;
   }
-  refLine += ` · 전월 ${refPrevPct.toFixed(1)}%`;
+  refLine += ` · 전월거래 환불 ${refPrevPct.toFixed(1)}% (${fE1(m3.refund_prev||0)})`;
   if(tgtRefPrev!=null){
     const s = refPrevPct<=tgtRefPrev ? 'g' : 'r';
     refLine += ` / 목표 ${tgtRefPrev}% <span class="tag tag-${s}">${refPrevPct<=tgtRefPrev?'OK':'OVER'}</span>`;
   }
-  refLine += ` (정산예정액에 반영 완료)`;
+  refLine += ` — 모두 정산예정액에 반영 완료`;
   ins.push(refLine);
 
   document.getElementById('s0-insight').innerHTML=ins.join('<br>');

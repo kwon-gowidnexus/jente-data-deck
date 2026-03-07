@@ -282,7 +282,7 @@ td[data-tip]:hover { text-decoration:underline; text-decoration-style:dotted; te
 
 /* ═══ Waterfall Chart — Multi-month comparison ═══ */
 .wf-compare { margin:12px 0 10px; }
-.wf-row { display:grid; grid-template-columns:90px repeat(3,1fr); gap:0; align-items:center; min-height:28px; border-bottom:1px solid var(--border-light); }
+.wf-row { display:grid; grid-template-columns:90px repeat(4,1fr); gap:0; align-items:center; min-height:28px; border-bottom:1px solid var(--border-light); }
 .wf-row:last-child { border-bottom:none; }
 .wf-row.wf-header { border-bottom:2px solid var(--rule); min-height:24px; }
 .wf-row.wf-subtotal { border-top:1px solid var(--text3); background:var(--bg-alt); }
@@ -397,6 +397,14 @@ td[data-tip]:hover { text-decoration:underline; text-decoration-style:dotted; te
   <p style="margin:-4px 0 8px;font-size:10px;color:var(--text3);letter-spacing:.2px">월 단위로 매출에서 비용을 단계별로 빼서 영업CF까지 — 수익 구조가 어떻게 변하는지 비교</p>
   <div id="wf-chart-area"></div>
   <div class="insight good" id="wf-insight"></div>
+</div>
+
+<!-- ═══ 자금배분 ═══ -->
+<div class="section" id="sec-fund-alloc">
+  <h2 data-num="03-B">자금배분 (Cash Allocation)</h2>
+  <p style="margin:-4px 0 8px;font-size:10px;color:var(--text3);letter-spacing:.2px">매출에서 비용을 순서대로 배분 — 얼마가 남고 얼마가 부족한지. CEO 관점 자금 운용 프레임</p>
+  <div class="tbl-wrap" id="fund-alloc-table"></div>
+  <div class="insight" id="fund-alloc-insight"></div>
 </div>
 
 <!-- ═══ S2: Monthly ═══ -->
@@ -1422,6 +1430,11 @@ function renderWaterfall(){
   const wf = CASH_DATA.waterfall;
   const months = ['2026-01','2026-02','2026-03'];
   const monthLabels = {'2026-01':'1월','2026-02':'2월','2026-03':'3월 MTD'};
+  const cols = [...months, '2026-03-est']; // 4열: 1월, 2월, 3월MTD, 3월추정
+  const colLabels = {'2026-01':'1월','2026-02':'2월','2026-03':'3월 MTD','2026-03-est':'3월 추정'};
+
+  // 월말추정: MTD × (전체일수/경과일수)
+  const ratio = CASH_DATA.meta.business_days / Math.max(1, CASH_DATA.meta.elapsed_bdays);
 
   // Step definitions — internally consistent: revenue→(-cogs)→GP→(조정)→남은돈→(-sga)→영업CF
   const stepDefs = [
@@ -1434,9 +1447,19 @@ function renderWaterfall(){
     {key:'op_cf',     label:'영업CF',        sign:1,  type:'auto', cls:'wf-final'},
   ];
 
+  // Build estimate data
+  const mtd=wf['2026-03'];
+  if(mtd){
+    wf['2026-03-est']={};
+    stepDefs.forEach(s=>{
+      wf['2026-03-est'][s.key]=mtd[s.key]!=null?mtd[s.key]*ratio:null;
+    });
+    wf['2026-03-est'].gmv=mtd.gmv!=null?mtd.gmv*ratio:null;
+  }
+
   // Collect all absolute values for bar scaling
   let maxAbs = 0;
-  months.forEach(mk=>{
+  cols.forEach(mk=>{
     const d=wf[mk]; if(!d) return;
     stepDefs.forEach(s=>{
       const v=d[s.key]; if(v!=null) maxAbs=Math.max(maxAbs,Math.abs(v));
@@ -1449,8 +1472,9 @@ function renderWaterfall(){
 
   // Header row
   html+='<div class="wf-row wf-header"><div class="wf-step-label"></div>';
-  months.forEach(mk=>{
-    html+=`<div class="wf-month-hdr">${monthLabels[mk]||mk}</div>`;
+  cols.forEach(mk=>{
+    const isEst=mk.includes('-est');
+    html+=`<div class="wf-month-hdr"${isEst?' style="color:var(--text3);font-style:italic"':''}>${colLabels[mk]||mk}</div>`;
   });
   html+='</div>';
 
@@ -1458,11 +1482,12 @@ function renderWaterfall(){
   stepDefs.forEach(s=>{
     const rowCls = s.cls ? ' '+s.cls : '';
     html+=`<div class="wf-row${rowCls}"><div class="wf-step-label">${s.label}</div>`;
-    months.forEach(mk=>{
+    cols.forEach(mk=>{
       const d=wf[mk];
+      const isEst=mk.includes('-est');
       if(!d){ html+='<div class="wf-cell"><span class="wf-val" style="color:var(--text3)">—</span></div>'; return; }
       const raw=d[s.key];
-      const val = raw!=null ? raw*s.sign : null; // display value (negative for costs)
+      const val = raw!=null ? raw*s.sign : null;
       const absVal = raw!=null ? Math.abs(raw) : 0;
       const barW = maxAbs>0 ? Math.max(2, Math.round(absVal/maxAbs*maxBarW)) : 2;
       const dispVal = val!=null ? val : null;
@@ -1472,10 +1497,11 @@ function renderWaterfall(){
       if(s.type==='auto') colorCls = val>=0?'pos':'neg';
       if(s.type==='bridge') colorCls = val>=0?'pos':'bridge';
       const textColor = (colorCls==='neg'||colorCls==='bridge') ? 'var(--negative)' : colorCls==='pos' ? 'var(--positive)' : 'var(--text3)';
+      const estStyle = isEst ? 'opacity:.6;font-style:italic;' : '';
 
       html+=`<div class="wf-cell">
-        <div class="wf-bar ${colorCls}" style="width:${barW}px"></div>
-        <span class="wf-val" style="color:${textColor}">${valStr}</span>
+        <div class="wf-bar ${colorCls}" style="width:${barW}px;${isEst?'opacity:.4':''}"></div>
+        <span class="wf-val" style="${estStyle}color:${textColor}">${isEst?'~':''}${valStr}</span>
       </div>`;
     });
     html+='</div>';
@@ -1486,19 +1512,23 @@ function renderWaterfall(){
   const wc=CASH_DATA.working_capital;
   const refRows=[
     {label:'참고: GMV', fn:mk=>wf[mk]?wf[mk].gmv.toFixed(1)+'억':'—'},
-    {label:'GP율', fn:mk=>mm[mk]&&mm[mk].gp_rate!=null?(mm[mk].gp_rate*100).toFixed(1)+'%':'—'},
+    {label:'GP율', fn:mk=>{
+      const m=mm[mk]||mm[mk.replace('-est','')];
+      return m&&m.gp_rate!=null?(m.gp_rate*100).toFixed(1)+'%':'—';
+    }},
   ];
   refRows.forEach(r=>{
     html+='<div class="wf-row" style="border-top:1px dashed var(--border);opacity:.6"><div class="wf-step-label" style="font-size:8px">'+r.label+'</div>';
-    months.forEach(mk=>{
-      html+=`<div class="wf-cell"><span class="wf-val" style="font-size:9px;color:var(--text3)">${r.fn(mk)}</span></div>`;
+    cols.forEach(mk=>{
+      const isEst=mk.includes('-est');
+      html+=`<div class="wf-cell"><span class="wf-val" style="font-size:9px;color:var(--text3);${isEst?'font-style:italic':''}">${isEst?'~':''}${r.fn(mk)}</span></div>`;
     });
     html+='</div>';
   });
 
-  // 이중 레이어: 원가 (매칭 vs 현금) + Gap
+  // 이중 레이어: 원가 (매칭 vs 현금) + Gap — months only (not estimate)
   html+='<div class="wf-row" style="border-top:2px solid var(--border);margin-top:6px;padding-top:4px"><div class="wf-step-label" style="font-size:8px;font-weight:600">원가 이중 기준</div>';
-  months.forEach(()=>html+='<div class="wf-cell"></div>');
+  cols.forEach(()=>html+='<div class="wf-cell"></div>');
   html+='</div>';
   const cogsLayers=[
     {label:'매칭 (발생주의)', fn:(mk,i)=>wc.accrual_cogs[i]!=null?(wc.accrual_cogs[i]/1e8).toFixed(1)+'억':'—', color:'var(--text2)'},
@@ -1511,8 +1541,10 @@ function renderWaterfall(){
   ];
   cogsLayers.forEach(r=>{
     html+=`<div class="wf-row" style="opacity:.7"><div class="wf-step-label" style="font-size:8px;padding-left:8px">${r.label}</div>`;
-    months.forEach((mk,i)=>{
-      html+=`<div class="wf-cell"><span class="wf-val" style="font-size:9px;color:${r.color};${r.bold?'font-weight:600':''}">${r.fn(mk,i)}</span></div>`;
+    cols.forEach((mk,i)=>{
+      const isEst=mk.includes('-est');
+      const mi=months.indexOf(mk); // -1 for estimate
+      html+=`<div class="wf-cell"><span class="wf-val" style="font-size:9px;color:${r.color};${r.bold?'font-weight:600':''}">${mi>=0?r.fn(mk,mi):'—'}</span></div>`;
     });
     html+='</div>';
   });
@@ -1530,6 +1562,85 @@ function renderWaterfall(){
   document.getElementById('wf-insight').className='insight';
   document.getElementById('wf-insight').innerHTML=
     `영업CF 추이: ${opCfs.join(' → ')} | 환불율: ${refRates.join(' → ')}${gapNote}`;
+}
+
+// ═══ 자금배분 (Cash Allocation) ═══
+function renderFundAlloc(){
+  const m3=CASH_DATA.monthly['2026-03'];
+  if(!m3) return;
+  const D=CASH_DATA;
+  const ratio=D.meta.business_days/Math.max(1,D.meta.elapsed_bdays);
+
+  // 자금배분 흐름: 순매출 → (-환불차감) → 유동성 → (-판관비) → (-급여) → (-금융) → FCF
+  // 현금 기준 잔액에서 순서대로 배분
+  const settlement = m3.settlement || 0;      // 정산 입금 (현금)
+  const cogsCash = m3.cogs_cash || (D.working_capital.cash_cogs[2]||0); // 원가 출금
+  const parking = settlement - cogsCash;       // 파킹 = 정산 - 원가출금
+  const refPrev = m3.refund_prev || 0;         // 전월환불 (발생, 향후 차감될 금액)
+  const refCur = m3.refund || 0;               // 당월환불
+  const afterRefund = parking - refPrev;       // 환불 차감 후
+  const sga = m3.sga || (D.schedule_annual?D.schedule_annual.items.find(x=>x.label.includes('급여'))?.vals[2]||0:0) || 0;
+  const opCf = m3.op_cf || 0;
+  const finCf = Math.abs(m3.fin_cf || 0);     // 재무CF (양수로)
+  const fcf = opCf - finCf;                    // 잔여
+
+  // Schedule에서 급여/금융비용 상세
+  const sa=D.schedule_annual;
+  const salaryM = sa?sa.items.filter(x=>x.label.includes('급여')||x.label.includes('보험')).reduce((s,x)=>s+(x.vals[2]||0),0):0;
+  const finDebtM = sa?sa.items.filter(x=>x.cat==='정기 상환').reduce((s,x)=>s+(x.vals[2]||0),0):0;
+  const sgaFixed = sa?sa.items.filter(x=>x.cat==='고정 지출').reduce((s,x)=>s+(x.vals[2]||0),0):0;
+
+  // 배분 흐름 rows: [label, MTD실적, 월목표, 비고]
+  const rows=[
+    {label:'정산 입금', val:settlement, cls:'pos', indent:0, note:'PG 정산 입금액'},
+    {label:'(-) 원가 출금', val:-cogsCash, cls:'neg', indent:0, note:'부티크 송금+매입부대'},
+    {label:'= 파킹 (정산-원가)', val:parking, cls:'sub', indent:0, note:'원가 차감 후 남은 현금', bold:true},
+    {label:'(-) 전월거래 환불', val:-refPrev, cls:'neg', indent:1, note:'발생 기준 — 정산 차감은 시차 있음'},
+    {label:'(-) 당월거래 환불', val:-refCur, cls:'neg', indent:1, note:''},
+    {label:'= 가용 유동성', val:parking-refPrev-refCur, cls:'sub', indent:0, note:'환불 차감 후', bold:true},
+    {sep:true},
+    {label:'(-) 판관비', val:-sga, cls:'neg', indent:0, note:`MTD ${fE1(sga)} / 월 ${fE1(sgaFixed)}`},
+    {label:'= 영업CF', val:opCf, cls:opCf>=0?'pos':'neg', indent:0, note:'', bold:true},
+    {sep:true},
+    {label:'(-) 금융상환', val:-(m3.fin_debt_repay||0), cls:'neg', indent:0, note:`이자+원금+무신사`},
+    {label:'(-) 법인카드', val:-(m3.fin_card||0), cls:'neg', indent:0, note:''},
+    {label:'= FCF (잔여)', val:fcf, cls:fcf>=0?'pos':'neg', indent:0, note:'', bold:true},
+  ];
+
+  // 월말추정
+  const estRows = rows.map(r=>{
+    if(r.sep) return r;
+    return {...r, val:r.val*ratio};
+  });
+
+  let h='<table><tr><th style="min-width:160px">배분 단계</th><th>MTD 실적</th><th style="color:var(--text3);font-style:italic">월말 추정</th><th style="min-width:120px;font-size:9px;color:var(--text3)">비고</th></tr>';
+  let b='';
+  rows.forEach((r,idx)=>{
+    if(r.sep){b+='<tr><td colspan="4" style="border-top:2px solid var(--border);padding:2px"></td></tr>';return;}
+    const padL=r.indent?'padding-left:'+(12+r.indent*16)+'px':'';
+    const fw=r.bold?'font-weight:600':'';
+    const color=r.cls==='pos'?'color:var(--positive)':r.cls==='neg'?'color:var(--negative)':'';
+    const estV=estRows[idx].val;
+    b+=`<tr style="${fw}">`;
+    b+=`<td style="${padL}">${r.label}</td>`;
+    b+=`<td style="${color}">${fE1(r.val)}</td>`;
+    b+=`<td style="${color};opacity:.6;font-style:italic">~${fE1(estV)}</td>`;
+    b+=`<td style="font-size:9px;color:var(--text3)">${r.note}</td>`;
+    b+=`</tr>`;
+  });
+  h+=b+'</table>';
+  document.getElementById('fund-alloc-table').innerHTML=h;
+
+  // Insight
+  const liquidity=parking-refPrev-refCur;
+  const liqEst=liquidity*ratio;
+  const needed=sgaFixed+finDebtM; // 월간 고정 지출
+  const gap=liqEst-needed;
+  const insEl=document.getElementById('fund-alloc-insight');
+  insEl.className=`insight ${gap>=0?'good':'warn'}`;
+  insEl.innerHTML=gap>=0
+    ?`월말추정 가용유동성 ~${(liqEst/1e8).toFixed(1)}억 vs 고정지출 ${(needed/1e8).toFixed(1)}억 → 여유 ${(gap/1e8).toFixed(1)}억`
+    :`월말추정 가용유동성 ~${(liqEst/1e8).toFixed(1)}억 vs 고정지출 ${(needed/1e8).toFixed(1)}억 → <strong>부족 ${(gap/1e8).toFixed(1)}억</strong>`;
 }
 
 // ═══ S-CF-SPLIT: 영업CF vs 재무CF 분리 ═══
@@ -1697,7 +1808,7 @@ function renderValidation(){
 // ═══ Init ═══
 function init(){
   renderS0();renderS1();renderS2();renderS3A();renderS3B();renderS4A();renderS4B();
-  renderWaterfall();renderCfSplit();renderCogsGap();renderDebtTs();renderValidation();
+  renderWaterfall();renderFundAlloc();renderCfSplit();renderCogsGap();renderDebtTs();renderValidation();
 }
 // Auto-init if PIN overlay is hidden (disabled)
 if(document.getElementById('pin-overlay').style.display==='none') init();

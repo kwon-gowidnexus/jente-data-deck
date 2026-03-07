@@ -760,9 +760,6 @@ document.getElementById('pin-input').addEventListener('input',function(){
     else{ document.getElementById('pin-error').textContent='Invalid PIN'; this.value=''; }
   }
 });
-// Auto-init if PIN overlay is hidden (disabled)
-if(document.getElementById('pin-overlay').style.display==='none') init();
-
 // ═══ Target Management ═══
 const TARGET_KEY = 'jente_cash_targets';
 const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -1596,6 +1593,8 @@ function init(){
   renderS0();renderS1();renderS2();renderS3A();renderS3B();renderS4A();renderS4B();
   renderWaterfall();renderCfSplit();renderCogsGap();renderDebtTs();renderValidation();
 }
+// Auto-init if PIN overlay is hidden (disabled)
+if(document.getElementById('pin-overlay').style.display==='none') init();
 </script>
 </body>
 </html>

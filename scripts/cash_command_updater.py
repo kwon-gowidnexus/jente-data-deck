@@ -495,6 +495,51 @@ def fetch_gmv_breakdown(creds, month_key):
     return {'api_sales': api_sales, 'inventory_sales': inventory_sales}
 
 
+def fetch_daily_mur(creds, month_key):
+    """RESET [일별실적_API] 탭 62행에서 일별 누적 MUR(부대,vat환급고려) 수집.
+
+    컬럼 레이아웃: col[14]=1일, col[15]=2일, ... col[13+day]=day일
+    """
+    sheet_id = RESET_SHEET_IDS.get(month_key)
+    if not sheet_id:
+        log.warning(f"RESET 시트 미등록: {month_key} → MUR 건너뜀")
+        return None
+
+    import calendar
+    from googleapiclient.discovery import build
+    year, mon = map(int, month_key.split('-'))
+    days_in_month = calendar.monthrange(year, mon)[1]
+
+    service = build('sheets', 'v4', credentials=creds, cache_discovery=False)
+    try:
+        result = service.spreadsheets().values().get(
+            spreadsheetId=sheet_id,
+            range="'일별실적_API'!A62:AP62"
+        ).execute()
+        row = result.get('values', [[]])[0]
+    except Exception as e:
+        log.warning(f"일별실적_API 탭 읽기 실패: {e}")
+        return None
+
+    mur = [None] * days_in_month
+    filled = 0
+    for day in range(1, days_in_month + 1):
+        col = 13 + day  # col[14]=1일, col[15]=2일, ...
+        if col >= len(row):
+            break
+        val = str(row[col]).strip().replace('%', '')
+        if not val:
+            continue
+        try:
+            mur[day - 1] = round(float(val), 2)
+            filled += 1
+        except ValueError:
+            continue
+
+    log.info(f"MUR 수집: {filled}일")
+    return mur
+
+
 def fetch_pg_settlement(creds, month_key):
     """jentestore_승인(카드/가상계좌) 탭에서 주문별 PG 정산액을 수집, 일별 합산 반환.
 
@@ -676,7 +721,7 @@ def fetch_bank_data(creds):
 # ═══════════════════════════════════════════════
 # D. CASH_DATA 병합
 # ═══════════════════════════════════════════════
-def merge_cash_data(existing_data, sheets_daily, bank_data, month_key, today, targets=None, gmv_breakdown=None, pg_settlement=None):
+def merge_cash_data(existing_data, sheets_daily, bank_data, month_key, today, targets=None, gmv_breakdown=None, pg_settlement=None, daily_mur=None):
     """기존 CASH_DATA에 새 데이터 병합."""
     import calendar
     year, mon = map(int, month_key.split('-'))
@@ -749,6 +794,21 @@ def merge_cash_data(existing_data, sheets_daily, bank_data, month_key, today, ta
             else:
                 merged.append(existing_arr[i])
         data['daily']['settlement_pg'] = merged
+
+    # D-1d. 일별 MUR 병합
+    if daily_mur:
+        existing_arr = data.get('daily', {}).get('mur', [None] * days_in_month)
+        while len(existing_arr) < days_in_month:
+            existing_arr.append(None)
+        while len(daily_mur) < days_in_month:
+            daily_mur.append(None)
+        merged = []
+        for i in range(days_in_month):
+            if i <= max_day_idx and daily_mur[i] is not None:
+                merged.append(daily_mur[i])
+            else:
+                merged.append(existing_arr[i])
+        data['daily']['mur'] = merged
 
     # D-2. bank 병합
     if bank_data:
@@ -827,27 +887,26 @@ def _sum_arr(arr):
 
 
 def _count_business_days(year, month):
-    """월간 영업일 수 (주말 제외, 공휴일 미반영)."""
+    """월간 영업일 수 (일요일만 제외 — 이커머스 토요일 매출 포함)."""
     import calendar
     days = calendar.monthrange(year, month)[1]
     count = 0
     for d in range(1, days + 1):
         wd = datetime(year, month, d).weekday()
-        if wd < 5:
+        if wd < 6:  # 월~토 (일요일=6만 제외)
             count += 1
     return count
 
 
 def _count_elapsed_bdays(year, month, today):
-    """현재까지 경과 영업일."""
+    """현재까지 경과 영업일 (일요일만 제외)."""
     count = 0
     end_day = min(today.day, 31)
     if today.year != year or today.month != month:
-        # 다른 달이면 전체 영업일
         return _count_business_days(year, month)
     for d in range(1, end_day + 1):
         wd = datetime(year, month, d).weekday()
-        if wd < 5:
+        if wd < 6:  # 월~토
             count += 1
     return count
 
@@ -1187,6 +1246,14 @@ def main():
         except Exception as e:
             log.warning(f"PG 정산 실패 (기존 데이터 유지): {e}")
 
+    # 일별 MUR (RESET [일별실적_API] 탭)
+    daily_mur = None
+    if sheets_creds:
+        try:
+            daily_mur = fetch_daily_mur(sheets_creds, month_key)
+        except Exception as e:
+            log.warning(f"MUR 수집 실패 (기존 데이터 유지): {e}")
+
     # BigQuery 은행잔고
     bank_data = None
     if bq_creds:
@@ -1199,7 +1266,7 @@ def main():
     if not sheets_daily and not bank_data:
         log.info("새 데이터 없음 — meta만 업데이트")
 
-    merged = merge_cash_data(existing, sheets_daily, bank_data, month_key, today, sheets_targets, gmv_breakdown, pg_settlement)
+    merged = merge_cash_data(existing, sheets_daily, bank_data, month_key, today, sheets_targets, gmv_breakdown, pg_settlement, daily_mur)
 
     # JS 렌더링
     new_js = render_cash_data_js(merged)

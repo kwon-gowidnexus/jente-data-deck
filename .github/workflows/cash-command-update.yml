@@ -26,6 +26,7 @@ jobs:
       - name: Run updater
         env:
           GOWID_ADC_JSON: ${{ secrets.GOWID_ADC_JSON }}
+          SHEETS_ADC_JSON: ${{ secrets.SHEETS_ADC_JSON }}
         run: |
           python scripts/cash_command_updater.py
 

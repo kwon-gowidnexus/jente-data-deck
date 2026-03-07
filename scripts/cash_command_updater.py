@@ -115,13 +115,15 @@ def _get_sheets_credentials():
         'https://www.googleapis.com/auth/drive.readonly',
     ]
 
-    # 1) GOWID_ADC_JSON 환경변수 (GitHub Actions — SA key)
-    adc_json = os.environ.get('GOWID_ADC_JSON')
-    if adc_json:
-        adc_data = json.loads(adc_json)
+    # 1) SHEETS_ADC_JSON 환경변수 (GitHub Actions — OAuth refresh token)
+    sheets_json = os.environ.get('SHEETS_ADC_JSON')
+    if sheets_json:
+        adc_data = json.loads(sheets_json)
         if adc_data.get('type') == 'service_account':
-            log.info("Sheets 인증: GOWID_ADC_JSON (SA)")
+            log.info("Sheets 인증: SHEETS_ADC_JSON (SA)")
             return _creds_from_sa_dict(adc_data, SCOPES)
+        log.info("Sheets 인증: SHEETS_ADC_JSON (OAuth)")
+        return _creds_from_adc_dict(adc_data)
 
     # 2) 로컬 ADC (OAuth — kwon@gowidnexus.com + pitstop quota)
     adc_paths = [

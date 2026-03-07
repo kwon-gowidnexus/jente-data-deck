@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -337,15 +337,15 @@ td[data-tip]:hover { text-decoration:underline; text-decoration-style:dotted; te
 <body>
 <div id="cc-tooltip"></div>
 
-<!-- PIN -->
-<div id="pin-overlay">
+<!-- PIN (temporarily disabled) -->
+<div id="pin-overlay" style="display:none">
   <h2>JENTE Cash Command</h2>
-  <input type="password" id="pin-input" maxlength="4" placeholder="PIN" autofocus>
+  <input type="password" id="pin-input" maxlength="4" placeholder="PIN">
   <div id="pin-error"></div>
 </div>
 
 <!-- App -->
-<div id="app">
+<div id="app" style="display:block">
 
 <!-- Header -->
 <div class="header-bar">
@@ -353,7 +353,7 @@ td[data-tip]:hover { text-decoration:underline; text-decoration-style:dotted; te
   <div class="meta">
     <span>Updated: <span id="meta-date"></span> <span id="meta-time" style="opacity:.6"></span></span>
     <button class="header-btn" onclick="openInfo()">i</button>
-    <button class="header-btn" id="theme-btn" onclick="toggleTheme()">Dark</button>
+    <button class="header-btn" id="theme-btn" onclick="toggleTheme()">Light</button>
     <a class="header-btn" href="jente_datadeck_draft.html">Data Deck &rarr;</a>
   </div>
 </div>
@@ -760,6 +760,8 @@ document.getElementById('pin-input').addEventListener('input',function(){
     else{ document.getElementById('pin-error').textContent='Invalid PIN'; this.value=''; }
   }
 });
+// Auto-init if PIN overlay is hidden (disabled)
+if(document.getElementById('pin-overlay').style.display==='none') init();
 
 // ═══ Target Management ═══
 const TARGET_KEY = 'jente_cash_targets';

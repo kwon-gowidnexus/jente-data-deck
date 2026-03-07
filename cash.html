@@ -721,7 +721,7 @@ const CASH_DATA = {
     sga: [123482799,117793907,102668907,null,null,null,null,null,null,null,null,null],
     mur: [30,30,30,null,null,null,null,null,null,null,null,null],
   },
-  meta: { updated:'2026-03-08', updated_time:'07:20', current_month:'2026-03', business_days:26, elapsed_bdays:6, today:8 }
+  meta: { updated:'2026-03-08', updated_time:'07:24', current_month:'2026-03', business_days:26, elapsed_bdays:6, today:8 }
 };
 // AUTO_UPDATE_END
 
@@ -1102,14 +1102,34 @@ function renderS1(){
   for(const row of rows){
     if(row.cat){body+=`<tr class="cat"><td colspan="${d.days+3}">${row.cat}</td></tr>`;continue;}
     if(row.target){
-      // Target comparison row: 거래액 MTD달성률 + 영업CF MTD달성률
-      const mi=currentMonthIdx(), tgG=getTarget('gmv',mi);
-      const cumGmv=sum(d.gmv.filter(v=>v!=null)), cumOp=sum(d.gp.filter((v,i)=>v!=null).map((v,i)=>(d.gp[i]||0)-(d.sga[i]||0)));
-      const gmvEst=eok(cumGmv)*(CASH_DATA.meta.business_days/CASH_DATA.meta.elapsed_bdays);
-      const gmvPct=tgG?((gmvEst/tgG)*100).toFixed(0):null;
+      // Target comparison row: 합계=월말추정 달성률, 일자=누적 달성률
+      const mi=currentMonthIdx(), tgG=getTarget('gmv',mi), tgMur=getTarget('mur',mi);
+      const bd=CASH_DATA.meta.business_days, ebd=CASH_DATA.meta.elapsed_bdays;
+      let cumGmv=0;
       body+=`<tr><td${row.tip?' data-tip="'+row.tip+'"':''}>${row.label}</td>`;
-      body+=`<td>${tgG?`<strong>거래액 ${gmvPct}%</strong>`:'<span style="color:var(--text3)">Target 미설정</span>'}</td><td></td>`;
-      for(let i=0;i<d.days;i++){body+=`<td class="future${(i+1)===today?' today':''}">—</td>`;}
+      // 합계: 월말추정 기준 달성률
+      const totalGmv=sum(d.gmv.filter(v=>v!=null));
+      const gmvEst=eok(totalGmv)*(bd/ebd);
+      const gmvPct=tgG?((gmvEst/tgG)*100).toFixed(0):null;
+      const murLast=d.mur?d.mur.filter(v=>v!=null).pop():null;
+      const murPct=tgMur&&murLast?((murLast/tgMur)*100).toFixed(0):null;
+      let sumLabel='';
+      if(gmvPct) sumLabel+=`거래액 ${gmvPct}%`;
+      if(murPct) sumLabel+=(sumLabel?' · ':'')+'MUR '+murPct+'%';
+      body+=`<td>${sumLabel?`<strong>${sumLabel}</strong>`:'<span style="color:var(--text3)">Target 미설정</span>'}</td><td></td>`;
+      // 일자: 누적 거래액 / 비례목표
+      for(let i=0;i<d.days;i++){
+        const isT=(i+1)===today;
+        if(d.gmv[i]!=null && tgG){
+          cumGmv+=d.gmv[i];
+          // 경과 영업일수 (일요일 제외) up to day i+1
+          let eBd=0; for(let dd=1;dd<=i+1;dd++){const wd=new Date(2026,2,dd).getDay(); if(wd!==0) eBd++;}
+          const proRata=tgG*1e8*(eBd/bd);
+          const pct=proRata>0?((cumGmv/proRata)*100).toFixed(0)+'%':'—';
+          const cls=isT?' class="today"':'';
+          body+=`<td${cls}>${pct}</td>`;
+        }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
+      }
       body+='</tr>';continue;
     }
     if(row.signal){

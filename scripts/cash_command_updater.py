@@ -30,7 +30,7 @@ log = logging.getLogger(__name__)
 # ──────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).parent
 DATADECK_DIR = SCRIPT_DIR.parent
-HTML_PATH = DATADECK_DIR / 'cash.html'
+HTML_PATH = DATADECK_DIR / 'jente_cash_command.html'
 
 MARKER_BEGIN = '// AUTO_UPDATE_BEGIN'
 MARKER_END = '// AUTO_UPDATE_END'

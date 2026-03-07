@@ -280,21 +280,23 @@ td[data-tip]:hover { text-decoration:underline; text-decoration-style:dotted; te
 .target-toolbar button.primary { background:var(--text); color:var(--bg); font-weight:600; }
 .target-toolbar button:hover { opacity:0.8; }
 
-/* ═══ Waterfall Chart ═══ */
-.waterfall-chart { display:flex; align-items:flex-end; gap:6px; height:220px; padding-top:24px; margin:16px 0 10px;
-  border-bottom:2px solid var(--rule); padding-bottom:0; }
-.wf-step { display:flex; flex-direction:column; align-items:center; flex:1; }
-.wf-bar { width:100%; position:relative; min-height:2px; transition:height .3s ease; }
+/* ═══ Waterfall Chart — Multi-month comparison ═══ */
+.wf-compare { margin:12px 0 10px; }
+.wf-row { display:grid; grid-template-columns:90px repeat(3,1fr); gap:0; align-items:center; min-height:28px; border-bottom:1px solid var(--border-light); }
+.wf-row:last-child { border-bottom:none; }
+.wf-row.wf-header { border-bottom:2px solid var(--rule); min-height:24px; }
+.wf-row.wf-subtotal { border-top:1px solid var(--text3); background:var(--bg-alt); }
+.wf-row.wf-final { border-top:2px solid var(--rule); background:var(--bg-alt); }
+.wf-step-label { font-size:9px; color:var(--text2); font-weight:600; letter-spacing:.3px; font-family:'Noto Sans KR',sans-serif; padding:4px 6px 4px 0; }
+.wf-month-hdr { font-size:9px; font-weight:700; color:var(--text); text-align:right; padding:4px 8px; font-family:var(--mono); letter-spacing:.5px; }
+.wf-cell { display:flex; align-items:center; justify-content:flex-end; gap:6px; padding:3px 8px; }
+.wf-bar { height:14px; min-width:2px; transition:width .4s ease; border-radius:1px; flex-shrink:0; }
 .wf-bar.pos { background:var(--text); }
 .wf-bar.neg { background:var(--negative); }
 .wf-bar.sub { background:var(--text3); }
+.wf-bar.bridge { background:var(--caution); opacity:.6; }
 :root.dark .wf-bar.pos { background:var(--positive); }
-.wf-label { font-size:8px; margin-top:6px; color:var(--text3); text-align:center; line-height:1.3; word-break:keep-all; font-weight:600; letter-spacing:.3px; text-transform:uppercase; }
-.wf-value { font-size:10px; font-weight:700; font-family:var(--mono); margin-bottom:3px; text-align:center; }
-.wf-tabs { display:flex; gap:2px; margin-bottom:10px; }
-.wf-tab { font-size:9px; padding:5px 16px; border:1px solid var(--border); background:var(--bg-alt); color:var(--text3); cursor:pointer; font-family:inherit; font-weight:600; letter-spacing:.5px; transition:all .15s; }
-.wf-tab.active { background:var(--text); color:var(--bg); border-color:var(--text); }
-.wf-tab:hover:not(.active) { border-color:var(--text); color:var(--text); }
+.wf-val { font-size:10px; font-weight:700; font-family:var(--mono); white-space:nowrap; min-width:52px; text-align:right; }
 
 /* ═══ Debt TS ═══ */
 .debt-ts-stack { display:flex; height:24px; overflow:hidden; border:1px solid var(--border); margin:6px 0; }
@@ -376,7 +378,7 @@ td[data-tip]:hover { text-decoration:underline; text-decoration-style:dotted; te
 <!-- ═══ S0: KPI ═══ -->
 <div class="section" id="sec-kpi">
   <h2 data-num="01" style="display:flex;align-items:center;justify-content:space-between">KPI Overview
-    <button class="header-btn" style="font-size:9px;color:var(--text2);border-color:var(--border);background:var(--bg-alt);text-transform:uppercase;letter-spacing:.5px" onclick="openTarget()">Target</button></h2>
+    <button class="header-btn" style="font-size:9px;font-weight:700;font-family:var(--mono);color:var(--bg);background:var(--text);border:none;padding:2px 8px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer;transition:all .15s" onmouseenter="this.style.color='var(--text)';this.style.background='var(--bg)';this.style.outline='1px solid var(--text)'" onmouseleave="this.style.color='var(--bg)';this.style.background='var(--text)';this.style.outline='none'" onclick="openTarget()">Target</button></h2>
   <div class="kpi-grid" id="kpi-row"></div>
   <div class="insight" id="s0-insight"></div>
 </div>
@@ -384,14 +386,15 @@ td[data-tip]:hover { text-decoration:underline; text-decoration-style:dotted; te
 <!-- ═══ S1: Daily CF ═══ -->
 <div class="section" id="sec-daily">
   <h2 data-num="02">당월 일별 현금흐름 <span style="font-size:10px;font-weight:400;color:var(--text3);letter-spacing:0;text-transform:none" id="s1-month"></span></h2>
+  <p style="margin:-4px 0 8px;font-size:10px;color:var(--text3);letter-spacing:.2px">매일 실제로 들어오고 나간 현금 — 정산입금 기준, 일별 추이와 누적</p>
   <div class="tbl-wrap" id="s1-table"></div>
   <div class="insight" id="s1-insight"></div>
 </div>
 
 <!-- ═══ S-WATERFALL: Waterfall P&L ═══ -->
 <div class="section" id="sec-waterfall">
-  <h2 data-num="03">Waterfall P&amp;L</h2>
-  <div class="wf-tabs" id="wf-tabs"></div>
+  <h2 data-num="03">Waterfall P&amp;L <span style="font-size:10px;font-weight:400;color:var(--text3);letter-spacing:0;text-transform:none">월별 비교</span></h2>
+  <p style="margin:-4px 0 8px;font-size:10px;color:var(--text3);letter-spacing:.2px">월 단위로 매출에서 비용을 단계별로 빼서 영업CF까지 — 수익 구조가 어떻게 변하는지 비교</p>
   <div id="wf-chart-area"></div>
   <div class="insight good" id="wf-insight"></div>
 </div>
@@ -586,30 +589,30 @@ graph LR
 const CASH_DATA = {
   daily: {
     month:'2026-03', days:31, business_days:22, elapsed_bdays:5,
-    gmv:             [115445540,127865957,85169431,90520593,102242323,70731883,137024834,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    refund_current:  [9472842,13266094,11269524,10293340,13335210,6670056,9384319,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    refund_prev:     [0,0,30909242,26374281,19097103,24410996,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    revenue:         [105972698,114599863,42990665,53852972,69810010,39650831,127640515,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs:            [84616699,88554839,48772240,54286584,59950703,42338814,88424472,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    gp:              [21355999,26045024,-5781575,-433612,9859307,-2687983,39216043,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    sga:             [4358970,1561290,1561290,1561290,13088965,1561290,1561290,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    debt_repay:      [0,1000000,1000000,1000000,1000000,1000000,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    gmv:             [115445540,127865957,85169431,90520593,102242323,70731883,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_current:  [9472842,13266094,11269524,10293340,12954783,6670056,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_prev:     [0,0,30909242,26374281,19097103,24410996,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    revenue:         [105972698,114599863,42990665,53852972,70190437,39650831,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs:            [84616699,88554839,48772240,54286584,60279265,42338814,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    gp:              [21355999,26045024,-5781575,-433612,9911172,-2687983,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    sga:             [4358970,1561290,1561290,1561290,13088965,1561290,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    debt_repay:      [0,1000000,1000000,1000000,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     musinsa_repay:   [0,1000000,1000000,1000000,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     card_repay:      [0,0,0,0,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    settlement:      [105345558,114813429,48222621,48774789,66853994,30654672,124269491,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    settlement_pg:   [103154946,111527652,71921971,78148562,86579520,61692704,124269491,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs_boutique:   [77987741,81617363,44951373,50033718,55254104,39021948,81497209,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs_import:     [6628958,6937476,3820867,4252866,4696599,3316866,6927263,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cash_margin:     [20728859,26258590,-549619,-5511795,6903291,-11684142,35845019,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    api_sales:       [112871943,122683902,69806432,74241454,83470526,59669831,118041929,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    inventory_sales: [2573597,5182055,15362999,16279139,18771797,11062052,18982905,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    settlement:      [105345558,114813429,48222621,48774789,66853994,30654672,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    settlement_pg:   [103154946,111527652,71921971,78148562,86579520,61692704,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_boutique:   [77987741,81617363,44951373,50033718,55556926,39021948,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_import:     [6628958,6937476,3820867,4252866,4722339,3316866,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cash_margin:     [20728859,26258590,-549619,-5511795,6574729,-11684142,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    api_sales:       [112871943,122683902,69806432,74241454,83470526,59669831,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    inventory_sales: [2573597,5182055,15362999,16279139,18771797,11062052,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
     // MUR: [일별실적_API] 탭 58행 참조. 일별 마크업률(%)
     mur:            [null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
   },
   monthly: {
-    '2026-01': { gmv:3320000000, refund:914000000, refund_rate:0.275, revenue:2406000000, cogs_cash:1912000000, gp:494000000, gp_rate:0.205, refund_prev:795000000, remaining:254000000, sga:119000000, op_cf:135000000, fin_debt_repay:113000000, fin_musinsa:0, fin_card:1818000000, fin_cf:-1931000000, net_cash_real:22000000, net_cash_total:-1796000000, inv_qty:1652, inv_val:717000000, total_debt:45753000000, cogs_accrual:2426000000, cogs_gap:514000000, dscr:1.19 },
-    '2026-02': { gmv:2971000000, refund:438000000, refund_rate:0.147, revenue:2211000000, cogs_cash:1392000000, gp:312000000, gp_rate:0.141, refund_prev:314000000, remaining:465000000, sga:108000000, op_cf:347000000, fin_debt_repay:161000000, fin_musinsa:0, fin_card:318000000, fin_cf:-479000000, net_cash_real:186000000, net_cash_total:-132000000, inv_qty:1732, inv_val:790000000, total_debt:45742000000, cogs_accrual:2275000000, cogs_gap:883000000, dscr:2.15 },
-    '2026-03': { gmv:729000561, refund:73691385, refund_rate:0.101, revenue:554517554, cogs_cash:466944351, gp:87573203, gp_rate:0.158, refund_prev:100791622, remaining:72000000, sga:25254385, op_cf:62318818, fin_debt_repay:5000000, fin_musinsa:5000000, fin_card:0, fin_cf:-10000000, net_cash_real:52318818, net_cash_total:77000000, inv_qty:1610, inv_val:747000000, total_debt:45752000000, cogs_accrual:315000000, cogs_gap:35000000, dscr:null, settlement:538934554, settlement_pg:637294846, cogs_boutique:430363456, cogs_import:36580895, cash_margin:71990203, cash_margin_rate:0.134, api_sales:640786017, inventory_sales:88214544, mtd:true },
+    '2026-01': { gmv:3320000000, refund:914000000, refund_rate:0.275, revenue:2406000000, cogs_cash:1912000000, gp:494000000, gp_rate:0.205, refund_prev:795000000, remaining:254000000, sga:119000000, op_cf:135000000, fin_debt_repay:113000000, fin_musinsa:0, fin_card:1818000000, fin_cf:-1931000000, net_cash_real:22000000, net_cash_total:-1796000000, inv_qty:1652, inv_val:717000000, total_debt:45753000000, cogs_accrual:2426000000, cogs_gap:514000000, dscr:1.19, mur:29.65 },
+    '2026-02': { gmv:2971000000, refund:438000000, refund_rate:0.147, revenue:2211000000, cogs_cash:1392000000, gp:312000000, gp_rate:0.141, refund_prev:314000000, remaining:465000000, sga:108000000, op_cf:347000000, fin_debt_repay:161000000, fin_musinsa:0, fin_card:318000000, fin_cf:-479000000, net_cash_real:186000000, net_cash_total:-132000000, inv_qty:1732, inv_val:790000000, total_debt:45742000000, cogs_accrual:2275000000, cogs_gap:883000000, dscr:2.15, mur:29.98 },
+    '2026-03': { gmv:591975727, refund:63926639, refund_rate:0.108, revenue:427257466, cogs_cash:378848441, gp:48409025, gp_rate:0.113, refund_prev:100791622, remaining:72000000, sga:23693095, op_cf:24715930, fin_debt_repay:5000000, fin_musinsa:5000000, fin_card:0, fin_cf:-10000000, net_cash_real:14715930, net_cash_total:77000000, inv_qty:1610, inv_val:747000000, total_debt:45752000000, cogs_accrual:315000000, cogs_gap:35000000, dscr:null, settlement:414665063, settlement_pg:513025355, cogs_boutique:349169069, cogs_import:29679372, cash_margin:35816622, cash_margin_rate:0.086, api_sales:522744088, inventory_sales:69231639, mur:30.15, mtd:true },
   },
   inventory: {
       months:['2025-12','2026-01','2026-02','2026-03'],
@@ -680,7 +683,6 @@ const CASH_DATA = {
   // DW 은행잔고 (고위드 연동 계좌, corp_id:5658801620)
   bank: {
     daily: [
-      {date:'2026-03-08', balance:4713316},
       {date:'2026-03-07', balance:4713316},
       {date:'2026-03-06', balance:4713316},
       {date:'2026-03-05', balance:2489579},
@@ -695,6 +697,7 @@ const CASH_DATA = {
       {date:'2026-02-24', balance:8345055},
       {date:'2026-02-23', balance:161591},
       {date:'2026-02-22', balance:262025},
+      {date:'2026-02-21', balance:262025},
     ],
     monthly: [
       {month:'2026-03', balance:4713316},
@@ -709,15 +712,16 @@ const CASH_DATA = {
   },
   // RESET 시트 목표값 (월별 1~12월, 원 단위)
   targets: {
-    gmv: [null,null,3500400000,null,null,null,null,null,null,null,null,null],
-    revenue: [null,null,3053155108,null,null,null,null,null,null,null,null,null],
-    cogs: [null,null,2179963077,null,null,null,null,null,null,null,null,null],
-    gp: [null,null,852235423,null,null,null,null,null,null,null,null,null],
-    refund_prev_limit: [null,null,438293189,null,null,null,null,null,null,null,null,null],
-    deposit: [null,null,2356905233,null,null,null,null,null,null,null,null,null],
-    sga: [null,null,102668907,null,null,null,null,null,null,null,null,null],
+    gmv: [3986000000,3800000000,3500000000,null,null,null,null,null,null,null,null,null],
+    revenue: [3567470000,2801024775,3052800000,null,null,null,null,null,null,null,null,null],
+    cogs: [2483584615,1939170998,2179692308,null,null,null,null,null,null,null,null,null],
+    gp: [1057872135,841169286,852153108,null,null,null,null,null,null,null,null,null],
+    refund_prev_limit: [527193575,367789268,438213908,null,null,null,null,null,null,null,null,null],
+    deposit: [2772109790,2179637855,2356636026,null,null,null,null,null,null,null,null,null],
+    sga: [123482799,117793907,102668907,null,null,null,null,null,null,null,null,null],
+    mur: [30,30,30,null,null,null,null,null,null,null,null,null],
   },
-  meta: { updated:'2026-03-08', updated_time:'06:31', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:8 }
+  meta: { updated:'2026-03-07', updated_time:'21:07', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:7 }
 };
 // AUTO_UPDATE_END
 
@@ -726,11 +730,17 @@ const CASH_DATA = {
   const m=CASH_DATA.monthly;
   CASH_DATA.waterfall={};
   for(const[k,d]of Object.entries(m)){
+    const rev=(d.revenue||0)/1e8;
+    const cogs=(d.cogs_cash||d.cogs_accrual||0)/1e8;
+    const gp_derived=rev-cogs;
+    const remaining=(d.remaining!=null?d.remaining:(d.gp||0)-(d.refund_prev||0))/1e8;
+    const bridge=remaining-gp_derived; // 환불·조정 etc
+    const sga=(d.sga||0)/1e8;
+    const op_cf=remaining-sga; // 워터폴 기준 영업CF (internally consistent)
     CASH_DATA.waterfall[k]={
-      gmv:d.gmv/1e6, refund:(d.refund||0)/1e6, revenue:(d.revenue||0)/1e6,
-      cogs:(d.cogs_cash||d.cogs_accrual||0)/1e6, gp:(d.gp||0)/1e6,
-      refund_prev:(d.refund_prev||0)/1e6, remaining:(d.remaining!=null?d.remaining:((d.gp||0)-(d.refund_prev||0)))/1e6,
-      sga:(d.sga||0)/1e6, op_cf:(d.op_cf||0)/1e6
+      revenue:rev, cogs:cogs, gp:gp_derived, bridge:bridge,
+      remaining:remaining, sga:sga, op_cf:op_cf,
+      op_cf_stored:(d.op_cf||0)/1e8, gmv:(d.gmv||0)/1e8
     };
   }
   const db=CASH_DATA.debt;
@@ -791,7 +801,7 @@ function getActual(monthIdx){
     gmv: eok(m.gmv),
     gmv_api: m.gmv_api!=null ? eok(m.gmv_api) : null,
     gmv_inventory: m.gmv_inventory!=null ? eok(m.gmv_inventory) : null,
-    mur: null, // MUR monthly not yet available
+    mur: m.mur != null ? m.mur : null,
     refund_total: (refCur!=null && refPrev!=null) ? refCur+refPrev : null,
     refund_current: refCur,
     refund_prev: refPrev,
@@ -812,10 +822,11 @@ function loadTargets(){
   }catch(e){}
   // CASH_DATA에 내장된 기본 목표 (RESET 시트 파싱)
   if(CASH_DATA.targets && Object.keys(CASH_DATA.targets).length > 0){
-    // RESET 목표 → Target 포맷 변환: 원 → 억 단위
+    // RESET 목표 → Target 포맷 변환: 원 → 억 단위 (% 키는 그대로)
+    const pctKeys = new Set(['mur','refund_total','refund_current','refund_prev']);
     const t = {};
     for(const [k,arr] of Object.entries(CASH_DATA.targets)){
-      t[k] = arr.map(v => v != null ? v / 1e8 : null);
+      t[k] = arr.map(v => v != null ? (pctKeys.has(k) ? v : v / 1e8) : null);
     }
     return t;
   }
@@ -887,7 +898,8 @@ function renderTargetTable(){
       const val = tgt[row.key]?.[i];
 
       // Target cell
-      body+=`<td${cls}><input data-metric="${row.key}" data-month="${i}" value="${val!=null?val:''}" disabled></td>`;
+      const valDisp = val!=null ? (row.unit==='%' ? val+'%' : val) : '';
+      body+=`<td${cls}><input data-metric="${row.key}" data-month="${i}" value="${valDisp}" disabled></td>`;
 
       // Actual cell (if month has data)
       if(hasActual){
@@ -899,9 +911,15 @@ function renderTargetTable(){
           let gapHtml='';
           if(val!=null && av!=null){
             const isGmvType = row.key.startsWith('gmv');
-            const isRefundPct = row.unit==='%'; // refund %: lower is better
+            const isMur = row.key==='mur'; // MUR %: higher is better
+            const isRefundPct = row.unit==='%' && !isMur; // refund %: lower is better
             const isBuyback = row.key.startsWith('buyback'); // buyback 억: compare to budget
-            if(isGmvType){
+            if(isMur){
+              const diff = av - val;
+              gapHtml = diff >= 0
+                ? `<div class="gap-pos">+${diff.toFixed(1)}p</div>`
+                : `<div class="gap-neg">${diff.toFixed(1)}p</div>`;
+            } else if(isGmvType){
               const pct = (av/val*100).toFixed(0);
               gapHtml = av>=val
                 ? `<div class="gap-pos">${pct}%</div>`
@@ -1361,69 +1379,93 @@ function renderS4B(){
   });
 })();
 
-// ═══ S-WATERFALL: Waterfall P&L ═══
-let wfActiveMonth = CASH_DATA.meta.current_month; // 기본: 현재 월
+// ═══ S-WATERFALL: Waterfall P&L (Multi-month comparison) ═══
 function renderWaterfall(){
   const wf = CASH_DATA.waterfall;
-  const tabKeys = Object.keys(wf);
-  const tabLabels = {'2026-01':'1월','2026-02':'2월','2026-03':'3월(추정)'};
+  const months = ['2026-01','2026-02','2026-03'];
+  const monthLabels = {'2026-01':'1월','2026-02':'2월','2026-03':'3월 MTD'};
 
-  // Tabs
-  let tabHtml='';
-  tabKeys.forEach(k=>{
-    tabHtml+=`<button class="wf-tab${k===wfActiveMonth?' active':''}" onclick="wfSelectMonth('${k}')">${tabLabels[k]||k}</button>`;
-  });
-  document.getElementById('wf-tabs').innerHTML=tabHtml;
-
-  // Chart
-  renderWaterfallChart(wfActiveMonth);
-}
-
-function wfSelectMonth(key){
-  wfActiveMonth=key;
-  renderWaterfall();
-}
-
-function renderWaterfallChart(key){
-  const d = CASH_DATA.waterfall[key];
-  if(!d){ document.getElementById('wf-chart-area').innerHTML='<p style="color:var(--text3);font-size:11px">데이터 없음</p>'; return; }
-
-  // 9단계 정의
-  const steps=[
-    {label:'GMV',       val:d.gmv,         type:'pos'},
-    {label:'(-환불)',   val:-d.refund,      type:'neg'},
-    {label:'순매출',    val:d.revenue,      type:'pos'},
-    {label:'(-원가)',   val:-d.cogs,        type:'neg'},
-    {label:'GP',        val:d.gp,           type:'pos'},
-    {label:'(-전월환불)',val:d.refund_prev!=null?-d.refund_prev:null, type:'neg'},
-    {label:'남은돈',    val:d.remaining,    type:d.remaining!=null?(d.remaining>=0?'pos':'neg'):'sub'},
-    {label:'(-판관비)', val:-d.sga,         type:'neg'},
-    {label:'영업CF',    val:d.op_cf,        type:d.op_cf>=0?'pos':'neg'},
+  // Step definitions — internally consistent: revenue→(-cogs)→GP→(조정)→남은돈→(-sga)→영업CF
+  const stepDefs = [
+    {key:'revenue',   label:'순매출',        sign:1,  type:'pos'},
+    {key:'cogs',      label:'(-) 원가',      sign:-1, type:'neg'},
+    {key:'gp',        label:'GP',            sign:1,  type:'pos',  cls:'wf-subtotal'},
+    {key:'bridge',    label:'환불·조정',     sign:1,  type:'bridge'},
+    {key:'remaining', label:'남은돈',        sign:1,  type:'pos',  cls:'wf-subtotal'},
+    {key:'sga',       label:'(-) 판관비',    sign:-1, type:'neg'},
+    {key:'op_cf',     label:'영업CF',        sign:1,  type:'auto', cls:'wf-final'},
   ];
 
-  const maxAbs = Math.max(...steps.map(s=>s.val!=null?Math.abs(s.val):0));
-  const maxH = 160;
-
-  let chartHtml='<div class="waterfall-chart">';
-  steps.forEach(s=>{
-    const h = s.val!=null && maxAbs>0 ? Math.max(2, Math.round(Math.abs(s.val)/maxAbs*maxH)) : 2;
-    const valStr = s.val!=null ? (s.val>=0?'+':'')+s.val.toFixed(0)+'M' : '—';
-    const colorClass = s.val==null?'sub':s.type;
-    chartHtml+=`<div class="wf-step">
-      <div class="wf-value" style="color:${s.type==='neg'?'var(--negative)':s.type==='pos'?'var(--positive)':'var(--text3)'}">${valStr}</div>
-      <div class="wf-bar ${colorClass}" style="height:${h}px"></div>
-      <div class="wf-label">${s.label}</div>
-    </div>`;
+  // Collect all absolute values for bar scaling
+  let maxAbs = 0;
+  months.forEach(mk=>{
+    const d=wf[mk]; if(!d) return;
+    stepDefs.forEach(s=>{
+      const v=d[s.key]; if(v!=null) maxAbs=Math.max(maxAbs,Math.abs(v));
+    });
   });
-  chartHtml+='</div>';
-  document.getElementById('wf-chart-area').innerHTML=chartHtml;
+  const maxBarW = 100; // px max bar width per cell
 
-  // Dynamic waterfall insight
+  // Build grid
+  let html='<div class="wf-compare">';
+
+  // Header row
+  html+='<div class="wf-row wf-header"><div class="wf-step-label"></div>';
+  months.forEach(mk=>{
+    html+=`<div class="wf-month-hdr">${monthLabels[mk]||mk}</div>`;
+  });
+  html+='</div>';
+
+  // Step rows
+  stepDefs.forEach(s=>{
+    const rowCls = s.cls ? ' '+s.cls : '';
+    html+=`<div class="wf-row${rowCls}"><div class="wf-step-label">${s.label}</div>`;
+    months.forEach(mk=>{
+      const d=wf[mk];
+      if(!d){ html+='<div class="wf-cell"><span class="wf-val" style="color:var(--text3)">—</span></div>'; return; }
+      const raw=d[s.key];
+      const val = raw!=null ? raw*s.sign : null; // display value (negative for costs)
+      const absVal = raw!=null ? Math.abs(raw) : 0;
+      const barW = maxAbs>0 ? Math.max(2, Math.round(absVal/maxAbs*maxBarW)) : 2;
+      const dispVal = val!=null ? val : null;
+      const valStr = dispVal!=null ? (dispVal>0?'+':dispVal<0?'':'')+dispVal.toFixed(1)+'억' : '—';
+
+      let colorCls = s.type;
+      if(s.type==='auto') colorCls = val>=0?'pos':'neg';
+      if(s.type==='bridge') colorCls = val>=0?'pos':'bridge';
+      const textColor = (colorCls==='neg'||colorCls==='bridge') ? 'var(--negative)' : colorCls==='pos' ? 'var(--positive)' : 'var(--text3)';
+
+      html+=`<div class="wf-cell">
+        <div class="wf-bar ${colorCls}" style="width:${barW}px"></div>
+        <span class="wf-val" style="color:${textColor}">${valStr}</span>
+      </div>`;
+    });
+    html+='</div>';
+  });
+
+  // Reference rows (lighter, context)
   const mm=CASH_DATA.monthly;
-  const refRates=['2026-01','2026-02','2026-03'].map(k=>mm[k]?(mm[k].refund_rate*100).toFixed(1)+'%':null).filter(Boolean);
-  const opCfs=['2026-01','2026-02','2026-03'].map(k=>mm[k]&&mm[k].op_cf!=null?(mm[k].op_cf/1e8).toFixed(1)+'억':null).filter(Boolean);
+  const refRows=[
+    {label:'참고: GMV', fn:mk=>wf[mk]?wf[mk].gmv.toFixed(1)+'억':'—'},
+    {label:'GP율', fn:mk=>mm[mk]&&mm[mk].gp_rate!=null?(mm[mk].gp_rate*100).toFixed(1)+'%':'—'},
+  ];
+  refRows.forEach(r=>{
+    html+='<div class="wf-row" style="border-top:1px dashed var(--border);opacity:.6"><div class="wf-step-label" style="font-size:8px">'+r.label+'</div>';
+    months.forEach(mk=>{
+      html+=`<div class="wf-cell"><span class="wf-val" style="font-size:9px;color:var(--text3)">${r.fn(mk)}</span></div>`;
+    });
+    html+='</div>';
+  });
+
+  html+='</div>';
+  document.getElementById('wf-chart-area').innerHTML=html;
+
+  // Insight — match other sections (plain .insight, no .good)
+  const opCfs=months.map(k=>wf[k]?wf[k].op_cf.toFixed(1)+'억':null).filter(Boolean);
+  const refRates=months.map(k=>mm[k]?(mm[k].refund_rate*100).toFixed(1)+'%':null).filter(Boolean);
+  document.getElementById('wf-insight').className='insight';
   document.getElementById('wf-insight').innerHTML=
-    `환불율 추이: ${refRates.join('→')} | 영업CF 추이: ${opCfs.join('→')}`;
+    `영업CF 추이: ${opCfs.join(' → ')} | 환불율: ${refRates.join(' → ')}`;
 }
 
 // ═══ S-CF-SPLIT: 영업CF vs 재무CF 분리 ═══

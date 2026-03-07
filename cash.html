@@ -1062,8 +1062,20 @@ function renderS0(){
     const s = refPrevPct<=tgtRefPrev ? 'g' : 'r';
     refLine += ` / 목표 ${tgtRefPrev}% <span class="tag tag-${s}">${refPrevPct<=tgtRefPrev?'OK':'OVER'}</span>`;
   }
-  refLine += ` — 모두 정산예정액에 반영 완료`;
+  // 환불: 발생 vs 정산 시차 경고
+  const refPrevAmt=m3.refund_prev||0;
+  const settGap=settPgMtd>0?(refPrevAmt/settPgMtd*100).toFixed(0):'?';
+  refLine += ` — 발생 기준 (정산 차감은 시차 있음, 전월환불 ${fE1(refPrevAmt)}은 향후 정산에서 차감)`;
   ins.push(refLine);
+
+  // 원가 이중 기준 (현금 vs 발생)
+  const wcData=CASH_DATA.working_capital;
+  const wcIdx=wcData.months.indexOf(D.meta.current_month);
+  if(wcIdx>=0){
+    const cashC=wcData.cash_cogs[wcIdx], accrC=wcData.accrual_cogs[wcIdx], gap=wcData.gap[wcIdx];
+    const gapSign=gap>=0?'+':'';
+    ins.push(`원가: 매칭(발생) ${fE1(accrC)} / 출금(현금) ${fE1(cashC)} → Gap ${gapSign}${(gap/1e8).toFixed(1)}억 ${gap>0?'<span class="tag tag-g">미지급↑ 현금 여유</span>':'<span class="tag tag-r">미지급↓ 현금 부담</span>'}`);
+  }
 
   document.getElementById('s0-insight').innerHTML=ins.join('<br>');
 }
@@ -1471,6 +1483,7 @@ function renderWaterfall(){
 
   // Reference rows (lighter, context)
   const mm=CASH_DATA.monthly;
+  const wc=CASH_DATA.working_capital;
   const refRows=[
     {label:'참고: GMV', fn:mk=>wf[mk]?wf[mk].gmv.toFixed(1)+'억':'—'},
     {label:'GP율', fn:mk=>mm[mk]&&mm[mk].gp_rate!=null?(mm[mk].gp_rate*100).toFixed(1)+'%':'—'},
@@ -1483,15 +1496,40 @@ function renderWaterfall(){
     html+='</div>';
   });
 
+  // 이중 레이어: 원가 (매칭 vs 현금) + Gap
+  html+='<div class="wf-row" style="border-top:2px solid var(--border);margin-top:6px;padding-top:4px"><div class="wf-step-label" style="font-size:8px;font-weight:600">원가 이중 기준</div>';
+  months.forEach(()=>html+='<div class="wf-cell"></div>');
+  html+='</div>';
+  const cogsLayers=[
+    {label:'매칭 (발생주의)', fn:(mk,i)=>wc.accrual_cogs[i]!=null?(wc.accrual_cogs[i]/1e8).toFixed(1)+'억':'—', color:'var(--text2)'},
+    {label:'출금 (현금주의)', fn:(mk,i)=>wc.cash_cogs[i]!=null?(wc.cash_cogs[i]/1e8).toFixed(1)+'억':'—', color:'var(--text2)'},
+    {label:'Gap (출금-매칭)', fn:(mk,i)=>{
+      if(wc.gap[i]==null) return '—';
+      const g=wc.gap[i]/1e8;
+      return (g>=0?'+':'')+g.toFixed(1)+'억';
+    }, color:'var(--negative)', bold:true},
+  ];
+  cogsLayers.forEach(r=>{
+    html+=`<div class="wf-row" style="opacity:.7"><div class="wf-step-label" style="font-size:8px;padding-left:8px">${r.label}</div>`;
+    months.forEach((mk,i)=>{
+      html+=`<div class="wf-cell"><span class="wf-val" style="font-size:9px;color:${r.color};${r.bold?'font-weight:600':''}">${r.fn(mk,i)}</span></div>`;
+    });
+    html+='</div>';
+  });
+
   html+='</div>';
   document.getElementById('wf-chart-area').innerHTML=html;
 
   // Insight — match other sections (plain .insight, no .good)
   const opCfs=months.map(k=>wf[k]?wf[k].op_cf.toFixed(1)+'억':null).filter(Boolean);
   const refRates=months.map(k=>mm[k]?(mm[k].refund_rate*100).toFixed(1)+'%':null).filter(Boolean);
+  // COGS gap for latest month
+  const latestGap=wc.gap[wc.gap.length-1];
+  const gapDir=latestGap!=null?(latestGap>wc.gap[wc.gap.length-2]?'확대':'축소'):'';
+  const gapNote=latestGap!=null?` | 원가 Gap ${(latestGap/1e8).toFixed(1)}억 (${gapDir}) — ${latestGap>0?'현금이 덜 나감(미지급↑)':'현금이 더 나감(미지급↓)'}`:'';
   document.getElementById('wf-insight').className='insight';
   document.getElementById('wf-insight').innerHTML=
-    `영업CF 추이: ${opCfs.join(' → ')} | 환불율: ${refRates.join(' → ')}`;
+    `영업CF 추이: ${opCfs.join(' → ')} | 환불율: ${refRates.join(' → ')}${gapNote}`;
 }
 
 // ═══ S-CF-SPLIT: 영업CF vs 재무CF 분리 ═══

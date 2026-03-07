@@ -235,6 +235,23 @@ td[data-tip] { cursor:help; }
 .target-toolbar button.primary { background:var(--text); color:var(--bg); font-weight:600; }
 .target-toolbar button:hover { opacity:0.8; }
 
+/* ═══ Waterfall Chart ═══ */
+.waterfall-chart { display:flex; align-items:flex-end; gap:4px; height:200px; padding-top:20px; margin:12px 0 8px; }
+.wf-step { display:flex; flex-direction:column; align-items:center; flex:1; }
+.wf-bar { width:100%; position:relative; min-height:2px; }
+.wf-bar.pos { background:var(--text); }
+.wf-bar.neg { background:var(--negative); }
+.wf-bar.sub { background:var(--text3); }
+.wf-label { font-size:9px; margin-top:4px; color:var(--text2); text-align:center; line-height:1.3; word-break:keep-all; }
+.wf-value { font-size:10px; font-weight:700; font-family:'Noto Sans Mono',monospace; margin-bottom:2px; text-align:center; }
+.wf-tabs { display:flex; gap:4px; margin-bottom:8px; }
+.wf-tab { font-size:10px; padding:3px 12px; border:1px solid var(--border); background:var(--bg-alt); color:var(--text2); cursor:pointer; font-family:inherit; }
+.wf-tab.active { background:var(--text); color:var(--bg); border-color:var(--text); }
+
+/* ═══ Debt TS ═══ */
+.debt-ts-stack { display:flex; height:20px; overflow:hidden; border:1px solid var(--border); margin:4px 0; }
+.debt-ts-seg { display:flex; align-items:center; justify-content:center; font-size:7px; font-weight:700; color:#fff; overflow:hidden; }
+
 /* ═══ Print ═══ */
 @media print {
   body { background:#fff !important; color:#000 !important; font-size:9.5pt; line-height:1.35; }
@@ -278,11 +295,17 @@ td[data-tip] { cursor:help; }
 <!-- TOC -->
 <nav class="toc">
   <a href="#sec-kpi">KPI</a>
+  <a href="#sec-signal">Signal</a>
   <a href="#sec-daily">Daily CF</a>
+  <a href="#sec-waterfall">Waterfall</a>
   <a href="#sec-monthly">Monthly</a>
+  <a href="#sec-cf-split">CF Split</a>
   <a href="#sec-inv">Inventory</a>
   <a href="#sec-debt">Debt</a>
+  <a href="#sec-cogs-gap">Cost Gap</a>
+  <a href="#sec-debt-ts">Debt TS</a>
   <a href="#sec-sched">Schedule</a>
+  <a href="#sec-validation">Validation</a>
 </nav>
 
 <!-- ═══ S0: KPI ═══ -->
@@ -293,6 +316,12 @@ td[data-tip] { cursor:help; }
   <div class="insight" id="s0-insight"></div>
 </div>
 
+<!-- ═══ S-SIGNAL: 신호등 판정 ═══ -->
+<div class="section" id="sec-signal">
+  <h2>신호등 판정</h2>
+  <div class="tbl-wrap" id="signal-table"></div>
+</div>
+
 <!-- ═══ S1: Daily CF ═══ -->
 <div class="section" id="sec-daily">
   <h2>당월 일별 현금흐름 <span style="font-size:12px;font-weight:400;color:var(--text3)" id="s1-month"></span></h2>
@@ -300,11 +329,29 @@ td[data-tip] { cursor:help; }
   <div class="insight" id="s1-insight"></div>
 </div>
 
+<!-- ═══ S-WATERFALL: Waterfall P&L ═══ -->
+<div class="section" id="sec-waterfall">
+  <h2>Waterfall P&amp;L</h2>
+  <div class="wf-tabs" id="wf-tabs"></div>
+  <div id="wf-chart-area"></div>
+  <div class="insight good" id="wf-insight">현금흐름 핵심: 환불 27.5%→14.7%→8.5% 급감 → GP 개선 → 영업CF 3개월 연속 흑자</div>
+</div>
+
 <!-- ═══ S2: Monthly ═══ -->
 <div class="section" id="sec-monthly">
   <h2>월별 요약 (2026)</h2>
   <div class="tbl-wrap" id="s2-table"></div>
   <div class="insight" id="s2-insight"></div>
+</div>
+
+<!-- ═══ S-CF-SPLIT: 영업CF vs 재무CF 분리 ═══ -->
+<div class="section" id="sec-cf-split">
+  <h2>영업CF vs 재무CF 분리</h2>
+  <h3>재무 현금흐름 (전체 기준)</h3>
+  <div class="tbl-wrap" id="cf-split-full"></div>
+  <h3>실질 순현금 (법인카드 제외)</h3>
+  <div class="tbl-wrap" id="cf-split-real"></div>
+  <div class="insight good" id="cf-split-insight">실질 기준 3개월 연속 흑자: 법인카드 롤오버 제외 시 1월 +0.22억 → 2월 +1.86억 → 3월 MTD +0.60억</div>
 </div>
 
 <!-- ═══ S3-A: Inventory ═══ -->
@@ -323,6 +370,21 @@ td[data-tip] { cursor:help; }
   <h2>부채 상세</h2>
   <div class="tbl-wrap" id="s3b-debt"></div>
   <div class="insight warn" id="s3b-gap"></div>
+</div>
+
+<!-- ═══ S-COGS-GAP: 현금주의 vs 발생주의 Gap ═══ -->
+<div class="section" id="sec-cogs-gap">
+  <h2>현금주의 vs 발생주의 Gap</h2>
+  <div class="tbl-wrap" id="cogs-gap-table"></div>
+  <div class="insight warn" id="cogs-gap-insight">현금-발생 Gap 해소 과제: 2월 Gap 8.83억으로 확대 — 부티크 미지급금 누적 주시 필요</div>
+</div>
+
+<!-- ═══ S-DEBT-TS: 부채 11개월 시계열 ═══ -->
+<div class="section" id="sec-debt-ts">
+  <h2>부채 11개월 시계열</h2>
+  <div class="tbl-wrap" id="debt-ts-table"></div>
+  <h4 style="margin-top:14px">최신월 부채 구성</h4>
+  <div id="debt-ts-stack-area"></div>
 </div>
 
 <!-- ═══ S4: Schedule ═══ -->
@@ -346,6 +408,31 @@ td[data-tip] { cursor:help; }
     </div>
     <div class="panel-bd">
       <div class="tbl-wrap" id="s4a-table"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ S-VALIDATION: Validation Layer ═══ -->
+<div class="section" id="sec-validation">
+  <h2>Validation Layer</h2>
+  <div class="tbl-wrap" id="validation-table"></div>
+
+  <div class="panel collapsed" id="panel-validation-rules">
+    <div class="panel-hd" onclick="togglePanel('panel-validation-rules')">
+      <h3>검증 규칙 정의</h3>
+      <span class="panel-chev">&#9660;</span>
+    </div>
+    <div class="panel-bd">
+      <div class="tbl-wrap">
+        <table>
+          <tr><th style="text-align:left">항목</th><th style="text-align:left">산식</th><th style="text-align:left">소스</th></tr>
+          <tr><td>GMV</td><td>포레 거래액</td><td>foret + RESET 합산관리</td></tr>
+          <tr><td>순매출</td><td>GMV - 환불액</td><td>매출데이터 시트</td></tr>
+          <tr><td>원가 (현금주의)</td><td>API 매출원가 시트 총원가</td><td>API 매출원가</td></tr>
+          <tr><td>판관비</td><td>급여+보험+광고비+SW+기타</td><td>RESET 합산관리</td></tr>
+          <tr><td>영업CF</td><td>순매출-원가-전월환불-판관비</td><td>본 대시보드 계산</td></tr>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -559,7 +646,24 @@ const CASH_DATA = {
     deposit: [null,null,2152363178,null,null,null,null,null,null,null,null,null],
     sga: [null,null,161031257,null,null,null,null,null,null,null,null,null],
   },
-  meta: { updated:'2026-03-06', updated_time:'13:52', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:6 }
+  meta: { updated:'2026-03-06', updated_time:'13:52', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:6 },
+  waterfall: {
+    '2026-01': {gmv:3320,refund:914,revenue:2406,cogs:1912,gp:494,refund_prev:795,remaining:254,sga:119,op_cf:135},
+    '2026-02': {gmv:2971,refund:438,revenue:2211,cogs:1392,gp:312,refund_prev:314,remaining:465,sga:108,op_cf:347},
+    '2026-03': {gmv:3250,refund:280,revenue:2530,cogs:2170,gp:360,refund_prev:null,remaining:null,sga:110,op_cf:380}
+  },
+  debt_timeseries: {
+    months: ['5월','6월','7월','8월','9월','10월','11월','12월','1월','2월','3월'],
+    categories: {
+      '법인카드':  [22.5,21.6,20.6,22.2,21.9,15.9,15.4,17.4,14.8,14.2,14.8],
+      '부티크':    [54.6,33.2,30.2,30.3,29.4,40.2,47.7,26.3,18.6,15.6,15.6],
+      '고객환불':  [6.9,7.4,8.5,8.6,8.6,9.0,10.5,11.2,11.5,12.3,11.5],
+      '무신사':    [8.8,8.8,8.8,8.8,8.1,7.1,6.6,6.5,6.3,6.1,5.9],
+      '기타영업':  [0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+      '고위드':    [136.0,180.9,182.2,184.0,182.7,184.5,186.3,206.1,216.9,226.1,228.1],
+      '금융부채':  [187.7,186.9,186.2,186.3,186.2,186.2,185.4,184.2,184.1,182.6,184.1]
+    }
+  }
 };
 // AUTO_UPDATE_END
 
@@ -1184,9 +1288,246 @@ function renderS4B(){
   });
 })();
 
+// ═══ S-SIGNAL: 신호등 판정 ═══
+function renderSignal(){
+  const m1=CASH_DATA.monthly['2026-01'], m2=CASH_DATA.monthly['2026-02'], m3=CASH_DATA.monthly['2026-03'];
+  // 영업CF 기준 자동 판정
+  const opCfTag = (v, thresh3, thresh2) => {
+    if(v==null) return '<span class="tag" style="color:var(--text3);border-color:var(--text3)">N/A</span>';
+    const e = v/1e8;
+    if(e >= thresh3) return '<span class="tag tag-g">GREEN</span>';
+    if(e >= thresh2) return '<span class="tag tag-y">CAUTION</span>';
+    return '<span class="tag tag-r">RED</span>';
+  };
+  // 환불율 추이 판정
+  const refTag = (rate, good, warn) => {
+    if(rate==null) return '<span class="tag" style="color:var(--text3);border-color:var(--text3)">N/A</span>';
+    if(rate <= good) return '<span class="tag tag-g">GREEN</span>';
+    if(rate <= warn) return '<span class="tag tag-y">CAUTION</span>';
+    return '<span class="tag tag-r">RED</span>';
+  };
+  let h='<tr><th>기준</th><th>1월</th><th>2월</th><th>3월(추정)</th></tr>';
+  let b='';
+  b+=`<tr><td>A대표 목표 달성 (영업CF &gt; 3억)</td><td>${opCfTag(m1.op_cf,3,2)}</td><td>${opCfTag(m2.op_cf,3,2)}</td><td>${opCfTag(m3?380000000:null,3,2)}</td></tr>`;
+  b+=`<tr><td>금융비용 커버 (영업CF &gt; 2억)</td><td>${opCfTag(m1.op_cf,2,0)}</td><td>${opCfTag(m2.op_cf,2,0)}</td><td>${opCfTag(m3?380000000:null,2,0)}</td></tr>`;
+  b+=`<tr><td>BEP (영업CF &gt; 0)</td><td>${opCfTag(m1.op_cf,0.01,-999)}</td><td>${opCfTag(m2.op_cf,0.01,-999)}</td><td>${opCfTag(m3?380000000:null,0.01,-999)}</td></tr>`;
+  b+=`<tr><td>환불율 (개선 추이)</td><td>${refTag(m1.refund_rate,0.15,0.25)}</td><td>${refTag(m2.refund_rate,0.15,0.25)}</td><td>${refTag(m3?0.085:null,0.15,0.25)}</td></tr>`;
+  document.getElementById('signal-table').innerHTML=`<table>${h}${b}</table>`;
+}
+
+// ═══ S-WATERFALL: Waterfall P&L ═══
+let wfActiveMonth = '2026-02'; // 기본: 2월 (완전 데이터)
+function renderWaterfall(){
+  const wf = CASH_DATA.waterfall;
+  const tabKeys = Object.keys(wf);
+  const tabLabels = {'2026-01':'1월','2026-02':'2월','2026-03':'3월(추정)'};
+
+  // Tabs
+  let tabHtml='';
+  tabKeys.forEach(k=>{
+    tabHtml+=`<button class="wf-tab${k===wfActiveMonth?' active':''}" onclick="wfSelectMonth('${k}')">${tabLabels[k]||k}</button>`;
+  });
+  document.getElementById('wf-tabs').innerHTML=tabHtml;
+
+  // Chart
+  renderWaterfallChart(wfActiveMonth);
+}
+
+function wfSelectMonth(key){
+  wfActiveMonth=key;
+  renderWaterfall();
+}
+
+function renderWaterfallChart(key){
+  const d = CASH_DATA.waterfall[key];
+  if(!d){ document.getElementById('wf-chart-area').innerHTML='<p style="color:var(--text3);font-size:11px">데이터 없음</p>'; return; }
+
+  // 9단계 정의
+  const steps=[
+    {label:'GMV',       val:d.gmv,         type:'pos'},
+    {label:'(-환불)',   val:-d.refund,      type:'neg'},
+    {label:'순매출',    val:d.revenue,      type:'pos'},
+    {label:'(-원가)',   val:-d.cogs,        type:'neg'},
+    {label:'GP',        val:d.gp,           type:'pos'},
+    {label:'(-전월환불)',val:d.refund_prev!=null?-d.refund_prev:null, type:'neg'},
+    {label:'남은돈',    val:d.remaining,    type:d.remaining!=null?(d.remaining>=0?'pos':'neg'):'sub'},
+    {label:'(-판관비)', val:-d.sga,         type:'neg'},
+    {label:'영업CF',    val:d.op_cf,        type:d.op_cf>=0?'pos':'neg'},
+  ];
+
+  const maxAbs = Math.max(...steps.map(s=>s.val!=null?Math.abs(s.val):0));
+  const maxH = 160;
+
+  let chartHtml='<div class="waterfall-chart">';
+  steps.forEach(s=>{
+    const h = s.val!=null && maxAbs>0 ? Math.max(2, Math.round(Math.abs(s.val)/maxAbs*maxH)) : 2;
+    const valStr = s.val!=null ? (s.val>=0?'+':'')+s.val.toFixed(0)+'M' : '—';
+    const colorClass = s.val==null?'sub':s.type;
+    chartHtml+=`<div class="wf-step">
+      <div class="wf-value" style="color:${s.type==='neg'?'var(--negative)':s.type==='pos'?'var(--positive)':'var(--text3)'}">${valStr}</div>
+      <div class="wf-bar ${colorClass}" style="height:${h}px"></div>
+      <div class="wf-label">${s.label}</div>
+    </div>`;
+  });
+  chartHtml+='</div>';
+  document.getElementById('wf-chart-area').innerHTML=chartHtml;
+}
+
+// ═══ S-CF-SPLIT: 영업CF vs 재무CF 분리 ═══
+function renderCfSplit(){
+  const months=['2026-01','2026-02','2026-03'];
+  const labels=['1월','2월','3월 MTD'];
+  const m=CASH_DATA.monthly;
+
+  // 전체 기준 테이블
+  let h1='<tr><th>항목</th>'+labels.map(l=>`<th>${l}</th>`).join('')+'</tr>';
+  let b1='';
+  const rows1=[
+    {label:'영업CF', keys:['op_cf'], sign:1},
+    {label:'(-) 부채상환 합계', keys:['fin_cf'], sign:1},
+    {label:'&nbsp;&nbsp;- 신용카드', keys:['fin_card'], sign:-1},
+    {label:'&nbsp;&nbsp;- 금융부채', keys:['fin_debt_repay'], sign:-1},
+    {label:'&nbsp;&nbsp;- 무신사', keys:['fin_musinsa'], sign:-1},
+    {label:'순현금', keys:['net_cash_total'], sign:1, sub:true},
+  ];
+  rows1.forEach(r=>{
+    const tr=r.sub?' class="sub"':'';
+    b1+=`<tr${tr}><td>${r.label}</td>`;
+    months.forEach(mk=>{
+      const md=m[mk];
+      if(!md){b1+='<td class="future">—</td>';return;}
+      let v=null;
+      if(r.keys[0]==='fin_cf'){ v=md.fin_cf; }
+      else if(r.keys[0]==='fin_card'){ v=md.fin_card!=null?-md.fin_card:null; }
+      else if(r.keys[0]==='fin_debt_repay'){ v=md.fin_debt_repay!=null?-md.fin_debt_repay:null; }
+      else if(r.keys[0]==='fin_musinsa'){ v=md.fin_musinsa!=null?-md.fin_musinsa:null; }
+      else { v=md[r.keys[0]]??null; }
+      b1+=`<td${vc(v)}>${fE1(v)}</td>`;
+    });
+    b1+='</tr>';
+  });
+  document.getElementById('cf-split-full').innerHTML=`<table>${h1}${b1}</table>`;
+
+  // 실질 순현금 테이블
+  let h2='<tr><th>항목</th>'+labels.map(l=>`<th>${l}</th>`).join('')+'</tr>';
+  let b2='';
+  const rows2=[
+    {label:'영업CF', key:'op_cf'},
+    {label:'(-) 금융+무신사', fn:md=>md?-(( md.fin_debt_repay||0)+(md.fin_musinsa||0)):null, neg:true},
+    {label:'실질 순현금', key:'net_cash_real', sub:true},
+  ];
+  rows2.forEach(r=>{
+    const tr=r.sub?' class="sub"':'';
+    b2+=`<tr${tr}><td>${r.label}</td>`;
+    months.forEach(mk=>{
+      const md=m[mk];
+      if(!md){b2+='<td class="future">—</td>';return;}
+      const v=r.fn?r.fn(md):(md[r.key]??null);
+      b2+=`<td${vc(v)}>${fE1(v)}</td>`;
+    });
+    b2+='</tr>';
+  });
+  document.getElementById('cf-split-real').innerHTML=`<table>${h2}${b2}</table>`;
+}
+
+// ═══ S-COGS-GAP: 현금주의 vs 발생주의 Gap ═══
+function renderCogsGap(){
+  const wc=CASH_DATA.working_capital;
+  let h='<tr><th>구분</th>'+wc.months.map((m,i)=>`<th>${['1월','2월','3월 MTD'][i]}</th>`).join('')+'</tr>';
+  let b='';
+  b+='<tr><td>현금주의 원가</td>'+wc.cash_cogs.map(v=>`<td>${fE1(v)}</td>`).join('')+'</tr>';
+  b+='<tr><td>발생주의 원가</td>'+wc.accrual_cogs.map(v=>`<td>${fE1(v)}</td>`).join('')+'</tr>';
+  b+='<tr class="sub"><td>Gap (미지급) ▲</td>'+wc.gap.map(v=>`<td class="neg">${fE1(v)}</td>`).join('')+'</tr>';
+  document.getElementById('cogs-gap-table').innerHTML=`<table>${h}${b}</table>`;
+}
+
+// ═══ S-DEBT-TS: 부채 11개월 시계열 ═══
+function renderDebtTs(){
+  const dt=CASH_DATA.debt_timeseries;
+  const cats=Object.keys(dt.categories);
+  const colors={'법인카드':'#6b7280','부티크':'#ef4444','고객환불':'#f59e0b','무신사':'#8b5cf6','기타영업':'#9ca3af','고위드':'#dc2626','금융부채':'#1e3a5f'};
+  const n=dt.months.length;
+
+  // 총부채 계산
+  const totals=dt.months.map((_,i)=>cats.reduce((s,c)=>s+(dt.categories[c][i]||0),0));
+
+  // 테이블 헤더
+  let h='<tr><th>카테고리</th>'+dt.months.map(m=>`<th>${m}</th>`).join('')+'<th>MoM</th></tr>';
+  let b='';
+
+  cats.forEach(cat=>{
+    const vals=dt.categories[cat];
+    const mom=vals[n-1]-vals[n-2];
+    b+=`<tr><td style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;background:${colors[cat]||'#999'};border-radius:50%"></span>${cat}</td>`;
+    vals.forEach(v=>b+=`<td>${v!=null?v.toFixed(1)+'억':'—'}</td>`);
+    b+=`<td${vc(mom)}>${mom>=0?'+':''}${mom.toFixed(1)}억</td></tr>`;
+  });
+
+  // 총부채 행
+  const totalMom=totals[n-1]-totals[n-2];
+  b+='<tr class="sub"><td>총부채</td>'+totals.map(v=>`<td><strong>${v.toFixed(1)}억</strong></td>`).join('');
+  b+=`<td${vc(totalMom)}><strong>${totalMom>=0?'+':''}${totalMom.toFixed(1)}억</strong></td></tr>`;
+
+  document.getElementById('debt-ts-table').innerHTML=`<table>${h}${b}</table>`;
+
+  // 최신월 스택바
+  const lastIdx=n-1;
+  const total=totals[lastIdx];
+  let stackHtml='<div style="font-size:10px;color:var(--text2);margin-bottom:4px">'+dt.months[lastIdx]+' 부채 구성 (총 '+total.toFixed(1)+'억)</div>';
+  stackHtml+='<div class="debt-ts-stack">';
+  cats.forEach(cat=>{
+    const v=dt.categories[cat][lastIdx]||0;
+    const pct=(v/total*100).toFixed(1);
+    if(pct>0){
+      stackHtml+=`<div class="debt-ts-seg" style="width:${pct}%;background:${colors[cat]||'#999'}" title="${cat}: ${v.toFixed(1)}억 (${pct}%)">${pct>4?pct+'%':''}</div>`;
+    }
+  });
+  stackHtml+='</div>';
+
+  // 범례
+  stackHtml+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">';
+  cats.forEach(cat=>{
+    const v=dt.categories[cat][lastIdx]||0;
+    const pct=(v/total*100).toFixed(1);
+    stackHtml+=`<span style="font-size:10px;color:var(--text2)"><span style="display:inline-block;width:8px;height:8px;background:${colors[cat]||'#999'};border-radius:2px;margin-right:2px"></span>${cat} ${v.toFixed(1)}억 (${pct}%)</span>`;
+  });
+  stackHtml+='</div>';
+
+  document.getElementById('debt-ts-stack-area').innerHTML=stackHtml;
+}
+
+// ═══ S-VALIDATION: Validation Layer ═══
+function renderValidation(){
+  const pending='<span class="tag" style="color:var(--text3);border-color:var(--text3)">PENDING</span>';
+  const rows=[
+    // 1월
+    {label:'1월 GMV',         srcA:'—', srcB:'—'},
+    {label:'1월 순매출',      srcA:'—', srcB:'—'},
+    {label:'1월 환불',        srcA:'—', srcB:'—'},
+    {label:'1월 원가',        srcA:'—', srcB:'—'},
+    {label:'1월 영업CF',      srcA:'—', srcB:'—'},
+    // 2월
+    {label:'2월 GMV',         srcA:'—', srcB:'—'},
+    {label:'2월 순매출',      srcA:'—', srcB:'—'},
+    {label:'2월 환불',        srcA:'—', srcB:'—'},
+    {label:'2월 원가',        srcA:'—', srcB:'—'},
+    {label:'2월 영업CF',      srcA:'—', srcB:'—'},
+    // 3월 MTD
+    {label:'3월 MTD GMV',     srcA:'—', srcB:'—'},
+    {label:'3월 MTD 환불',    srcA:'—', srcB:'—'},
+  ];
+  let h='<tr><th>검증 항목</th><th>소스 A (RESET)</th><th>소스 B (foret)</th><th>상태</th><th>Gap</th></tr>';
+  let b='';
+  rows.forEach(r=>{
+    b+=`<tr><td>${r.label}</td><td>${r.srcA}</td><td>${r.srcB}</td><td>${pending}</td><td>—</td></tr>`;
+  });
+  document.getElementById('validation-table').innerHTML=`<table>${h}${b}</table>`;
+}
+
 // ═══ Init ═══
 function init(){
   renderS0();renderS1();renderS2();renderS3A();renderS3B();renderS4A();renderS4B();
+  renderSignal();renderWaterfall();renderCfSplit();renderCogsGap();renderDebtTs();renderValidation();
 }
 </script>
 </body>

@@ -295,7 +295,6 @@ td[data-tip] { cursor:help; }
 <!-- TOC -->
 <nav class="toc">
   <a href="#sec-kpi">KPI</a>
-  <a href="#sec-signal">Signal</a>
   <a href="#sec-daily">Daily CF</a>
   <a href="#sec-waterfall">Waterfall</a>
   <a href="#sec-monthly">Monthly</a>
@@ -314,12 +313,6 @@ td[data-tip] { cursor:help; }
     <button class="header-btn" style="font-size:10px;color:var(--text2);border-color:var(--border);background:var(--bg-alt)" onclick="openTarget()">Target</button></h2>
   <div class="kpi-grid" id="kpi-row"></div>
   <div class="insight" id="s0-insight"></div>
-</div>
-
-<!-- ═══ S-SIGNAL: 신호등 판정 ═══ -->
-<div class="section" id="sec-signal">
-  <h2>신호등 판정</h2>
-  <div class="tbl-wrap" id="signal-table"></div>
 </div>
 
 <!-- ═══ S1: Daily CF ═══ -->
@@ -658,7 +651,7 @@ const CASH_DATA = {
     deposit: [null,null,2356636026,null,null,null,null,null,null,null,null,null],
     sga: [null,null,102668907,null,null,null,null,null,null,null,null,null],
   },
-  meta: { updated:'2026-03-07', updated_time:'21:11', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:7 }
+  meta: { updated:'2026-03-07', updated_time:'21:07', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:7 }
 };
 // AUTO_UPDATE_END
 
@@ -1305,36 +1298,6 @@ function renderS4B(){
   });
 })();
 
-// ═══ S-SIGNAL: 신호등 판정 ═══
-function renderSignal(){
-  const m1=CASH_DATA.monthly['2026-01'], m2=CASH_DATA.monthly['2026-02'], m3=CASH_DATA.monthly['2026-03'];
-  // 영업CF 기준 자동 판정
-  const opCfTag = (v, thresh3, thresh2) => {
-    if(v==null) return '<span class="tag" style="color:var(--text3);border-color:var(--text3)">N/A</span>';
-    const e = v/1e8;
-    if(e >= thresh3) return '<span class="tag tag-g">GREEN</span>';
-    if(e >= thresh2) return '<span class="tag tag-y">CAUTION</span>';
-    return '<span class="tag tag-r">RED</span>';
-  };
-  // 환불율 추이 판정
-  const refTag = (rate, good, warn) => {
-    if(rate==null) return '<span class="tag" style="color:var(--text3);border-color:var(--text3)">N/A</span>';
-    if(rate <= good) return '<span class="tag tag-g">GREEN</span>';
-    if(rate <= warn) return '<span class="tag tag-y">CAUTION</span>';
-    return '<span class="tag tag-r">RED</span>';
-  };
-  let h='<tr><th>기준</th><th>1월</th><th>2월</th><th>3월(추정)</th></tr>';
-  let b='';
-  // 3월: MTD 영업CF를 영업일수 비례 월환산
-  const m3opEst = m3 ? (m3.op_cf||0) / CASH_DATA.meta.elapsed_bdays * CASH_DATA.meta.business_days : null;
-  const m3refRate = m3 ? m3.refund_rate : null;
-  b+=`<tr><td>A대표 목표 달성 (영업CF &gt; 3억)</td><td>${opCfTag(m1.op_cf,3,2)}</td><td>${opCfTag(m2.op_cf,3,2)}</td><td>${opCfTag(m3opEst,3,2)}</td></tr>`;
-  b+=`<tr><td>금융비용 커버 (영업CF &gt; 2억)</td><td>${opCfTag(m1.op_cf,2,0)}</td><td>${opCfTag(m2.op_cf,2,0)}</td><td>${opCfTag(m3opEst,2,0)}</td></tr>`;
-  b+=`<tr><td>BEP (영업CF &gt; 0)</td><td>${opCfTag(m1.op_cf,0.01,-999)}</td><td>${opCfTag(m2.op_cf,0.01,-999)}</td><td>${opCfTag(m3opEst,0.01,-999)}</td></tr>`;
-  b+=`<tr><td>환불율 (개선 추이)</td><td>${refTag(m1.refund_rate,0.15,0.25)}</td><td>${refTag(m2.refund_rate,0.15,0.25)}</td><td>${refTag(m3refRate,0.15,0.25)}</td></tr>`;
-  document.getElementById('signal-table').innerHTML=`<table>${h}${b}</table>`;
-}
-
 // ═══ S-WATERFALL: Waterfall P&L ═══
 let wfActiveMonth = CASH_DATA.meta.current_month; // 기본: 현재 월
 function renderWaterfall(){
@@ -1565,7 +1528,7 @@ function renderValidation(){
 // ═══ Init ═══
 function init(){
   renderS0();renderS1();renderS2();renderS3A();renderS3B();renderS4A();renderS4B();
-  renderSignal();renderWaterfall();renderCfSplit();renderCogsGap();renderDebtTs();renderValidation();
+  renderWaterfall();renderCfSplit();renderCogsGap();renderDebtTs();renderValidation();
 }
 </script>
 </body>

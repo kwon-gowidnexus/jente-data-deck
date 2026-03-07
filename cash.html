@@ -998,10 +998,11 @@ function renderS0(){
     <div class="kpi-value">${fE1(m3.fin_cf)}</div>
     <div class="kpi-sub">금융${fE1(m3.fin_debt_repay)} + 무신사${fE1(m3.fin_musinsa)}</div></div>`;
   const dm=D.debt.total[3]-D.debt.total[2];
-  h+=`<div class="kpi-card"><div class="kpi-label">총부채</div>
+  const curM=D.meta.current_month.replace('2026-','').replace(/^0/,'')+'월';
+  h+=`<div class="kpi-card"><div class="kpi-label">총부채 (${curM})</div>
     <div class="kpi-value">${fE1(m3.total_debt)}</div>
     <div class="kpi-sub">MoM ${dm>=0?'+':''}${fE1(dm)}</div></div>`;
-  h+=`<div class="kpi-card"><div class="kpi-label">환불율</div>
+  h+=`<div class="kpi-card"><div class="kpi-label">환불율 (${curM} MTD)</div>
     <div class="kpi-value ${m3.refund_rate<0.15?'pos':'warn'}">${fP(m3.refund_rate)}</div>
     <div class="kpi-sub">전월 ${fP(m2.refund_rate)}</div></div>`;
 

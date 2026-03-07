@@ -334,7 +334,7 @@ td[data-tip] { cursor:help; }
   <h2>Waterfall P&amp;L</h2>
   <div class="wf-tabs" id="wf-tabs"></div>
   <div id="wf-chart-area"></div>
-  <div class="insight good" id="wf-insight">현금흐름 핵심: 환불 27.5%→14.7%→8.5% 급감 → GP 개선 → 영업CF 3개월 연속 흑자</div>
+  <div class="insight good" id="wf-insight"></div>
 </div>
 
 <!-- ═══ S2: Monthly ═══ -->
@@ -351,7 +351,7 @@ td[data-tip] { cursor:help; }
   <div class="tbl-wrap" id="cf-split-full"></div>
   <h3>실질 순현금 (법인카드 제외)</h3>
   <div class="tbl-wrap" id="cf-split-real"></div>
-  <div class="insight good" id="cf-split-insight">실질 기준 3개월 연속 흑자: 법인카드 롤오버 제외 시 1월 +0.22억 → 2월 +1.86억 → 3월 MTD +0.60억</div>
+  <div class="insight good" id="cf-split-insight"></div>
 </div>
 
 <!-- ═══ S3-A: Inventory ═══ -->
@@ -376,12 +376,12 @@ td[data-tip] { cursor:help; }
 <div class="section" id="sec-cogs-gap">
   <h2>현금주의 vs 발생주의 Gap</h2>
   <div class="tbl-wrap" id="cogs-gap-table"></div>
-  <div class="insight warn" id="cogs-gap-insight">현금-발생 Gap 해소 과제: 2월 Gap 8.83억으로 확대 — 부티크 미지급금 누적 주시 필요</div>
+  <div class="insight warn" id="cogs-gap-insight"></div>
 </div>
 
 <!-- ═══ S-DEBT-TS: 부채 11개월 시계열 ═══ -->
 <div class="section" id="sec-debt-ts">
-  <h2>부채 11개월 시계열</h2>
+  <h2>부채 시계열</h2>
   <div class="tbl-wrap" id="debt-ts-table"></div>
   <h4 style="margin-top:14px">최신월 부채 구성</h4>
   <div id="debt-ts-stack-area"></div>
@@ -443,17 +443,16 @@ td[data-tip] { cursor:help; }
     <button class="modal-close" onclick="closeInfo()">&times;</button>
     <h2>Cash Command Board</h2>
     <p>매일 아침 <strong>현금 상황을 1분 안에 완전 장악</strong>하기 위한 CEO 전용 대시보드.<br>
-    젠테 수조 분석 시트 → 수기 정리 → 인라인 데이터(CASH_DATA)로 렌더링.</p>
+    GitHub Actions가 매일 KST 06:05 자동 실행 → Sheets API + BigQuery → CASH_DATA 갱신 → GitHub Pages 배포.</p>
 
     <h3>데이터 흐름</h3>
     <div class="mermaid-box" id="mermaid-container">
       <pre class="mermaid">
 graph LR
-  A["RESET 대시보드<br/>(합산관리·부채·재고)"] -->|자동 파싱| B["CASH_DATA<br/>(인라인 JS)"]
-  M["매출데이터 (월별)<br/>(거래·환불·정산·MUR·foret)"] -->|환불 집행 원천| A
-  R["환불리뷰<br/>(환불 건별)"] -->|환불율 산정| A
-  C["고위드 DW<br/>(BigQuery)"] -->|은행잔고| B
-  W["API 매출원가<br/>(발주·부대비용)"] -->|원가 산정| A
+  A["RESET 대시보드<br/>(합산관리·부채·재고)"] -->|Sheets API| U["cash_command_updater.py<br/>(GitHub Actions 06:05 KST)"]
+  M["매출데이터 (월별)<br/>(PG정산·GMV분해)"] -->|Sheets API| U
+  C["고위드 DW<br/>(BigQuery)"] -->|SA 인증| U
+  U -->|마커 치환| B["CASH_DATA<br/>(cash.html 인라인 JS)"]
   B --> D["S0: KPI 카드"]
   B --> E["S1: 일별 CF"]
   B --> F["S2: 월별 요약"]
@@ -491,8 +490,10 @@ graph LR
       <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1Hi_Ceaj8XfFR8c3h3rZweCdaKLQUmQvx8rkpJruzwiI/" target="_blank">API 매출원가</a></td><td style="font-family:'Noto Sans KR'">월별 발주원가, 부대비용, 부티크별 MUR</td><td>월말</td></tr>
       <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1cMxKNV_vixIdTNMH1HdWZ-0mczSlLwEAxqYzTHdAJ5w/" target="_blank">물류비용 (2026)</a></td><td style="font-family:'Noto Sans KR'">운임/관부가세</td><td>월말</td></tr>
       <tr><td style="font-family:'Noto Sans KR'"><a href="https://docs.google.com/spreadsheets/d/1FAUmTA3zDKnUSxsav5I3M5lCgktRNQgzUYJe2kHRxGg/" target="_blank">비원가성 재고</a></td><td style="font-family:'Noto Sans KR'">마감재고, 반품/매입 피봇</td><td>월말</td></tr>
-      <tr><td colspan="3" style="font-family:'Noto Sans KR';font-weight:700;background:var(--bg-alt);padding:4px 8px">자동 연동</td></tr>
-      <tr><td style="font-family:'Noto Sans KR'">고위드 DW (BigQuery)</td><td style="font-family:'Noto Sans KR'">은행 잔고 (corp_id:5658801620)</td><td>자동 (일 1회)</td></tr>
+      <tr><td colspan="3" style="font-family:'Noto Sans KR';font-weight:700;background:var(--bg-alt);padding:4px 8px">자동 연동 (GitHub Actions, 매일 06:05 KST)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">RESET 합산관리</td><td style="font-family:'Noto Sans KR'">일별 거래액·정산·원가·판관비 (31일 배열)</td><td>Sheets API (OAuth)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">매출데이터 PG정산</td><td style="font-family:'Noto Sans KR'">GMV 분해 (API·재고), PG정산액 (결제일 기준)</td><td>Sheets API (OAuth)</td></tr>
+      <tr><td style="font-family:'Noto Sans KR'">고위드 DW (BigQuery)</td><td style="font-family:'Noto Sans KR'">은행 잔고 (corp_id:5658801620)</td><td>SA 인증 (gowid-prd)</td></tr>
     </table>
   </div>
 </div>
@@ -660,6 +661,25 @@ const CASH_DATA = {
   meta: { updated:'2026-03-07', updated_time:'21:11', current_month:'2026-03', business_days:22, elapsed_bdays:5, today:7 }
 };
 // AUTO_UPDATE_END
+
+// ═══ Derived: waterfall & debt_timeseries (from monthly/debt) ═══
+(function(){
+  const m=CASH_DATA.monthly;
+  CASH_DATA.waterfall={};
+  for(const[k,d]of Object.entries(m)){
+    CASH_DATA.waterfall[k]={
+      gmv:d.gmv/1e6, refund:(d.refund||0)/1e6, revenue:(d.revenue||0)/1e6,
+      cogs:(d.cogs_cash||d.cogs_accrual||0)/1e6, gp:(d.gp||0)/1e6,
+      refund_prev:(d.refund_prev||0)/1e6, remaining:(d.remaining!=null?d.remaining:((d.gp||0)-(d.refund_prev||0)))/1e6,
+      sga:(d.sga||0)/1e6, op_cf:(d.op_cf||0)/1e6
+    };
+  }
+  const db=CASH_DATA.debt;
+  const cats=Object.keys(db.categories);
+  const dtCats={};
+  cats.forEach(c=>{dtCats[c]=db.categories[c].map(v=>v!=null?v/1e8:null);});
+  CASH_DATA.debt_timeseries={months:db.months, categories:dtCats};
+})();
 
 // ═══ Helpers ═══
 const PIN = '2026';
@@ -1126,8 +1146,11 @@ function renderS2(){
     body+='</tr>';
   }
   document.getElementById('s2-table').innerHTML=`<table>${head}${body}</table>`;
+  // Dynamic S2 insight
+  const mks=['2026-01','2026-02','2026-03'];
+  const opLabels=mks.map(k=>{const md=mData[k];if(!md)return null;const v=md.op_cf;if(v==null)return null;const e=(v/1e8).toFixed(2);const s=v/1e8>=3?'GREEN':v/1e8>=2?'YELLOW':'RED';return `${parseInt(k.slice(5))}월 ${e}억(${s})`;}).filter(Boolean);
   document.getElementById('s2-insight').innerHTML=
-    '영업CF: 1월 1.35억(RED) → 2월 3.47억(GREEN) → 3월 월환산 ~3.9억(GREEN). 3월부터 현금 기준(정산예정액·현금마진) 추적 시작.';
+    `영업CF 추이: ${opLabels.join(' → ')}. 현금 기준(정산예정액·현금마진) 추적 중.`;
 }
 
 // ═══ S3-A: Inventory ═══
@@ -1302,15 +1325,18 @@ function renderSignal(){
   };
   let h='<tr><th>기준</th><th>1월</th><th>2월</th><th>3월(추정)</th></tr>';
   let b='';
-  b+=`<tr><td>A대표 목표 달성 (영업CF &gt; 3억)</td><td>${opCfTag(m1.op_cf,3,2)}</td><td>${opCfTag(m2.op_cf,3,2)}</td><td>${opCfTag(m3?380000000:null,3,2)}</td></tr>`;
-  b+=`<tr><td>금융비용 커버 (영업CF &gt; 2억)</td><td>${opCfTag(m1.op_cf,2,0)}</td><td>${opCfTag(m2.op_cf,2,0)}</td><td>${opCfTag(m3?380000000:null,2,0)}</td></tr>`;
-  b+=`<tr><td>BEP (영업CF &gt; 0)</td><td>${opCfTag(m1.op_cf,0.01,-999)}</td><td>${opCfTag(m2.op_cf,0.01,-999)}</td><td>${opCfTag(m3?380000000:null,0.01,-999)}</td></tr>`;
-  b+=`<tr><td>환불율 (개선 추이)</td><td>${refTag(m1.refund_rate,0.15,0.25)}</td><td>${refTag(m2.refund_rate,0.15,0.25)}</td><td>${refTag(m3?0.085:null,0.15,0.25)}</td></tr>`;
+  // 3월: MTD 영업CF를 영업일수 비례 월환산
+  const m3opEst = m3 ? (m3.op_cf||0) / CASH_DATA.meta.elapsed_bdays * CASH_DATA.meta.business_days : null;
+  const m3refRate = m3 ? m3.refund_rate : null;
+  b+=`<tr><td>A대표 목표 달성 (영업CF &gt; 3억)</td><td>${opCfTag(m1.op_cf,3,2)}</td><td>${opCfTag(m2.op_cf,3,2)}</td><td>${opCfTag(m3opEst,3,2)}</td></tr>`;
+  b+=`<tr><td>금융비용 커버 (영업CF &gt; 2억)</td><td>${opCfTag(m1.op_cf,2,0)}</td><td>${opCfTag(m2.op_cf,2,0)}</td><td>${opCfTag(m3opEst,2,0)}</td></tr>`;
+  b+=`<tr><td>BEP (영업CF &gt; 0)</td><td>${opCfTag(m1.op_cf,0.01,-999)}</td><td>${opCfTag(m2.op_cf,0.01,-999)}</td><td>${opCfTag(m3opEst,0.01,-999)}</td></tr>`;
+  b+=`<tr><td>환불율 (개선 추이)</td><td>${refTag(m1.refund_rate,0.15,0.25)}</td><td>${refTag(m2.refund_rate,0.15,0.25)}</td><td>${refTag(m3refRate,0.15,0.25)}</td></tr>`;
   document.getElementById('signal-table').innerHTML=`<table>${h}${b}</table>`;
 }
 
 // ═══ S-WATERFALL: Waterfall P&L ═══
-let wfActiveMonth = '2026-02'; // 기본: 2월 (완전 데이터)
+let wfActiveMonth = CASH_DATA.meta.current_month; // 기본: 현재 월
 function renderWaterfall(){
   const wf = CASH_DATA.waterfall;
   const tabKeys = Object.keys(wf);
@@ -1365,6 +1391,13 @@ function renderWaterfallChart(key){
   });
   chartHtml+='</div>';
   document.getElementById('wf-chart-area').innerHTML=chartHtml;
+
+  // Dynamic waterfall insight
+  const mm=CASH_DATA.monthly;
+  const refRates=['2026-01','2026-02','2026-03'].map(k=>mm[k]?(mm[k].refund_rate*100).toFixed(1)+'%':null).filter(Boolean);
+  const opCfs=['2026-01','2026-02','2026-03'].map(k=>mm[k]&&mm[k].op_cf!=null?(mm[k].op_cf/1e8).toFixed(1)+'억':null).filter(Boolean);
+  document.getElementById('wf-insight').innerHTML=
+    `환불율 추이: ${refRates.join('→')} | 영업CF 추이: ${opCfs.join('→')}`;
 }
 
 // ═══ S-CF-SPLIT: 영업CF vs 재무CF 분리 ═══
@@ -1422,6 +1455,12 @@ function renderCfSplit(){
     b2+='</tr>';
   });
   document.getElementById('cf-split-real').innerHTML=`<table>${h2}${b2}</table>`;
+
+  // Dynamic CF split insight
+  const realParts=months.map((mk,i)=>{const md=m[mk];if(!md||md.net_cash_real==null)return null;return `${['1월','2월','3월 MTD'][i]} ${md.net_cash_real>=0?'+':''}${(md.net_cash_real/1e8).toFixed(2)}억`;}).filter(Boolean);
+  const allPos=months.every(mk=>{const md=m[mk];return md&&md.net_cash_real!=null&&md.net_cash_real>=0;});
+  document.getElementById('cf-split-insight').innerHTML=allPos?`실질 기준 ${realParts.length}개월 연속 흑자: 법인카드 롤오버 제외 시 ${realParts.join(' → ')}`:`실질 순현금 추이: ${realParts.join(' → ')}`;
+  document.getElementById('cf-split-insight').className=`insight ${allPos?'good':'warn'}`;
 }
 
 // ═══ S-COGS-GAP: 현금주의 vs 발생주의 Gap ═══
@@ -1433,9 +1472,14 @@ function renderCogsGap(){
   b+='<tr><td>발생주의 원가</td>'+wc.accrual_cogs.map(v=>`<td>${fE1(v)}</td>`).join('')+'</tr>';
   b+='<tr class="sub"><td>Gap (미지급) ▲</td>'+wc.gap.map(v=>`<td class="neg">${fE1(v)}</td>`).join('')+'</tr>';
   document.getElementById('cogs-gap-table').innerHTML=`<table>${h}${b}</table>`;
+
+  // Dynamic cogs gap insight
+  const gapParts=wc.months.map((m,i)=>`${['1월','2월','3월 MTD'][i]} ${(wc.gap[i]/1e8).toFixed(2)}억`);
+  const trend=wc.gap[wc.gap.length-1]>wc.gap[wc.gap.length-2]?'확대 추세 — 부티크 미지급금 누적 주시 필요':'축소 추세';
+  document.getElementById('cogs-gap-insight').innerHTML=`현금-발생 Gap: ${gapParts.join(' → ')} (${trend})`;
 }
 
-// ═══ S-DEBT-TS: 부채 11개월 시계열 ═══
+// ═══ S-DEBT-TS: 부채 시계열 ═══
 function renderDebtTs(){
   const dt=CASH_DATA.debt_timeseries;
   const cats=Object.keys(dt.categories);

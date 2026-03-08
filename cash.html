@@ -1034,11 +1034,11 @@ function renderS0(){
     const achvPct=prorata>0?(mtd/prorata*100):0;
     const fillPct=Math.min(mtd/tgt*100, 100);
     const c=inv
-      ?(achvPct<=80?'var(--positive)':achvPct<=100?'var(--caution)':'var(--negative)')
-      :(achvPct>=100?'var(--positive)':achvPct>=80?'var(--caution)':'var(--negative)');
+      ?(achvPct<=90?'var(--positive)':achvPct<=100?'var(--caution)':'var(--negative)')
+      :(achvPct>=100?'var(--positive)':achvPct>=90?'var(--caution)':'var(--negative)');
     const cls=inv
-      ?(achvPct<=80?'on':achvPct<=100?'behind':'danger')
-      :(achvPct>=100?'on':achvPct>=80?'behind':'danger');
+      ?(achvPct<=90?'on':achvPct<=100?'behind':'danger')
+      :(achvPct>=100?'on':achvPct>=90?'behind':'danger');
     return `<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${fillPct.toFixed(1)}%;background:${c}"></div></div>`
       +`<div class="kpi-target"><span>${label} ${fE1(prorata)} / ${fE1(tgt)}</span><span class="pct ${cls}">${achvPct.toFixed(0)}%</span></div>`;
   };
@@ -1055,7 +1055,7 @@ function renderS0(){
   const gmvMtd=m3.gmv||0, gmvEst=eok(gmvMtd)*(bd/eb);
   const gmvProrata=tGmv?tGmv*prog:0;
   const gmvAchv=gmvProrata>0?(gmvMtd/gmvProrata*100):0;
-  const gmvSig=tGmv?sc(gmvAchv,100,80):'';
+  const gmvSig=tGmv?sc(gmvAchv,100,90):'';
   h+=`<div class="kpi-card ${gmvSig==='g'?'success':gmvSig==='y'?'highlight':tGmv?'danger':''}">
     <div class="kpi-label">${sigHtml(gmvSig)}거래액 GMV (MTD)</div>
     <div class="kpi-value">${fE1(gmvMtd)}</div>
@@ -1074,7 +1074,7 @@ function renderS0(){
   const refPrevMtd=m3.refund_prev||0;
   const refPrevProrata=tRefPrevLimit?tRefPrevLimit*prog:0;
   const refAchv=refPrevProrata>0?(refPrevMtd/refPrevProrata*100):0;
-  const refPrevSig=tRefPrevLimit?(refAchv<=80?'g':refAchv<=100?'y':'r'):'';
+  const refPrevSig=tRefPrevLimit?(refAchv<=90?'g':refAchv<=100?'y':'r'):'';
   const refCardCls=refPrevSig==='g'?'success':refPrevSig==='y'?'highlight':tRefPrevLimit?'danger':'';
   h+=`<div class="kpi-card${refCardCls?' '+refCardCls:''}"><div class="kpi-label">${sigHtml(refPrevSig)}환불 (${curM} MTD)</div>
     <div class="kpi-value ${refPrevSig==='g'?'pos':refPrevSig==='r'?'neg':'warn'}">${fP(m3.refund_rate)}</div>
@@ -1108,7 +1108,7 @@ function renderS0(){
   const invPct=m3.gmv>0?((invMtd/m3.gmv)*100).toFixed(0):'—';
   if(tgtGmv!=null){
     const pct=(gmvEst/tgtGmv*100).toFixed(0);
-    const s=pct>=100?'g':pct>=80?'y':'r';
+    const s=pct>=100?'g':pct>=90?'y':'r';
     ins.push(`거래액 MTD ${fE1(gmvMtd)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 / 목표 ${tgtGmv}억 (${pct}%) <span class="tag tag-${s}">${pct>=100?'ON TRACK':'BEHIND'}</span>`);
   } else {
     ins.push(`거래액 MTD ${fE1(gmvMtd)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 [Target 미설정]`);
@@ -1205,7 +1205,7 @@ function renderS1(){
         const totalGmv=sum(d.gmv.filter(v=>v!=null));
         const gmvEst=eok(totalGmv)*(bd/ebd);
         const estPctN=tg?((gmvEst/tg)*100):0;
-        const estPctC=tg?(estPctN>=100?'color:var(--positive)':estPctN>=80?'color:var(--caution)':'color:var(--negative)'):'';
+        const estPctC=tg?(estPctN>=100?'color:var(--positive)':estPctN>=90?'color:var(--caution)':'color:var(--negative)'):'';
         body+=`<td style="${estPctC}"><strong>${tg?estPctN.toFixed(0)+'%':'—'}</strong></td><td></td>`;
         let cum=0;
         for(let i=0;i<d.days;i++){
@@ -1215,7 +1215,7 @@ function renderS1(){
             const eBd=i+1;
             const pr=tg*1e8*(eBd/bd);
             const cpct=pr>0?((cum/pr)*100):0;
-            const cc=cpct>=100?'color:var(--positive)':cpct>=80?'color:var(--caution)':'color:var(--negative)';
+            const cc=cpct>=100?'color:var(--positive)':cpct>=90?'color:var(--caution)':'color:var(--negative)';
             body+=`<td${isT?' class="today"':''} style="${cc}">${cpct.toFixed(0)}%</td>`;
           }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
         }
@@ -1228,7 +1228,7 @@ function renderS1(){
           const isT=(i+1)===today;
           if(d.gmv[i]!=null && dailyTg>0){
             const pct=(d.gmv[i]/dailyTg*100).toFixed(0);
-            const color=pct>=100?'color:var(--positive)':pct>=80?'color:var(--caution)':'color:var(--negative)';
+            const color=pct>=100?'color:var(--positive)':pct>=90?'color:var(--caution)':'color:var(--negative)';
             body+=`<td${isT?' class="today"':''} style="${color}">${pct}%</td>`;
           }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
         }
@@ -1237,14 +1237,14 @@ function renderS1(){
         const murArr=d.mur||[];
         const lastMur=murArr.filter(v=>v!=null).pop();
         const murEstN=tg&&lastMur?((lastMur/tg)*100):0;
-        const murEstC=tg&&lastMur?(murEstN>=100?'color:var(--positive)':murEstN>=80?'color:var(--caution)':'color:var(--negative)'):'';
+        const murEstC=tg&&lastMur?(murEstN>=100?'color:var(--positive)':murEstN>=90?'color:var(--caution)':'color:var(--negative)'):'';
         body+=`<td style="${murEstC}"><strong>${tg&&lastMur?murEstN.toFixed(0)+'%':'—'}</strong></td><td></td>`;
         for(let i=0;i<d.days;i++){
           const isT=(i+1)===today;
           const v=murArr[i];
           if(v!=null && tg){
             const mp=((v/tg)*100);
-            const mc=mp>=100?'color:var(--positive)':mp>=80?'color:var(--caution)':'color:var(--negative)';
+            const mc=mp>=100?'color:var(--positive)':mp>=90?'color:var(--caution)':'color:var(--negative)';
             body+=`<td${isT?' class="today"':''} style="${mc}">${mp.toFixed(0)}%</td>`;
           }else{body+=`<td class="future${isT?' today':''}">—</td>`;}
         }

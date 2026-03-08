@@ -89,6 +89,7 @@ TARGET_LABEL_MAP = [
 # 서브 라벨 (col D, 부채 상환 하위)
 SUB_LABEL_MAP = {
     '무신사': 'musinsa_repay',
+    '신용카드 상환': 'card_repay',
     '부티크 송금예정액': 'cogs_boutique',  # R30: 실제 원가 하위
 }
 
@@ -373,6 +374,13 @@ def _parse_hapsan(rows, month_key):
     for i in range(days_in_month):
         if daily['gp'][i] is None and daily['revenue'][i] is not None and daily['cogs'][i] is not None:
             daily['gp'][i] = daily['revenue'][i] - daily['cogs'][i]
+
+    # 재무 상환 필드: 데이터 있는 일자 내 빈 셀(None) → 0 (상환 없음 = 0원)
+    # 미래 일자(gmv도 없는 날)는 null 유지
+    for repay_field in ['debt_repay', 'musinsa_repay', 'card_repay']:
+        for i in range(days_in_month):
+            if daily[repay_field][i] is None and daily['gmv'][i] is not None:
+                daily[repay_field][i] = 0
 
     # cogs_import = cogs - cogs_boutique (부대비용 자동 산출)
     for i in range(days_in_month):

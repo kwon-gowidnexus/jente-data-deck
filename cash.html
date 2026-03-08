@@ -1064,7 +1064,16 @@ function renderS0(){
     ${tGp?pBar(cmMtd,tGp,'목표GP'):''}
     <div class="kpi-sub">영업CF ${fE1(opMtd)} | 월환산 ~${opEst.toFixed(1)}억</div></div>`;
 
-  // 4. 재무CF + 상환 스케줄
+  // 4. 환불
+  const curM=D.meta.current_month.replace('2026-','').replace(/^0/,'')+'월';
+  const refPrevMtd=m3.refund_prev||0;
+  const refPrevSig=tRefPrevLimit?(refPrevMtd<=tRefPrevLimit*prog?'g':'r'):'';
+  h+=`<div class="kpi-card${m3.refund_rate>=0.15?' danger':''}"><div class="kpi-label">${sigHtml(refPrevSig)}환불 (${curM} MTD)</div>
+    <div class="kpi-value ${m3.refund_rate<0.15?'pos':'warn'}">${fP(m3.refund_rate)}</div>
+    ${tRefPrevLimit?pBar(refPrevMtd,tRefPrevLimit,'전월환불한도'):''}
+    <div class="kpi-sub">전월환불 ${fE1(refPrevMtd)} | 전월율 ${fP(m2.refund_rate)}</div></div>`;
+
+  // 5. 재무CF + 상환 스케줄
   const finCf=m3.fin_cf||0;
   const schedItems=D.schedule_annual?.items||[];
   const mSched=schedItems.reduce((s,it)=>s+(it.vals?.[mi]||0),0);
@@ -1075,15 +1084,6 @@ function renderS0(){
     ${mSched>0?`<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${finFill.toFixed(1)}%;background:var(--text3)"></div></div>
     <div class="kpi-target"><span>월 상환 ${fE1(mSched)}</span><span class="pct">${finPct}%</span></div>`:''}
     <div class="kpi-sub">금융${fE1(m3.fin_debt_repay)} 무신사${fE1(m3.fin_musinsa)} 카드${fE1(m3.fin_card)}</div></div>`;
-
-  // 6. 환불율
-  const curM=D.meta.current_month.replace('2026-','').replace(/^0/,'')+'월';
-  const refPrevMtd=m3.refund_prev||0;
-  const refPrevSig=tRefPrevLimit?(refPrevMtd<=tRefPrevLimit*prog?'g':'r'):'';
-  h+=`<div class="kpi-card${m3.refund_rate>=0.15?' danger':''}"><div class="kpi-label">${sigHtml(refPrevSig)}환불 (${curM} MTD)</div>
-    <div class="kpi-value ${m3.refund_rate<0.15?'pos':'warn'}">${fP(m3.refund_rate)}</div>
-    ${tRefPrevLimit?pBar(refPrevMtd,tRefPrevLimit,'전월환불한도'):''}
-    <div class="kpi-sub">전월환불 ${fE1(refPrevMtd)} | 전월율 ${fP(m2.refund_rate)}</div></div>`;
 
   document.getElementById('kpi-row').innerHTML=h;
   document.getElementById('meta-date').textContent=D.meta.updated;

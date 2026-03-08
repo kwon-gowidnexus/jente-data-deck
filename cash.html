@@ -118,7 +118,7 @@ a { color: var(--accent); text-decoration: none; }
 .section h4 { font-size:11px; font-weight:600; margin:14px 0 6px; color:var(--text2); }
 
 /* ═══ KPI Grid ═══ */
-.kpi-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:1px; margin-bottom:16px; background:var(--border); border:1px solid var(--border); }
+.kpi-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:1px; margin-bottom:16px; background:var(--border); border:1px solid var(--border); }
 .kpi-card {
   background:var(--bg-card); padding:14px 16px;
   border-left:none; position:relative; transition:background .15s;
@@ -138,6 +138,13 @@ a { color: var(--accent); text-decoration: none; }
 .kpi-value.neg { color:var(--negative); }
 .kpi-value.pos { color:var(--positive); }
 .kpi-value.warn { color:var(--caution); }
+.kpi-bar { height:4px; background:var(--border); border-radius:2px; margin:5px 0 3px; overflow:hidden; }
+.kpi-bar-fill { height:100%; border-radius:2px; transition:width .3s; }
+.kpi-target { font-size:8px; color:var(--text3); font-family:var(--mono); display:flex; justify-content:space-between; }
+.kpi-target .pct { font-weight:700; }
+.kpi-target .pct.on { color:var(--positive); }
+.kpi-target .pct.behind { color:var(--caution); }
+.kpi-target .pct.danger { color:var(--negative); }
 
 /* ═══ Signal dots ═══ */
 .sig { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:4px; vertical-align:middle; }
@@ -1002,42 +1009,95 @@ function togglePanel(id){
 function renderS0(){
   const D=CASH_DATA, m3=D.monthly['2026-03'], m2=D.monthly['2026-02'];
   const bankToday = D.bank.daily[0].balance;
+  const mi=currentMonthIdx();
+  const bd=D.meta.business_days, eb=D.meta.elapsed_bdays;
+  const prog=eb/bd; // 기간 진행률
   // 현금마진 기반 월환산
   const cmMtd = m3.cash_margin || m3.op_cf || 0;
-  const cmEst = eok(cmMtd)*(D.meta.business_days/D.meta.elapsed_bdays);
+  const cmEst = eok(cmMtd)*(bd/eb);
   const opMtd = m3.op_cf || 0;
-  const opEst = eok(opMtd)*(D.meta.business_days/D.meta.elapsed_bdays);
+  const opEst = eok(opMtd)*(bd/eb);
   const opSig = sc(opEst,3,2);
+  // 목표
+  const tGmv=getTarget('gmv',mi), tRev=getTarget('revenue',mi), tCogs=getTarget('cogs',mi);
+  const tGp=getTarget('gp',mi), tSga=getTarget('sga',mi), tDeposit=getTarget('deposit',mi);
+  const tRefPrevLimit=getTarget('refund_prev_limit',mi);
+
+  // 헬퍼: 진행률 바 HTML
+  const pBar=(mtd,tgt,label)=>{
+    if(!tgt) return '';
+    const pct=Math.min((mtd/tgt*100),150);
+    const progPct=(prog*100).toFixed(0);
+    const c=pct>=prog*100?'var(--positive)':pct>=prog*70?'var(--caution)':'var(--negative)';
+    const cls=pct>=prog*100?'on':pct>=prog*70?'behind':'danger';
+    return `<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(pct,100)}%;background:${c}"></div></div>`
+      +`<div class="kpi-target"><span>${label} ${(tgt/1e8).toFixed(1)}억</span><span class="pct ${cls}">${pct.toFixed(0)}%</span></div>`;
+  };
 
   let h='';
+  // 1. GMV 달성
+  const gmvMtd=m3.gmv||0, gmvEst=eok(gmvMtd)*(bd/eb);
+  const gmvPct=tGmv?(gmvMtd/tGmv*100):0;
+  const gmvSig=tGmv?sc(gmvPct/100*bd/eb,1,0.8):'';
+  h+=`<div class="kpi-card ${gmvSig==='g'?'success':gmvSig==='y'?'highlight':tGmv?'danger':''}">
+    <div class="kpi-label">${sigHtml(gmvSig)}거래액 GMV (MTD)</div>
+    <div class="kpi-value">${fE1(gmvMtd)}</div>
+    ${pBar(gmvMtd,tGmv,'목표')}
+    <div class="kpi-sub">월환산 ~${gmvEst.toFixed(1)}억 | 진행 ${(prog*100).toFixed(0)}%</div></div>`;
+
+  // 2. 은행잔고
+  const bankYest=D.bank.daily.length>1?D.bank.daily[1].balance:null;
+  const bankDiff=bankYest!=null?bankToday-bankYest:null;
   h+=`<div class="kpi-card info"><div class="kpi-label">은행잔고 (DW)</div>
     <div class="kpi-value">${fE(bankToday)}</div>
-    <div class="kpi-sub">${D.bank.source} | ${D.bank.daily[0].date}</div></div>`;
+    <div class="kpi-sub">${bankDiff!=null?`전일비 ${bankDiff>=0?'+':''}${fE1(bankDiff)} | `:''}${D.bank.daily[0].date}</div></div>`;
+
+  // 3. 현금마진 → 목표GP 대비
+  const gpTgtProrata=tGp?tGp*prog:null;
+  const cmVsGp=gpTgtProrata?(cmMtd/gpTgtProrata*100).toFixed(0):null;
   h+=`<div class="kpi-card ${opSig==='g'?'success':opSig==='y'?'highlight':'danger'}">
     <div class="kpi-label">${sigHtml(opSig)}현금마진 (MTD)</div>
     <div class="kpi-value">${fE1(cmMtd)}</div>
+    ${tGp?pBar(cmMtd,tGp,'목표GP'):''}
     <div class="kpi-sub">영업CF ${fE1(opMtd)} | 월환산 ~${opEst.toFixed(1)}억</div></div>`;
-  h+=`<div class="kpi-card"><div class="kpi-label">재무CF (MTD)</div>
-    <div class="kpi-value">${fE1(m3.fin_cf)}</div>
-    <div class="kpi-sub">금융${fE1(m3.fin_debt_repay)} + 무신사${fE1(m3.fin_musinsa)}</div></div>`;
-  const dm=D.debt.total[3]-D.debt.total[2];
+
+  // 4. 정산·원가 효율 — 정산예정액 vs 목표입금, 원가율
+  const settMtdKpi=m3.settlement||0;
+  const cogsMtd=m3.cogs_cash||0;
+  const cogsRate=settMtdKpi>0?(cogsMtd/settMtdKpi*100).toFixed(0):'—';
+  h+=`<div class="kpi-card"><div class="kpi-label">정산·원가 효율</div>
+    <div class="kpi-value">${fE1(settMtdKpi)}</div>
+    ${tDeposit?pBar(settMtdKpi,tDeposit,'목표입금'):''}
+    <div class="kpi-sub">원가율 ${cogsRate}% | 마진율 ${m3.cash_margin_rate!=null?(m3.cash_margin_rate*100).toFixed(1)+'%':'—'}</div></div>`;
+
+  // 5. 재무CF + 상환 스케줄
+  const finCf=m3.fin_cf||0;
+  const schedItems=D.schedule_annual?.items||[];
+  const mSched=schedItems.reduce((s,it)=>s+(it.vals?.[mi]||0),0);
+  const finPct=mSched>0?(Math.abs(finCf)/mSched*100).toFixed(0):'—';
+  h+=`<div class="kpi-card${finCf<0?' danger':''}"><div class="kpi-label">재무CF (MTD)</div>
+    <div class="kpi-value">${fE1(finCf)}</div>
+    ${mSched>0?`<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(Math.abs(finCf)/mSched*100,100)}%;background:var(--text3)"></div></div>
+    <div class="kpi-target"><span>월 상환 ${(mSched/1e8).toFixed(1)}억</span><span class="pct">${finPct}%</span></div>`:''}
+    <div class="kpi-sub">금융${fE1(m3.fin_debt_repay)} 무신사${fE1(m3.fin_musinsa)} 카드${fE1(m3.fin_card)}</div></div>`;
+
+  // 6. 환불율
   const curM=D.meta.current_month.replace('2026-','').replace(/^0/,'')+'월';
-  h+=`<div class="kpi-card"><div class="kpi-label">총부채 (${curM})</div>
-    <div class="kpi-value">${fE1(m3.total_debt)}</div>
-    <div class="kpi-sub">MoM ${dm>=0?'+':''}${fE1(dm)}</div></div>`;
-  h+=`<div class="kpi-card"><div class="kpi-label">환불율 (${curM} MTD)</div>
+  const refPrevMtd=m3.refund_prev||0;
+  const refPrevSig=tRefPrevLimit?(refPrevMtd<=tRefPrevLimit*prog?'g':'r'):'';
+  h+=`<div class="kpi-card${m3.refund_rate>=0.15?' danger':''}"><div class="kpi-label">${sigHtml(refPrevSig)}환불 (${curM} MTD)</div>
     <div class="kpi-value ${m3.refund_rate<0.15?'pos':'warn'}">${fP(m3.refund_rate)}</div>
-    <div class="kpi-sub">전월 ${fP(m2.refund_rate)}</div></div>`;
+    ${tRefPrevLimit?pBar(refPrevMtd,tRefPrevLimit,'전월환불한도'):''}
+    <div class="kpi-sub">전월환불 ${fE1(refPrevMtd)} | 전월율 ${fP(m2.refund_rate)}</div></div>`;
 
   document.getElementById('kpi-row').innerHTML=h;
   document.getElementById('meta-date').textContent=D.meta.updated;
   document.getElementById('meta-time').textContent=D.meta.updated_time?`${D.meta.updated_time} KST (매일 06:05 자동 업데이트)`:'';
 
   // MTD 기준 insight + Target 대비
-  const ins=[], mi=currentMonthIdx();
-  const tgtGmv=getTarget('gmv',mi);
+  const ins=[];
+  const tgtGmv=tGmv?tGmv/1e8:null;
   const tgtRefCur=getTarget('refund_current',mi), tgtRefPrev=getTarget('refund_prev',mi);
-  const gmvEst=eok(m3.gmv)*(D.meta.business_days/D.meta.elapsed_bdays);
 
   // 거래액 MTD vs Target + API/재고 분해
   const apiMtd=m3.api_sales||0, invMtd=m3.inventory_sales||0;
@@ -1046,34 +1106,32 @@ function renderS0(){
   if(tgtGmv!=null){
     const pct=(gmvEst/tgtGmv*100).toFixed(0);
     const s=pct>=100?'g':pct>=80?'y':'r';
-    ins.push(`거래액 MTD ${fE1(m3.gmv)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 / 목표 ${tgtGmv}억 (${pct}%) <span class="tag tag-${s}">${pct>=100?'ON TRACK':'BEHIND'}</span>`);
+    ins.push(`거래액 MTD ${fE1(gmvMtd)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 / 목표 ${tgtGmv}억 (${pct}%) <span class="tag tag-${s}">${pct>=100?'ON TRACK':'BEHIND'}</span>`);
   } else {
-    ins.push(`거래액 MTD ${fE1(m3.gmv)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 [Target 미설정]`);
+    ins.push(`거래액 MTD ${fE1(gmvMtd)} (API ${apiPct}% · 재고 ${invPct}%) → 월환산 ~${gmvEst.toFixed(1)}억 [Target 미설정]`);
   }
 
   // 정산예정액 → 현금마진 → 영업CF 워터폴
   const settMtd = m3.settlement || 0;
   const settPgMtd = m3.settlement_pg || 0;
   const settRate = m3.gmv>0 ? (settPgMtd/m3.gmv*100).toFixed(1) : '?';
-  ins.push(`정산예정액 MTD ${fE1(settMtd)} (PG결제일 기준 ${fE1(settPgMtd)}, 정산율 ${settRate}%) → 현금마진 ${fE1(cmMtd)} → 영업CF ${fE1(opMtd)} (월환산 ~${opEst.toFixed(1)}억)`);
+  const depositTgtNote = tDeposit ? ` (목표 ${(tDeposit/1e8).toFixed(1)}억, ${(settMtd/tDeposit*100).toFixed(0)}%)` : '';
+  ins.push(`정산예정액${depositTgtNote} ${fE1(settMtd)} | PG정산(결제일) ${fE1(settPgMtd)} (정산율 ${settRate}%) → 현금마진 ${fE1(cmMtd)} → 영업CF ${fE1(opMtd)}`);
 
   // 환불 MTD — 모니터링 KPI
-  const refCurPct = m3.gmv>0 ? ((m3.refund||0)/m3.gmv*100) : 0;
-  const refPrevPct = m3.gmv>0 ? ((m3.refund_prev||0)/m3.gmv*100) : 0;
-  let refLine = `환불: 당월거래 환불 ${refCurPct.toFixed(1)}%`;
+  const refCurPct = gmvMtd>0 ? ((m3.refund||0)/gmvMtd*100) : 0;
+  const refPrevPct = gmvMtd>0 ? ((m3.refund_prev||0)/gmvMtd*100) : 0;
+  let refLine = `환불: 당월 ${refCurPct.toFixed(1)}%`;
   if(tgtRefCur!=null){
     const s = refCurPct<=tgtRefCur ? 'g' : 'r';
     refLine += ` / 목표 ${tgtRefCur}% <span class="tag tag-${s}">${refCurPct<=tgtRefCur?'OK':'OVER'}</span>`;
   }
-  refLine += ` · 전월거래 환불 ${refPrevPct.toFixed(1)}% (${fE1(m3.refund_prev||0)})`;
-  if(tgtRefPrev!=null){
-    const s = refPrevPct<=tgtRefPrev ? 'g' : 'r';
-    refLine += ` / 목표 ${tgtRefPrev}% <span class="tag tag-${s}">${refPrevPct<=tgtRefPrev?'OK':'OVER'}</span>`;
+  refLine += ` · 전월 ${fE1(refPrevMtd)}`;
+  if(tRefPrevLimit){
+    const rpPct=(refPrevMtd/tRefPrevLimit*100).toFixed(0);
+    const s=refPrevMtd<=tRefPrevLimit*prog?'g':'r';
+    refLine += ` / 한도 ${fE1(tRefPrevLimit)} (${rpPct}%) <span class="tag tag-${s}">${s==='g'?'OK':'OVER'}</span>`;
   }
-  // 환불: 발생 vs 정산 시차 경고
-  const refPrevAmt=m3.refund_prev||0;
-  const settGap=settPgMtd>0?(refPrevAmt/settPgMtd*100).toFixed(0):'?';
-  refLine += ` — 발생 기준 (정산 차감은 시차 있음, 전월환불 ${fE1(refPrevAmt)}은 향후 정산에서 차감)`;
   ins.push(refLine);
 
   // 원가 이중 기준 (현금 vs 발생)
@@ -1082,7 +1140,8 @@ function renderS0(){
   if(wcIdx>=0){
     const cashC=wcData.cash_cogs[wcIdx], accrC=wcData.accrual_cogs[wcIdx], gap=wcData.gap[wcIdx];
     const gapSign=gap>=0?'+':'';
-    ins.push(`원가: 매칭(발생) ${fE1(accrC)} / 출금(현금) ${fE1(cashC)} → Gap ${gapSign}${(gap/1e8).toFixed(1)}억 ${gap>0?'<span class="tag tag-g">미지급↑ 현금 여유</span>':'<span class="tag tag-r">미지급↓ 현금 부담</span>'}`);
+    const cogsNote=tCogs?` (목표 ${fE1(tCogs)}, MTD ${((m3.cogs_cash||0)/tCogs*100).toFixed(0)}%)`:'';
+    ins.push(`원가${cogsNote}: 매칭 ${fE1(accrC)} / 출금 ${fE1(cashC)} → Gap ${gapSign}${(gap/1e8).toFixed(1)}억 ${gap>0?'<span class="tag tag-g">미지급↑</span>':'<span class="tag tag-r">미지급↓</span>'}`);
   }
 
   document.getElementById('s0-insight').innerHTML=ins.join('<br>');

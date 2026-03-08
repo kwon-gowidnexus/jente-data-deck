@@ -1023,22 +1023,24 @@ function renderS0(){
   const tGp=getTarget('gp',mi), tSga=getTarget('sga',mi), tDeposit=getTarget('deposit',mi);
   const tRefPrevLimit=getTarget('refund_prev_limit',mi);
 
-  // 헬퍼: 진행률 바 HTML
+  // 헬퍼: 진행률 바 HTML — 비례목표(pro-rata) 대비 달성률
   const pBar=(mtd,tgt,label)=>{
     if(!tgt) return '';
-    const pct=Math.min((mtd/tgt*100),150);
-    const progPct=(prog*100).toFixed(0);
-    const c=pct>=prog*100?'var(--positive)':pct>=prog*70?'var(--caution)':'var(--negative)';
-    const cls=pct>=prog*100?'on':pct>=prog*70?'behind':'danger';
-    return `<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(pct,100)}%;background:${c}"></div></div>`
-      +`<div class="kpi-target"><span>${label} ${(tgt/1e8).toFixed(1)}억</span><span class="pct ${cls}">${pct.toFixed(0)}%</span></div>`;
+    const prorata=tgt*prog; // 비례목표 = 월목표 × (경과일/전체일)
+    const achvPct=prorata>0?(mtd/prorata*100):0; // 달성률 = MTD / 비례목표
+    const fillPct=Math.min(mtd/tgt*100, 100); // 바 채움 = MTD / 월목표 (시각적)
+    const c=achvPct>=100?'var(--positive)':achvPct>=80?'var(--caution)':'var(--negative)';
+    const cls=achvPct>=100?'on':achvPct>=80?'behind':'danger';
+    return `<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${fillPct.toFixed(1)}%;background:${c}"></div></div>`
+      +`<div class="kpi-target"><span>${label} ${fE1(prorata)} / ${fE1(tgt)}</span><span class="pct ${cls}">${achvPct.toFixed(0)}%</span></div>`;
   };
 
   let h='';
   // 1. GMV 달성
   const gmvMtd=m3.gmv||0, gmvEst=eok(gmvMtd)*(bd/eb);
-  const gmvPct=tGmv?(gmvMtd/tGmv*100):0;
-  const gmvSig=tGmv?sc(gmvPct/100*bd/eb,1,0.8):'';
+  const gmvProrata=tGmv?tGmv*prog:0;
+  const gmvAchv=gmvProrata>0?(gmvMtd/gmvProrata*100):0; // 비례목표 대비 달성률
+  const gmvSig=tGmv?sc(gmvAchv,100,80):'';
   h+=`<div class="kpi-card ${gmvSig==='g'?'success':gmvSig==='y'?'highlight':tGmv?'danger':''}">
     <div class="kpi-label">${sigHtml(gmvSig)}거래액 GMV (MTD)</div>
     <div class="kpi-value">${fE1(gmvMtd)}</div>
@@ -1074,11 +1076,12 @@ function renderS0(){
   const finCf=m3.fin_cf||0;
   const schedItems=D.schedule_annual?.items||[];
   const mSched=schedItems.reduce((s,it)=>s+(it.vals?.[mi]||0),0);
+  const finFill=mSched>0?Math.min(Math.abs(finCf)/mSched*100,100):0;
   const finPct=mSched>0?(Math.abs(finCf)/mSched*100).toFixed(0):'—';
   h+=`<div class="kpi-card${finCf<0?' danger':''}"><div class="kpi-label">재무CF (MTD)</div>
     <div class="kpi-value">${fE1(finCf)}</div>
-    ${mSched>0?`<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(Math.abs(finCf)/mSched*100,100)}%;background:var(--text3)"></div></div>
-    <div class="kpi-target"><span>월 상환 ${(mSched/1e8).toFixed(1)}억</span><span class="pct">${finPct}%</span></div>`:''}
+    ${mSched>0?`<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${finFill.toFixed(1)}%;background:var(--text3)"></div></div>
+    <div class="kpi-target"><span>월 상환 ${fE1(mSched)}</span><span class="pct">${finPct}%</span></div>`:''}
     <div class="kpi-sub">금융${fE1(m3.fin_debt_repay)} 무신사${fE1(m3.fin_musinsa)} 카드${fE1(m3.fin_card)}</div></div>`;
 
   // 6. 환불율

@@ -1062,12 +1062,12 @@ function renderS0(){
     ${pBar(gmvMtd,tGmv,'목표')}
     <div class="kpi-sub">월환산 ~${gmvEst.toFixed(1)}억 | 진행 ${(prog*100).toFixed(0)}%</div></div>`;
 
-  // 3. 현금마진 → 목표GP 대비
+  // 3. 영업CF
   h+=`<div class="kpi-card ${opSig==='g'?'success':opSig==='y'?'highlight':'danger'}">
-    <div class="kpi-label">${sigHtml(opSig)}현금마진 (MTD)</div>
-    <div class="kpi-value">${fE1(cmMtd)}</div>
-    ${tGp?pBar(cmMtd,tGp,'목표GP'):''}
-    <div class="kpi-sub">영업CF ${fE1(opMtd)} | 월환산 ~${opEst.toFixed(1)}억</div></div>`;
+    <div class="kpi-label">${sigHtml(opSig)}영업CF (MTD)</div>
+    <div class="kpi-value">${fE1(opMtd)}</div>
+    ${tGp?pBar(opMtd,tGp,'목표GP'):''}
+    <div class="kpi-sub">현금마진 ${fE1(cmMtd)} | 월환산 ~${opEst.toFixed(1)}억</div></div>`;
 
   // 4. 환불 (역방향: 낮을수록 좋음. 비례한도 대비 ≤80% GREEN, ≤100% YELLOW, >100% RED)
   const curM=D.meta.current_month.replace('2026-','').replace(/^0/,'')+'월';
@@ -1081,13 +1081,17 @@ function renderS0(){
     ${tRefPrevLimit?pBar(refPrevMtd,tRefPrevLimit,'전월환불한도',true):''}
     <div class="kpi-sub">전월환불 ${fE1(refPrevMtd)} | 전월율 ${fP(m2.refund_rate)}</div></div>`;
 
-  // 5. 재무CF + 상환 스케줄 (재무CF는 마이너스가 정상 — 상환 진행률 기준 색상)
+  // 5. 재무CF + 상환 스케줄 (상환 진행률 기준 신호등, 역방향: 적게 쓸수록 좋음)
   const finCf=m3.fin_cf||0;
   const schedItems=D.schedule_annual?.items||[];
   const mSched=schedItems.reduce((s,it)=>s+(it.vals?.[mi]||0),0);
   const finFill=mSched>0?Math.min(Math.abs(finCf)/mSched*100,100):0;
   const finPct=mSched>0?(Math.abs(finCf)/mSched*100).toFixed(0):'—';
-  h+=`<div class="kpi-card"><div class="kpi-label">재무CF (MTD)</div>
+  const finProrata=mSched*prog;
+  const finAchv=finProrata>0?(Math.abs(finCf)/finProrata*100):0;
+  const finSig=mSched>0?(finAchv<=90?'g':finAchv<=100?'y':'r'):'';
+  const finCardCls=finSig==='g'?'success':finSig==='y'?'highlight':finSig==='r'?'danger':'';
+  h+=`<div class="kpi-card${finCardCls?' '+finCardCls:''}"><div class="kpi-label">${sigHtml(finSig)}재무CF (MTD)</div>
     <div class="kpi-value">${fE1(finCf)}</div>
     ${mSched>0?`<div class="kpi-bar"><div class="kpi-bar-fill" style="width:${finFill.toFixed(1)}%;background:var(--text3)"></div></div>
     <div class="kpi-target"><span>월 상환 ${fE1(mSched)}</span><span class="pct">${finPct}%</span></div>`:''}

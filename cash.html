@@ -1018,10 +1018,11 @@ function renderS0(){
   const opMtd = m3.op_cf || 0;
   const opEst = eok(opMtd)*(bd/eb);
   const opSig = sc(opEst,3,2);
-  // 목표
-  const tGmv=getTarget('gmv',mi), tRev=getTarget('revenue',mi), tCogs=getTarget('cogs',mi);
-  const tGp=getTarget('gp',mi), tSga=getTarget('sga',mi), tDeposit=getTarget('deposit',mi);
-  const tRefPrevLimit=getTarget('refund_prev_limit',mi);
+  // 목표 (getTarget은 억 단위 → 원 단위로 환산)
+  const _t=k=>{ const v=getTarget(k,mi); return v!=null?v*1e8:null; };
+  const tGmv=_t('gmv'), tRev=_t('revenue'), tCogs=_t('cogs');
+  const tGp=_t('gp'), tSga=_t('sga'), tDeposit=_t('deposit');
+  const tRefPrevLimit=_t('refund_prev_limit');
 
   // 헬퍼: 진행률 바 HTML — 비례목표(pro-rata) 대비 달성률
   const pBar=(mtd,tgt,label)=>{

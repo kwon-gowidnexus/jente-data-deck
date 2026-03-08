@@ -118,7 +118,7 @@ a { color: var(--accent); text-decoration: none; }
 .section h4 { font-size:11px; font-weight:600; margin:14px 0 6px; color:var(--text2); }
 
 /* ═══ KPI Grid ═══ */
-.kpi-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:1px; margin-bottom:16px; background:var(--border); border:1px solid var(--border); }
+.kpi-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:1px; margin-bottom:16px; background:var(--border); border:1px solid var(--border); }
 .kpi-card {
   background:var(--bg-card); padding:14px 16px;
   border-left:none; position:relative; transition:background .15s;
@@ -1039,10 +1039,17 @@ function renderS0(){
   };
 
   let h='';
-  // 1. GMV 달성
+  // 1. 은행잔고
+  const bankYest=D.bank.daily.length>1?D.bank.daily[1].balance:null;
+  const bankDiff=bankYest!=null?bankToday-bankYest:null;
+  h+=`<div class="kpi-card info"><div class="kpi-label">은행잔고 (DW)</div>
+    <div class="kpi-value">${fE(bankToday)}</div>
+    <div class="kpi-sub">${bankDiff!=null?`전일비 ${bankDiff>=0?'+':''}${fE1(bankDiff)} | `:''}${D.bank.daily[0].date}</div></div>`;
+
+  // 2. GMV 달성
   const gmvMtd=m3.gmv||0, gmvEst=eok(gmvMtd)*(bd/eb);
   const gmvProrata=tGmv?tGmv*prog:0;
-  const gmvAchv=gmvProrata>0?(gmvMtd/gmvProrata*100):0; // 비례목표 대비 달성률
+  const gmvAchv=gmvProrata>0?(gmvMtd/gmvProrata*100):0;
   const gmvSig=tGmv?sc(gmvAchv,100,80):'';
   h+=`<div class="kpi-card ${gmvSig==='g'?'success':gmvSig==='y'?'highlight':tGmv?'danger':''}">
     <div class="kpi-label">${sigHtml(gmvSig)}거래액 GMV (MTD)</div>
@@ -1050,32 +1057,14 @@ function renderS0(){
     ${pBar(gmvMtd,tGmv,'목표')}
     <div class="kpi-sub">월환산 ~${gmvEst.toFixed(1)}억 | 진행 ${(prog*100).toFixed(0)}%</div></div>`;
 
-  // 2. 은행잔고
-  const bankYest=D.bank.daily.length>1?D.bank.daily[1].balance:null;
-  const bankDiff=bankYest!=null?bankToday-bankYest:null;
-  h+=`<div class="kpi-card info"><div class="kpi-label">은행잔고 (DW)</div>
-    <div class="kpi-value">${fE(bankToday)}</div>
-    <div class="kpi-sub">${bankDiff!=null?`전일비 ${bankDiff>=0?'+':''}${fE1(bankDiff)} | `:''}${D.bank.daily[0].date}</div></div>`;
-
   // 3. 현금마진 → 목표GP 대비
-  const gpTgtProrata=tGp?tGp*prog:null;
-  const cmVsGp=gpTgtProrata?(cmMtd/gpTgtProrata*100).toFixed(0):null;
   h+=`<div class="kpi-card ${opSig==='g'?'success':opSig==='y'?'highlight':'danger'}">
     <div class="kpi-label">${sigHtml(opSig)}현금마진 (MTD)</div>
     <div class="kpi-value">${fE1(cmMtd)}</div>
     ${tGp?pBar(cmMtd,tGp,'목표GP'):''}
     <div class="kpi-sub">영업CF ${fE1(opMtd)} | 월환산 ~${opEst.toFixed(1)}억</div></div>`;
 
-  // 4. 정산·원가 효율 — 정산예정액 vs 목표입금, 원가율
-  const settMtdKpi=m3.settlement||0;
-  const cogsMtd=m3.cogs_cash||0;
-  const cogsRate=settMtdKpi>0?(cogsMtd/settMtdKpi*100).toFixed(0):'—';
-  h+=`<div class="kpi-card"><div class="kpi-label">정산·원가 효율</div>
-    <div class="kpi-value">${fE1(settMtdKpi)}</div>
-    ${tDeposit?pBar(settMtdKpi,tDeposit,'목표입금'):''}
-    <div class="kpi-sub">원가율 ${cogsRate}% | 마진율 ${m3.cash_margin_rate!=null?(m3.cash_margin_rate*100).toFixed(1)+'%':'—'}</div></div>`;
-
-  // 5. 재무CF + 상환 스케줄
+  // 4. 재무CF + 상환 스케줄
   const finCf=m3.fin_cf||0;
   const schedItems=D.schedule_annual?.items||[];
   const mSched=schedItems.reduce((s,it)=>s+(it.vals?.[mi]||0),0);

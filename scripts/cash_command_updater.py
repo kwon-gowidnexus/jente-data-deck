@@ -901,11 +901,13 @@ def _count_business_days(year, month):
 
 
 def _count_elapsed_bdays(year, month, today):
-    """현재까지 경과 영업일 (역일 기준)."""
+    """데이터 확정 경과일 (역일 기준, 어제까지).
+    06:05 실행 시 오늘 데이터는 미완성 → 어제까지만 확정."""
     import calendar
+    total = calendar.monthrange(year, month)[1]
     if today.year != year or today.month != month:
-        return calendar.monthrange(year, month)[1]
-    return min(today.day, calendar.monthrange(year, month)[1])
+        return total
+    return min(max(today.day - 1, 1), total)
 
 
 # ═══════════════════════════════════════════════

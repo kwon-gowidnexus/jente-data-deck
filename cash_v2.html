@@ -353,7 +353,9 @@ graph LR
       <tr><td>실행 시간</td><td>매일 KST 06:05 (UTC 21:05), Mon-Fri</td></tr>
       <tr><td>인증 — Sheets</td><td>OAuth ADC (pitstop-487005 quota)</td></tr>
       <tr><td>인증 — BQ</td><td>SA 키 (gowid-prd)</td></tr>
-      <tr><td>마커 방식</td><td><code>// AUTO_UPDATE_BEGIN
+      <tr><td>마커 방식</td><td><code>&sol;&sol; AUTO_UPDATE_BEGIN ... &sol;&sol; AUTO_UPDATE_END</code></td></tr>
+<!-- CASH_DATA 샘플 제거: 마커 텍스트가 updater find()와 충돌 방지 -->
+<!--
 const CASH_DATA = {
   daily: {
     month:'2026-03', days:31, business_days:31, elapsed_bdays:10,
@@ -491,7 +493,7 @@ const CASH_DATA = {
   },
   meta: { updated:'2026-03-11', updated_time:'10:06', current_month:'2026-03', business_days:31, elapsed_bdays:10, today:11 }
 };
-// AUTO_UPDATE_END</code></td></tr>
+-->
       <tr><td>배포</td><td>GitHub Pages → <code>kwon-gowidnexus.github.io/jente-data-deck/</code></td></tr>
       <tr><td>Secrets</td><td><code>GOWID_ADC_JSON</code> (BQ), <code>SHEETS_ADC_JSON</code> (Sheets), <code>JENTE_DEPLOY_PAT</code></td></tr>
     </table>
@@ -647,111 +649,140 @@ const CASH_DATA = {
 // AUTO_UPDATE_BEGIN
 const CASH_DATA = {
   daily: {
-    month:'2026-03', days:31, business_days:31, elapsed_bdays:9,
-    gmv:             [120097000,132772000,88152000,93119000,104867000,72765000,142145000,166376345,96442000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    refund_current:  [1431697,3868600,12110919,17582899,20583377,15859690,17998610,17014691,14677257,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    refund_prev:     [0,0,30909242,26374281,19097103,24410996,0,0,28093858,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    revenue:         [118665303,128903400,45131839,49161820,65186520,32494314,124146390,149361654,53670885,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs:            [84265846,88554839,47958895,54255115,59950703,42175583,87028766,97625502,62247646,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    gp:              [34399457,40348561,-2827056,-5093295,5235817,-9681269,37117624,51736152,-8576761,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    sga:             [4694054,1561290,1561290,1561290,13088965,1561290,1561290,1561290,1561290,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    debt_repay:      [0,1000000,1000000,1000000,1000000,1000000,0,0,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    musinsa_repay:   [0,1000000,1000000,1000000,1000000,1000000,0,0,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    card_repay:      [0,0,0,0,0,0,0,0,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    settlement:      [105345558,114813429,48222621,48774789,66853994,30654672,124269491,139174232,39278545,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    settlement_pg:   [101765903,111527652,70548249,78148562,86579520,56250984,120557381,131921444,85795833,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs_boutique:   [77664374,81617363,44201747,50004714,55254104,38871505,80210844,89977421,57371102,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cogs_import:     [6601472,6937476,3757148,4250401,4696599,3304078,6817922,7648081,4876544,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    cash_margin:     [21079712,26258590,263726,-5480326,6903291,-11520911,37240725,41548730,-22969101,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    api_sales:       [117382000,127351000,72272000,76403000,85493000,61187000,122390000,139985000,80596000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    inventory_sales: [2715000,5421000,15880000,16716000,19374000,11578000,19755000,22825000,15846000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
-    mur:            [30.72,31.22,30.87,29.57,27.84,30.21,30.82,30.82,27.52,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+    month:'2026-03', days:31, business_days:31, elapsed_bdays:10,
+    gmv:             [115445540,127865957,85169431,90520593,102242323,70731883,137024834,160111194,93375369,90805963,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_current:  [10900032,13431394,13033974,11005503,14666809,13512441,14279159,21140334,9563898,5697268,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    refund_prev:     [0,0,30909242,26374281,19097103,24410996,0,0,28093858,23460901,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    revenue:         [104545508,114434563,41891962,53819179,68964945,33409125,122745675,138970860,56463566,62274893,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs:            [84142099,88554839,47696650,53834300,58848508,41775250,86481098,97625502,59501673,61517122,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    gp:              [20403409,25879724,-5804688,-15121,10116437,-8366125,36264577,41345358,-3038107,757771,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    sga:             [4444090,1561290,1561290,1561290,13088965,1561290,1561290,1561290,1561290,12820890,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    debt_repay:      [0,1000000,1000000,1000000,1000000,1000000,0,0,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    musinsa_repay:   [0,1000000,1000000,1000000,1000000,1000000,0,0,1000000,1000000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    card_repay:      [0,0,0,0,0,0,0,0,0,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    settlement:      [105345558,114813429,48222621,48774789,66853994,30654672,124269491,139174232,39278545,51044966,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    settlement_pg:   [101765903,111366770,70204684,77455433,85283514,55033212,119505490,131921444,81593742,82844104,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_boutique:   [77550322,81617363,43960046,49616866,54238256,38502535,79706081,89977421,54840252,56697808,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cogs_import:     [6591777,6937476,3736604,4217434,4610252,3272715,6775017,7648081,4661421,4819314,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    cash_margin:     [21203459,26258590,525971,-5059511,8005486,-11120578,37788393,41548730,-20223128,-10472156,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    api_sales:       [117382000,127351000,72272000,76403000,85493000,61187000,122390000,139985000,80596000,79992000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    inventory_sales: [2715000,5421000,15880000,16716000,19374000,11578000,19755000,22825000,15846000,14107000,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    // MUR: [일별실적_API] 탭 58행 참조. 일별 마크업률(%)
+    mur:            [38.7,39.08,38.63,37.31,35.48,37.92,38.6,38.51,35.18,33.11,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
   },
   monthly: {
     '2026-01': { gmv:3320000000, refund:914000000, refund_rate:0.275, revenue:2406000000, cogs_cash:1912000000, gp:494000000, gp_rate:0.205, refund_prev:795000000, remaining:254000000, sga:119000000, op_cf:135000000, fin_debt_repay:113000000, fin_musinsa:0, fin_card:1818000000, fin_cf:-1931000000, net_cash_real:22000000, net_cash_total:-1796000000, inv_qty:1652, inv_val:717000000, total_debt:45753000000, cogs_accrual:2426000000, cogs_gap:514000000, dscr:1.19, mur:29.65 },
     '2026-02': { gmv:2971000000, refund:438000000, refund_rate:0.147, revenue:2211000000, cogs_cash:1392000000, gp:312000000, gp_rate:0.141, refund_prev:314000000, remaining:465000000, sga:108000000, op_cf:347000000, fin_debt_repay:161000000, fin_musinsa:0, fin_card:318000000, fin_cf:-479000000, net_cash_real:186000000, net_cash_total:-132000000, inv_qty:1732, inv_val:790000000, total_debt:45742000000, cogs_accrual:2275000000, cogs_gap:883000000, dscr:2.15, mur:29.98 },
-    '2026-03': { gmv:1016735345, refund:121127740, refund_rate:0.119, revenue:766722125, cogs_cash:624062895, gp:142659230, gp_rate:0.186, refund_prev:128885480, remaining:72000000, sga:28712049, op_cf:113947181, fin_debt_repay:6000000, fin_musinsa:6000000, fin_card:0, fin_cf:-12000000, net_cash_real:101947181, net_cash_total:77000000, inv_qty:1610, inv_val:747000000, total_debt:45752000000, cogs_accrual:315000000, cogs_gap:35000000, dscr:null, settlement:717387331, settlement_pg:843095528, cogs_boutique:575173174, cogs_import:48889721, cash_margin:93324436, cash_margin_rate:0.13, api_sales:883059000, inventory_sales:130110000, mur:30.15, mtd:true },
+    '2026-03': { gmv:1073293087, refund:127230812, refund_rate:0.119, revenue:797520276, cogs_cash:679977041, gp:117543235, gp_rate:0.147, refund_prev:152346381, remaining:72000000, sga:41282975, op_cf:76260260, fin_debt_repay:7000000, fin_musinsa:7000000, fin_card:0, fin_cf:-14000000, net_cash_real:62260260, net_cash_total:77000000, inv_qty:1610, inv_val:747000000, total_debt:45752000000, cogs_accrual:315000000, cogs_gap:35000000, dscr:null, settlement:768432297, settlement_pg:916974296, cogs_boutique:626706950, cogs_import:53270091, cash_margin:88455256, cash_margin_rate:0.115, api_sales:963051000, inventory_sales:144217000, mur:30.15, mtd:true },
   },
   inventory: {
-    months:['2025-12','2026-01','2026-02','2026-03'],
-    opening:[2383,1891,1652,1732], api_in:[3334,3347,3878,572], pre_in:[77,22,72,0],
-    return_in:[597,426,367,72], out:[4500,4035,4238,751], closing:[1891,1652,1732,1625],
-    closing_val:[712000000,717000000,790000000,618000000],
-    closing_val_real:[712000000,717000000,790000000,747000000],
-    composition:{ months:['2026-01','2026-02','2026-03'], return_qty:[null,670,null], return_val:[null,519000000,null], purchase_qty:[null,1062,null], purchase_val:[null,271000000,null] }
-  },
-  returns: {
-    months:['2026-01','2026-02','2026-03'],
-    foret_count:[531,307,28], foret_amount:[419000000,250000000,32000000],
-    warehouse_qty:[426,367,72], warehouse_val:[381000000,304000000,55000000], intake_rate:[0.802,1.195,2.57]
-  },
-  debt: {
-    months:['2025-12','2026-01','2026-02','2026-03'],
-    categories:{
-      '고위드':[20611000000,22500000000,22500000000,22813000000],
-      '무신사':[9076000000,9076000000,8995000000,5941000000],
-      '금융부채':[5100000000,5100000000,5170000000,18407000000],
-      '법인카드':[1741000000,1475000000,1422000000,1475000000],
-      '고객환불':[1120000000,1151000000,1233000000,1151000000],
-      '기타':[6450000000,6450000000,6422000000,null]
+      months:['2025-12','2026-01','2026-02','2026-03'],
+      opening:[2383,1891,1652,1732],
+      api_in:[3334,3347,3878,572],
+      pre_in:[77,22,72,0],
+      return_in:[597,426,367,72],
+      out:[4500,4035,4238,751],
+      closing:[1891,1652,1732,1625],
+      closing_val:[712000000,717000000,790000000,618000000],
+      closing_val_real:[712000000,717000000,790000000,747000000],
+      composition:{
+        months:['2026-01','2026-02','2026-03'],
+        return_qty:[null,670,null],
+        return_val:[null,519000000,null],
+        purchase_qty:[null,1062,null],
+        purchase_val:[null,271000000,null]
+      }
     },
-    total:[44098000000,45752000000,45742000000,45752000000]
-  },
+  returns: {
+      months:['2026-01','2026-02','2026-03'],
+      foret_count:[531,307,28],
+      foret_amount:[419000000,250000000,32000000],
+      warehouse_qty:[426,367,72],
+      warehouse_val:[381000000,304000000,55000000],
+      intake_rate:[0.802,1.195,2.57]
+    },
+  debt: {
+      months:['2025-12','2026-01','2026-02','2026-03'],
+      categories:{
+        '고위드':[20611000000,22500000000,22500000000,22813000000],
+        '무신사':[9076000000,9076000000,8995000000,5941000000],
+        '금융부채':[5100000000,5100000000,5170000000,18407000000],
+        '법인카드':[1741000000,1475000000,1422000000,1475000000],
+        '고객환불':[1120000000,1151000000,1233000000,1151000000],
+        '기타':[6450000000,6450000000,6422000000,null]
+      },
+      total:[44098000000,45752000000,45742000000,45752000000]
+    },
   working_capital: {
-    months:['2026-01','2026-02','2026-03'],
-    cash_cogs:[1912000000,1392000000,280000000],
-    accrual_cogs:[2426000000,2275000000,315000000],
-    gap:[514000000,883000000,35000000]
-  },
+      months:['2026-01','2026-02','2026-03'],
+      cash_cogs:[1912000000,1392000000,280000000],
+      accrual_cogs:[2426000000,2275000000,315000000],
+      gap:[514000000,883000000,35000000]
+    },
   schedule_annual: {
     items: [
-      {cat:'정기 상환',label:'금융부채 이자',tip:'매월 10일 전후 자동이체',vals:[15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000]},
-      {cat:'정기 상환',label:'금융부채 원금',tip:'매월 말일 상환',vals:[98000000,146000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000]},
-      {cat:'정기 상환',label:'무신사 상환',tip:'3월부터 월 1,900만',vals:[0,0,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000]},
-      {cat:'정기 상환',label:'법인카드',tip:'매월 20일 결제',vals:[1818000000,318000000,147505310,null,null,null,null,null,null,null,null,null]},
-      {cat:'고정 지출',label:'급여+4대보험',tip:'매월 25일 지급',vals:[117000000,117000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000]},
-      {cat:'고정 지출',label:'SW 구독',tip:'Shopify·GA·Slack 등',vals:[13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000]},
-      {cat:'고정 지출',label:'사무실',tip:'임차료+관리비',vals:[8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000]},
-      {cat:'가변 지출',label:'마케팅/광고',tip:'인스타/구글 광고비',vals:[5600000,5600000,5600000,null,null,null,null,null,null,null,null,null]},
-      {cat:'가변 지출',label:'물류비(추정)',tip:'월 3.5억 전후',vals:[347000000,363000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000]},
+      {cat:'정기 상환',label:'금융부채 이자',tip:'RESET 대시보드 [부채현황] 탭. 매월 10일 전후 자동이체',vals:[15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000,15000000]},
+      {cat:'정기 상환',label:'금융부채 원금',tip:'RESET 대시보드 [부채현황] 탭. 매월 말일 상환. 1월 0.98억 → 2월부터 1.48억/월',vals:[98000000,146000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000,148000000]},
+      {cat:'정기 상환',label:'무신사 상환',tip:'RESET [부채현황]. 3월부터 월 1,900만 정기 상환 시작. 잔액 59.41억',vals:[0,0,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000,19000000]},
+      {cat:'정기 상환',label:'법인카드',tip:'RESET [부채현황]. 매월 20일 결제. 1~3월 실적, 4월~ 미정',vals:[1818000000,318000000,147505310,null,null,null,null,null,null,null,null,null]},
+      {cat:'고정 지출',label:'급여+4대보험',tip:'운영시트 [판관비]. 매월 25일 지급. 1~2월 1.17억, 3월~ 인원 증가로 1.42억',vals:[117000000,117000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000,142000000]},
+      {cat:'고정 지출',label:'SW 구독',tip:'운영시트 [판관비]. Shopify·GA·Slack 등 월 1,300만. 매월 15일 전후 결제',vals:[13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000,13000000]},
+      {cat:'고정 지출',label:'사무실',tip:'운영시트 [판관비]. 임차료+관리비. 매월 28일 이체',vals:[8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000,8000000]},
+      {cat:'가변 지출',label:'마케팅/광고',tip:'운영시트 [판관비]. 인스타/구글 광고비. 1~3월 실적, 4월~ 미정',vals:[5600000,5600000,5600000,null,null,null,null,null,null,null,null,null]},
+      {cat:'가변 지출',label:'물류비(추정)',tip:'[합산관리] 시트 물류비 열. 월 3.5억 전후. CJ대한통운+반품물류 포함',vals:[347000000,363000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000]},
     ],
     op_cf_est:[135000000,347000000,390000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000,350000000]
   },
   schedule_monthly: {
-    10:[{label:'금융이자',amount:15000000,tip:'매월 10일 자동이체'}],
-    15:[{label:'SW구독',amount:13000000,tip:'Shopify·GA 등'}],
-    20:[{label:'법인카드',amount:147505310,tip:'매월 20일 결제'},{label:'무신사',amount:19000000,tip:'3월부터 정기상환'}],
-    25:[{label:'급여+4대보험',amount:142000000,tip:'매월 25일 지급'}],
-    28:[{label:'사무실',amount:8000000,tip:'임차료+관리비'}],
-    31:[{label:'금융원금',amount:148000000,tip:'매월 말일 상환'}],
+    10:[{label:'금융이자',amount:15000000,tip:'매월 10일 자동이체. RESET [부채현황]'}],
+    15:[{label:'SW구독',amount:13000000,tip:'Shopify·GA 등. 운영시트 [판관비]'}],
+    20:[{label:'법인카드',amount:147505310,tip:'매월 20일 결제. RESET [부채현황]'},{label:'무신사',amount:19000000,tip:'3월부터 정기상환. RESET [부채현황]'}],
+    25:[{label:'급여+4대보험',amount:142000000,tip:'매월 25일 지급. 운영시트 [판관비]'}],
+    28:[{label:'사무실',amount:8000000,tip:'임차료+관리비. 운영시트 [판관비]'}],
+    31:[{label:'금융원금',amount:148000000,tip:'매월 말일 상환. RESET [부채현황]'}],
   },
+  // DW 은행잔고 (고위드 연동 계좌, corp_id:5658801620)
   bank: {
-    daily:[
-      {date:'2026-03-08',balance:4713316},{date:'2026-03-07',balance:4713316},
-      {date:'2026-03-06',balance:4713316},{date:'2026-03-05',balance:2489579},
-      {date:'2026-03-04',balance:4059741},{date:'2026-03-03',balance:3340709},
-      {date:'2026-03-02',balance:7042993},{date:'2026-03-01',balance:7042993},
+    daily: [
+      {date:'2026-03-08', balance:4713316},
+      {date:'2026-03-07', balance:4713316},
+      {date:'2026-03-06', balance:4713316},
+      {date:'2026-03-05', balance:2489579},
+      {date:'2026-03-04', balance:4059741},
+      {date:'2026-03-03', balance:3340709},
+      {date:'2026-03-02', balance:7042993},
+      {date:'2026-03-01', balance:7042993},
+      {date:'2026-02-28', balance:12042993},
+      {date:'2026-02-27', balance:12042993},
+      {date:'2026-02-26', balance:4432354},
+      {date:'2026-02-25', balance:3992624},
+      {date:'2026-02-24', balance:8345055},
+      {date:'2026-02-23', balance:161591},
+      {date:'2026-02-22', balance:262025},
     ],
-    monthly:[
-      {month:'2026-03',balance:4713316},{month:'2026-02',balance:12042993},
-      {month:'2026-01',balance:81627},{month:'2025-12',balance:491963324},
+    monthly: [
+      {month:'2026-03', balance:4713316},
+      {month:'2026-02', balance:12042993},
+      {month:'2026-01', balance:81627},
+      {month:'2025-12', balance:491963324},
+      {month:'2025-11', balance:41575159},
+      {month:'2025-10', balance:340602},
+      {month:'2025-09', balance:87424277},
     ],
-    source:'gowid-prd DW (corp_id:5658801620)'
+    source: 'gowid-prd DW (corp_id:5658801620)'
   },
+  // RESET 시트 목표값 (월별 1~12월, 원 단위)
   targets: {
     gmv: [3986000000,3800000000,3500000000,null,null,null,null,null,null,null,null,null],
     revenue: [3567470000,2801024775,3052800000,null,null,null,null,null,null,null,null,null],
     cogs: [2483584615,1939170998,2179692308,null,null,null,null,null,null,null,null,null],
     gp: [1057872135,841169286,852153108,null,null,null,null,null,null,null,null,null],
     refund_prev_limit: [527193575,367789268,438213908,null,null,null,null,null,null,null,null,null],
+    deposit: [2772109790,2179637855,2356636026,null,null,null,null,null,null,null,null,null],
     sga: [123482799,117793907,102668907,null,null,null,null,null,null,null,null,null],
     mur: [30,30,30,null,null,null,null,null,null,null,null,null],
   },
-  daily_targets: {
-    gmv: [110000000,110000000,90000000,95000000,115000000,110000000,130000000,130000000,110000000,110000000,100000000,120000000,100000000,110000000,110000000,100000000,120000000,140000000,120000000,110000000,120000000,120000000,120000000,110000000,130000000,90000000,100000000,120000000,120000000,120000000,110000000],
-    totals:{ gmv:3500000000 }
-  },
-  meta:{ updated:'2026-03-10', updated_time:'06:39', current_month:'2026-03', business_days:31, elapsed_bdays:9, today:10 }
+  meta: { updated:'2026-03-11', updated_time:'10:10', current_month:'2026-03', business_days:31, elapsed_bdays:10, today:11 }
 };
 // AUTO_UPDATE_END
 

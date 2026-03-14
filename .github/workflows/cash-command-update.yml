@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add cash.html
+          git add cash.html cash_v2.html
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else

@@ -2,7 +2,7 @@
 젠테 Cash Command 자동 업데이트 스크립트
 =========================================
 매일 KST 06:05 GitHub Actions에서 실행.
-Google Sheets(합산관리 탭) + BigQuery(은행잔고) → jente_cash_command.html 업데이트.
+Google Sheets(합산관리 탭) + BigQuery(은행잔고) → cash.html + cash_v2.html 업데이트.
 
 사용법:
   python cash_command_updater.py                # 기본 실행
@@ -30,7 +30,8 @@ log = logging.getLogger(__name__)
 # ──────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).parent
 DATADECK_DIR = SCRIPT_DIR.parent
-HTML_PATH = DATADECK_DIR / 'jente_cash_command.html'
+HTML_PATH = DATADECK_DIR / 'cash.html'
+HTML_PATH_V2 = DATADECK_DIR / 'cash_v2.html'
 
 MARKER_BEGIN = '// AUTO_UPDATE_BEGIN'
 MARKER_END = '// AUTO_UPDATE_END'
@@ -1279,6 +1280,13 @@ def main():
     new_html = update_html(html_content, new_js)
     HTML_PATH.write_text(new_html, encoding='utf-8')
     log.info(f"HTML 업데이트 완료: {HTML_PATH}")
+
+    # v2도 동일 데이터로 업데이트
+    if HTML_PATH_V2.exists():
+        html_v2 = HTML_PATH_V2.read_text(encoding='utf-8')
+        new_html_v2 = update_html(html_v2, new_js)
+        HTML_PATH_V2.write_text(new_html_v2, encoding='utf-8')
+        log.info(f"HTML v2 업데이트 완료: {HTML_PATH_V2}")
     log.info(f"업데이트 시각: {today.strftime('%Y-%m-%d %H:%M')} KST")
 
 

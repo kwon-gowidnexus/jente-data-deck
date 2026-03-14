@@ -1110,6 +1110,24 @@ def render_cash_data_js(data):
             lines.append(f"    {tgt_key}: [{arr_str}],")
         lines.append('  },')
 
+    # daily_targets (일별 목표 — localStorage 또는 수동 설정)
+    if 'daily_targets' in data and data['daily_targets']:
+        dt = data['daily_targets']
+        lines.append('  daily_targets: {')
+        for dt_key, dt_val in dt.items():
+            if isinstance(dt_val, list):
+                arr_str = ','.join('null' if v is None else str(v) for v in dt_val)
+                lines.append(f'    {dt_key}: [{arr_str}],')
+            elif isinstance(dt_val, dict):
+                parts = []
+                for k, v in dt_val.items():
+                    if v is None:
+                        parts.append(f'{k}:null')
+                    else:
+                        parts.append(f'{k}:{v}')
+                lines.append(f"    {dt_key}: {{{', '.join(parts)}}}")
+        lines.append('  },')
+
     # meta
     m = data['meta']
     lines.append(f"  meta: {{ updated:'{m['updated']}', updated_time:'{m['updated_time']}', current_month:'{m['current_month']}', business_days:{m['business_days']}, elapsed_bdays:{m['elapsed_bdays']}, today:{m['today']} }}")
